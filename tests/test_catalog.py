@@ -1,6 +1,8 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import requests
+
 from scraper.catalog import crawl_full_catalog, parse_listing_page
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -54,3 +56,25 @@ def test_crawl_full_catalog_paginates_until_an_empty_page():
         "https://laws.gov.tt/ttdll-web/revision/list?offset=10",
         "https://laws.gov.tt/ttdll-web/revision/list?offset=20",
     ]
+
+
+def test_crawl_full_catalog_stops_gracefully_on_http_error_past_the_last_page():
+    # Verified against the live site: laws.gov.tt does not return an empty
+    # 200 page past the last real offset — it returns an HTTP 500. That is
+    # the site's actual "end of pagination" signal, not a real server
+    # failure, so the crawl must treat it as a stop condition rather than
+    # letting the error propagate and crash the whole run.
+    listing_html = (FIXTURES / "listing_page.html").read_text()
+
+    fake_client = MagicMock()
+    fake_client.get.side_effect = [
+        MagicMock(text=listing_html),
+        requests.HTTPError("Server error 500 for .../list?offset=10"),
+    ]
+
+    listings = crawl_full_catalog(
+        fake_client, base_url="https://laws.gov.tt", listing_path="/ttdll-web/revision/list", page_size=10
+    )
+
+    assert len(listings) == 7
+    assert fake_client.get.call_count == 2
