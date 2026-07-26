@@ -2,6 +2,13 @@
 
 Run manually (not in CI): python scripts/run_recon.py
 """
+import sys
+from pathlib import Path
+
+# running this file directly only puts scripts/ on sys.path, not the
+# project root, so `import scraper` fails unless we add it ourselves.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from scraper.config import (
     BASE_URL,
     LISTING_PATH,

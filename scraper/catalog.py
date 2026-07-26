@@ -1,5 +1,6 @@
 import re
 
+import requests
 from bs4 import BeautifulSoup
 
 from scraper.models import ChapterListing
@@ -48,7 +49,14 @@ def crawl_full_catalog(
     offset = 0
     while True:
         url = f"{base_url}{listing_path}?offset={offset}"
-        response = client.get(url)
+        try:
+            response = client.get(url)
+        except requests.HTTPError:
+            # Verified against the live site: laws.gov.tt returns an HTTP
+            # 500 for offsets past the last real page rather than an empty
+            # 200 result. That 500 is the site's actual pagination-end
+            # signal, not a real failure, so treat it as "no more pages."
+            break
         page_listings = parse_listing_page(response.text)
         if not page_listings:
             break
