@@ -17,7 +17,7 @@ def _fake_pdf_bytes(tmp_path):
     return path.read_bytes()
 
 
-def test_writes_pdf_and_markdown_for_each_chapter_and_a_summary_report(tmp_path):
+def test_writes_pdf_and_markdown_for_every_version_of_every_chapter(tmp_path):
     listing_html = (FIXTURES / "listing_page.html").read_text()
     empty_html = (FIXTURES / "empty_listing_page.html").read_text()
     detail_html = (FIXTURES / "chapter_detail_page.html").read_text()
@@ -32,7 +32,7 @@ def test_writes_pdf_and_markdown_for_each_chapter_and_a_summary_report(tmp_path)
             return MagicMock(text=empty_html)
         if "currentid=" in url:
             # give each chapter a distinct title/chapter number by patching
-            # the shared fixture, so each one gets a unique filename on disk
+            # the shared fixture, so each one gets a unique folder on disk
             # (real chapters obviously differ; the shared fixture wouldn't
             # exercise that unless nudged apart here).
             current_id = url.rsplit("currentid=", 1)[1]
@@ -60,19 +60,26 @@ def test_writes_pdf_and_markdown_for_each_chapter_and_a_summary_report(tmp_path)
         report_path=report_path,
     )
 
-    # 7 chapters in the fixture listing page, one detail+PDF fetch each
-    assert len(rows) == 7
+    # 7 chapters in the fixture listing page, 3 versions each in the shared
+    # detail fixture = 21 (chapter, version) rows total.
+    assert len(rows) == 21
     assert all(row["status"] == "ok" for row in rows)
 
-    written_pdfs = list(pdf_dir.glob("*.pdf"))
-    written_md = list(markdown_dir.glob("*.md"))
-    assert len(written_pdfs) == 7
-    assert len(written_md) == 7
+    written_pdfs = list(pdf_dir.glob("*/*.pdf"))
+    written_md = list(markdown_dir.glob("*/*.md"))
+    assert len(written_pdfs) == 21
+    assert len(written_md) == 21
+
+    # each chapter gets its own subfolder grouping all of its versions
+    chapter_pdf_dirs = {p.parent.name for p in written_pdfs}
+    assert len(chapter_pdf_dirs) == 7
 
     with open(report_path) as f:
         report_rows = list(csv.DictReader(f))
-    assert len(report_rows) == 7
+    assert len(report_rows) == 21
     assert report_rows[0]["status"] == "ok"
+    assert report_rows[0]["download_id"] == "105522"
+    assert report_rows[0]["as_at_date"] == "as at December 31st 2016"
 
 
 def test_safe_filename_strips_unsafe_characters():

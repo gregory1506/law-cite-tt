@@ -22,6 +22,10 @@ def run_reconnaissance(
     markdown_dir: Path,
     report_path: Path,
 ) -> list[dict]:
+    """Crawl the full catalog and fetch every historical version of every
+    chapter, not just the current one — needed to support amendment/
+    timeline tracking later, not just "is this valid right now" lookups.
+    """
     pdf_dir.mkdir(parents=True, exist_ok=True)
     markdown_dir.mkdir(parents=True, exist_ok=True)
 
@@ -39,6 +43,9 @@ def run_reconnaissance(
                     "chapter_number": detail.chapter_number,
                     "title": detail.title,
                     "current_id": listing.current_id,
+                    "download_id": "",
+                    "version_label": "",
+                    "as_at_date": "",
                     "status": "no_versions_found",
                     "character_count": 0,
                     "likely_scanned": "",
@@ -46,31 +53,40 @@ def run_reconnaissance(
             )
             continue
 
-        latest_version = detail.versions[0]
-        filename = safe_filename(detail.chapter_number, detail.title)
-        pdf_path = pdf_dir / f"{filename}.pdf"
-        md_path = markdown_dir / f"{filename}.md"
+        chapter_folder = safe_filename(detail.chapter_number, detail.title)
+        chapter_pdf_dir = pdf_dir / chapter_folder
+        chapter_md_dir = markdown_dir / chapter_folder
+        chapter_pdf_dir.mkdir(parents=True, exist_ok=True)
+        chapter_md_dir.mkdir(parents=True, exist_ok=True)
 
-        pdf_response = client.get(
-            f"{base_url}/ttdll-web/revision/download/{latest_version.download_id}?type=act"
-        )
-        pdf_path.write_bytes(pdf_response.content)
+        for version in detail.versions:
+            pdf_path = chapter_pdf_dir / f"{version.download_id}.pdf"
+            md_path = chapter_md_dir / f"{version.download_id}.md"
 
-        result = extract_pdf_to_markdown(
-            str(pdf_path), title=f"{detail.title} ({detail.chapter_number})"
-        )
-        md_path.write_text(result.markdown)
+            pdf_response = client.get(
+                f"{base_url}/ttdll-web/revision/download/{version.download_id}?type=act"
+            )
+            pdf_path.write_bytes(pdf_response.content)
 
-        report_rows.append(
-            {
-                "chapter_number": detail.chapter_number,
-                "title": detail.title,
-                "current_id": listing.current_id,
-                "status": "ok",
-                "character_count": result.character_count,
-                "likely_scanned": result.likely_scanned,
-            }
-        )
+            result = extract_pdf_to_markdown(
+                str(pdf_path),
+                title=f"{detail.title} ({detail.chapter_number}) — {version.label} {version.as_at_date}",
+            )
+            md_path.write_text(result.markdown)
+
+            report_rows.append(
+                {
+                    "chapter_number": detail.chapter_number,
+                    "title": detail.title,
+                    "current_id": listing.current_id,
+                    "download_id": version.download_id,
+                    "version_label": version.label,
+                    "as_at_date": version.as_at_date,
+                    "status": "ok",
+                    "character_count": result.character_count,
+                    "likely_scanned": result.likely_scanned,
+                }
+            )
 
     with open(report_path, "w", newline="") as f:
         fieldnames = list(report_rows[0].keys()) if report_rows else []
