@@ -31,6 +31,7 @@ The resolution keeps the **graph** simple (chapter/act-level nodes only — no p
 
 ## Data flow
 
+0. **Data reconnaissance (local, first — before any cloud infra is built):** the scraper's crawl + fetch step runs first against all 533 chapters, writing raw PDFs and extracted/converted markdown to a local external drive (`/Volumes/Extreme SSD`), not the cloud. Chunking regex, OCR-fallback thresholds, and the embedding/chunking strategy in this spec are informed assumptions, not verified against real documents yet — this phase produces the real data needed to confirm or correct them (e.g. how many chapters are actually scanned vs. native text, how consistent section markers really are) before any cloud pipeline is built around guesses. Only after inspecting this output does the pipeline design below get finalized and pointed at cloud storage.
 1. **Eager full crawl (v1 launch, one-time batch):** for all 533 chapters — scrape metadata, fetch each chapter's current PDF, extract text, chunk, embed, and populate Postgres + Blob storage. This must complete before the API is considered launch-ready, since validation is meaningless without text coverage.
 2. **Ongoing scraper runs (scheduled, via GitHub Actions cron):** re-crawl metadata; for any chapter whose extracted-text content hash has changed (new revision published), re-run extract → chunk → embed for that chapter only. Unchanged chapters are skipped — no wasted re-embedding cost.
 3. **API requests** are served entirely from Postgres/pgvector/Blob storage — the API itself never scrapes laws.gov.tt directly.
@@ -42,7 +43,7 @@ The resolution keeps the **graph** simple (chapter/act-level nodes only — no p
 3. **Clean/normalize** — strip headers/footers/page numbers, fix OCR hyphenation artifacts, normalize whitespace.
 4. **Chunk, structure-aware first.** Try splitting on section markers (regex) so a chunk maps to "Section 12" wherever possible. Fall back to fixed-size sliding-window chunking (with overlap) where section structure can't be reliably detected — common in OCR'd older ordinances.
 5. **Embed** using a legal-domain-tuned embedding model (e.g. Voyage `voyage-law-2`) rather than a generic one, since retrieval quality on legal text is the whole point of this layer. Exact provider is finalized during implementation, not locked in this spec.
-6. **Store** — raw text → Blob storage; chunks + embeddings → the `chunks` pgvector table, tagged with `extraction_method` (native/OCR) for provenance.
+6. **Store** — during Phase 0 (data reconnaissance), raw PDFs and converted markdown are written to the local external drive for inspection, and no chunking/embedding runs yet. Once the pipeline design is confirmed against that real data, subsequent runs store raw text → Blob storage; chunks + embeddings → the `chunks` pgvector table, tagged with `extraction_method` (native/OCR) for provenance.
 7. **Idempotency** — hash the raw extracted text; skip re-chunk/re-embed for a version whose hash hasn't changed since the last run.
 
 ## Scraping etiquette (hard constraints — this is a government website)
