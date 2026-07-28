@@ -82,6 +82,67 @@ def test_writes_pdf_and_markdown_for_every_version_of_every_chapter(tmp_path):
     assert report_rows[0]["as_at_date"] == "as at December 31st 2016"
 
 
+def test_re_running_skips_chapters_that_already_have_all_versions(tmp_path):
+    listing_html = (FIXTURES / "listing_page.html").read_text()
+    empty_html = (FIXTURES / "empty_listing_page.html").read_text()
+    detail_html = (FIXTURES / "chapter_detail_page.html").read_text()
+    pdf_bytes = _fake_pdf_bytes(tmp_path)
+
+    fake_client = MagicMock()
+
+    def fake_get(url):
+        if "revision/list?offset=0" in url and "currentid" not in url:
+            return MagicMock(text=listing_html)
+        if "revision/list?offset=10" in url:
+            return MagicMock(text=empty_html)
+        if "currentid=" in url:
+            current_id = url.rsplit("currentid=", 1)[1]
+            per_chapter_html = detail_html.replace(
+                "Absconding Debtors Chap. 8:08",
+                f"Test Chapter {current_id} Chap. 1:{current_id}",
+            )
+            return MagicMock(text=per_chapter_html)
+        if "revision/download/" in url:
+            return MagicMock(content=pdf_bytes)
+        raise AssertionError(f"unexpected URL requested: {url}")
+
+    fake_client.get.side_effect = fake_get
+
+    pdf_dir = tmp_path / "pdfs"
+    markdown_dir = tmp_path / "markdown"
+    report_path = tmp_path / "recon_report.csv"
+
+    # First run — download everything
+    rows1 = run_reconnaissance(
+        fake_client,
+        base_url="https://laws.gov.tt",
+        listing_path="/ttdll-web/revision/list",
+        pdf_dir=pdf_dir,
+        markdown_dir=markdown_dir,
+        report_path=report_path,
+    )
+    assert len(rows1) == 21
+    assert all(row["status"] == "ok" for row in rows1)
+
+    # Second run — all should be skipped since PDFs already on disk
+    rows2 = run_reconnaissance(
+        fake_client,
+        base_url="https://laws.gov.tt",
+        listing_path="/ttdll-web/revision/list",
+        pdf_dir=pdf_dir,
+        markdown_dir=markdown_dir,
+        report_path=report_path,
+    )
+    assert len(rows2) == 21
+    assert all(row["status"] == "skipped" for row in rows2)
+
+    # Disk state unchanged after second run
+    written_pdfs = list(pdf_dir.glob("*/*.pdf"))
+    written_md = list(markdown_dir.glob("*/*.md"))
+    assert len(written_pdfs) == 21
+    assert len(written_md) == 21
+
+
 def test_safe_filename_strips_unsafe_characters():
     from scraper.recon import safe_filename
 

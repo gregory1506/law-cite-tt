@@ -1,0 +1,780 @@
+{
+  "meta": {
+    "created": "2026-07-27",
+    "version": "1",
+    "total_entries": 30,
+    "coverage": {
+      "simple_citations": {
+        "count": 10,
+        "entry_ids": [
+          "simple-absconding-s1",
+          "simple-absconding-s5",
+          "simple-accessories-s1",
+          "simple-summary-courts-s1",
+          "simple-supreme-court-s4",
+          "simple-anatomy-s1",
+          "simple-antibiotics-s1",
+          "simple-antibiotics-s3",
+          "simple-ads-reg-s3",
+          "simple-income-tax-s3"
+        ]
+      },
+      "temporal_diffs": {
+        "count": 10,
+        "entry_ids": [
+          "temporal-absconding-s1-orig",
+          "temporal-absconding-s1-1950",
+          "temporal-absconding-s1-curr",
+          "temporal-accessories-s1-orig",
+          "temporal-accessories-s1-1950",
+          "temporal-accessories-s1-curr",
+          "temporal-anatomy-s14-v1",
+          "temporal-anatomy-s14-v2",
+          "temporal-antibiotics-s3-v1",
+          "temporal-antibiotics-s3-v2"
+        ]
+      },
+      "nested_references": {
+        "count": 5,
+        "entry_ids": [
+          "nested-antibiotics-s3-sub1",
+          "nested-antibiotics-s3-sub4",
+          "nested-antibiotics-s14-sub2",
+          "nested-anatomy-s14-sub3-para-a",
+          "nested-anatomy-s2-nearest-relative"
+        ]
+      },
+      "edge_cases": {
+        "count": 5,
+        "entry_ids": [
+          "edge-antibiotics-schedule",
+          "edge-income-tax-first-schedule-repealed",
+          "edge-absconding-s99-nonexistent",
+          "edge-summary-courts-s3A",
+          "edge-income-tax-s3-sub3-para-a"
+        ]
+      }
+    },
+    "chapters_used": [
+      "8:08",
+      "10:02",
+      "4:20",
+      "4:01",
+      "28:06",
+      "30:02",
+      "35:53",
+      "85:04"
+    ]
+  },
+  "entries": [
+    {
+      "id": "simple-absconding-s1",
+      "category": "simple_lookup",
+      "citation": {
+        "chapter": "8:08",
+        "act": "Absconding Debtors",
+        "section": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "This Act may be cited as the Absconding Debtors Act",
+        "must_contain": [
+          "Absconding Debtors Act"
+        ],
+        "must_not_contain": [
+          "Ordinance"
+        ],
+        "min_chars": 55
+      },
+      "source_file": "8_08_Absconding_Debtors/105522.md"
+    },
+    {
+      "id": "simple-absconding-s5",
+      "category": "simple_lookup",
+      "citation": {
+        "chapter": "8:08",
+        "act": "Absconding Debtors",
+        "section": "5"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "intention of the defendant to quit Trinidad and Tobago",
+        "must_contain": [
+          "affidavit",
+          "intention"
+        ],
+        "must_not_contain": [],
+        "min_chars": 100
+      },
+      "source_file": "8_08_Absconding_Debtors/105522.md"
+    },
+    {
+      "id": "simple-accessories-s1",
+      "category": "simple_lookup",
+      "citation": {
+        "chapter": "10:02",
+        "act": "Accessories and Abettors",
+        "section": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "This Act may be cited as the Accessories and Abettors Act",
+        "must_contain": [
+          "Accessories and Abettors Act"
+        ],
+        "must_not_contain": [
+          "Ordinance"
+        ],
+        "min_chars": 60
+      },
+      "source_file": "10_02_Accessories_and_Abettors/105526.md"
+    },
+    {
+      "id": "simple-summary-courts-s1",
+      "category": "simple_lookup",
+      "citation": {
+        "chapter": "4:20",
+        "act": "Summary Courts",
+        "section": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "This Act may be cited as the Summary Courts Act",
+        "must_contain": [
+          "Summary Courts Act"
+        ],
+        "min_chars": 50
+      },
+      "source_file": "4_20_Summary_Courts/105711.md"
+    },
+    {
+      "id": "simple-supreme-court-s4",
+      "category": "simple_lookup",
+      "citation": {
+        "chapter": "4:01",
+        "act": "Supreme Court of Judicature",
+        "section": "4"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "There shall be a Supreme Court of Judicature",
+        "must_contain": [
+          "Supreme Court",
+          "Judicature"
+        ],
+        "min_chars": 100
+      },
+      "source_file": "4_01_Supreme_Court_of_Judicature/105707.md"
+    },
+    {
+      "id": "simple-anatomy-s1",
+      "category": "simple_lookup",
+      "citation": {
+        "chapter": "28:06",
+        "act": "Anatomy",
+        "section": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "This Act may be cited as the Anatomy Act",
+        "must_contain": [
+          "Anatomy Act"
+        ],
+        "min_chars": 40
+      },
+      "source_file": "28_06_Anatomy/106753.md"
+    },
+    {
+      "id": "simple-antibiotics-s1",
+      "category": "simple_lookup",
+      "citation": {
+        "chapter": "30:02",
+        "act": "Antibiotics",
+        "section": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "This Act may be cited as the Antibiotics Act",
+        "must_contain": [
+          "Antibiotics Act"
+        ],
+        "min_chars": 45
+      },
+      "source_file": "30_02_Antibiotics/106044.md"
+    },
+    {
+      "id": "simple-antibiotics-s3",
+      "category": "simple_lookup",
+      "citation": {
+        "chapter": "30:02",
+        "act": "Antibiotics",
+        "section": "3"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "Antibiotics Control Committee",
+        "must_contain": [
+          "Committee",
+          "Chairman"
+        ],
+        "min_chars": 200
+      },
+      "source_file": "30_02_Antibiotics/106044.md"
+    },
+    {
+      "id": "simple-ads-reg-s3",
+      "category": "simple_lookup",
+      "citation": {
+        "chapter": "35:53",
+        "act": "Advertisements Regulation",
+        "section": "3"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "hoarding",
+        "must_contain": [
+          "advertisement",
+          "hoarding"
+        ],
+        "min_chars": 100
+      },
+      "source_file": "35_53_Advertisements_Regulation/106095.md"
+    },
+    {
+      "id": "simple-income-tax-s3",
+      "category": "simple_lookup",
+      "citation": {
+        "chapter": "85:04",
+        "act": "Income Tax In Aid of Industry",
+        "section": "3"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "shall be allowed to him a deduction",
+        "must_contain": [
+          "allowance",
+          "deduction",
+          "expenditure"
+        ],
+        "min_chars": 200
+      },
+      "source_file": "85_04_Income_Tax_In_Aid_of_Industry/106435.md"
+    },
+    {
+      "id": "temporal-absconding-s1-orig",
+      "category": "temporal_diff",
+      "citation": {
+        "chapter": "8:08",
+        "act": "Absconding Debtors",
+        "section": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "1898-08-05",
+        "version_label": "Original Ordinance 1898"
+      },
+      "expected": {
+        "text_contains": "This 01\u00b7dinance may be cited as",
+        "must_contain": [
+          "Ordinance",
+          "1898"
+        ],
+        "must_not_contain": [],
+        "differs_from": [
+          "temporal-absconding-s1-1950",
+          "temporal-absconding-s1-curr"
+        ],
+        "diff_key": "Ordinance vs Act; includes year 1898",
+        "min_chars": 50
+      },
+      "source_file": "8_08_Absconding_Debtors/80890.md"
+    },
+    {
+      "id": "temporal-absconding-s1-1950",
+      "category": "temporal_diff",
+      "citation": {
+        "chapter": "8:08",
+        "act": "Absconding Debtors",
+        "section": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "1950-12-01",
+        "version_label": "1950 Revised Edition"
+      },
+      "expected": {
+        "text_contains": "This Act may be cited as the Absconding Debtors",
+        "must_contain": [
+          "Act"
+        ],
+        "must_not_contain": [
+          "Ordinance"
+        ],
+        "differs_from": [
+          "temporal-absconding-s1-orig",
+          "temporal-absconding-s1-curr"
+        ],
+        "diff_key": "Act (not Ordinance); marginal title at end; uses \u00b7 character",
+        "min_chars": 55
+      },
+      "source_file": "8_08_Absconding_Debtors/23669.md"
+    },
+    {
+      "id": "temporal-absconding-s1-curr",
+      "category": "temporal_diff",
+      "citation": {
+        "chapter": "8:08",
+        "act": "Absconding Debtors",
+        "section": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "This Act may be cited as the Absconding Debtors Act",
+        "must_contain": [
+          "Act"
+        ],
+        "must_not_contain": [
+          "Ordinance",
+          "\u00b7"
+        ],
+        "differs_from": [
+          "temporal-absconding-s1-orig",
+          "temporal-absconding-s1-1950"
+        ],
+        "diff_key": "Act; marginal title at start; modern formatting",
+        "min_chars": 55
+      },
+      "source_file": "8_08_Absconding_Debtors/105522.md"
+    },
+    {
+      "id": "temporal-accessories-s1-orig",
+      "category": "temporal_diff",
+      "citation": {
+        "chapter": "10:02",
+        "act": "Accessories and Abettors",
+        "section": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "1925-03-17",
+        "version_label": "Original Ordinance 1925"
+      },
+      "expected": {
+        "text_contains": "Ordinance",
+        "must_contain": [
+          "Ordinance",
+          "1925"
+        ],
+        "must_not_contain": [],
+        "differs_from": [
+          "temporal-accessories-s1-1950",
+          "temporal-accessories-s1-curr"
+        ],
+        "diff_key": "Ordinance (original 1925)",
+        "min_chars": 50
+      },
+      "source_file": "10_02_Accessories_and_Abettors/40413.md"
+    },
+    {
+      "id": "temporal-accessories-s1-1950",
+      "category": "temporal_diff",
+      "citation": {
+        "chapter": "10:02",
+        "act": "Accessories and Abettors",
+        "section": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "1950-12-01",
+        "version_label": "1950 Revised Edition"
+      },
+      "expected": {
+        "text_contains": "This Ordinance may be cited as the Accessories and",
+        "must_contain": [
+          "Ordinance"
+        ],
+        "must_not_contain": [],
+        "differs_from": [
+          "temporal-accessories-s1-orig",
+          "temporal-accessories-s1-curr"
+        ],
+        "diff_key": "Ordinance (still); no year; marginal title at start",
+        "min_chars": 55
+      },
+      "source_file": "10_02_Accessories_and_Abettors/23683.md"
+    },
+    {
+      "id": "temporal-accessories-s1-curr",
+      "category": "temporal_diff",
+      "citation": {
+        "chapter": "10:02",
+        "act": "Accessories and Abettors",
+        "section": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition as at December 31st 2016"
+      },
+      "expected": {
+        "text_contains": "This Act may be cited as the Accessories and Abettors Act",
+        "must_contain": [
+          "Act"
+        ],
+        "must_not_contain": [
+          "Ordinance"
+        ],
+        "differs_from": [
+          "temporal-accessories-s1-orig",
+          "temporal-accessories-s1-1950"
+        ],
+        "diff_key": "Act (not Ordinance)",
+        "min_chars": 55
+      },
+      "source_file": "10_02_Accessories_and_Abettors/105526.md"
+    },
+    {
+      "id": "temporal-anatomy-s14-v1",
+      "category": "temporal_diff",
+      "citation": {
+        "chapter": "28:06",
+        "act": "Anatomy",
+        "section": "14"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition (106753)"
+      },
+      "expected": {
+        "text_contains": "post-mortem examination",
+        "must_contain": [
+          "post-mortem",
+          "examination"
+        ],
+        "is_identical_to": "temporal-anatomy-s14-v2",
+        "min_chars": 200
+      },
+      "source_file": "28_06_Anatomy/106753.md"
+    },
+    {
+      "id": "temporal-anatomy-s14-v2",
+      "category": "temporal_diff",
+      "citation": {
+        "chapter": "28:06",
+        "act": "Anatomy",
+        "section": "14"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition (40740)"
+      },
+      "expected": {
+        "text_contains": "post-mortem examination",
+        "must_contain": [
+          "post-mortem",
+          "examination"
+        ],
+        "is_identical_to": "temporal-anatomy-s14-v1",
+        "min_chars": 200
+      },
+      "source_file": "28_06_Anatomy/40740.md"
+    },
+    {
+      "id": "temporal-antibiotics-s3-v1",
+      "category": "temporal_diff",
+      "citation": {
+        "chapter": "30:02",
+        "act": "Antibiotics",
+        "section": "3"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition (106044)"
+      },
+      "expected": {
+        "text_contains": "Antibiotics Control Committee",
+        "must_contain": [
+          "Committee",
+          "Chairman"
+        ],
+        "min_chars": 200,
+        "is_identical_to": "temporal-antibiotics-s3-v2"
+      },
+      "source_file": "30_02_Antibiotics/106044.md"
+    },
+    {
+      "id": "temporal-antibiotics-s3-v2",
+      "category": "temporal_diff",
+      "citation": {
+        "chapter": "30:02",
+        "act": "Antibiotics",
+        "section": "3"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition (90909)"
+      },
+      "expected": {
+        "text_contains": "Antibiotics Control Committee",
+        "must_contain": [
+          "Committee",
+          "Chairman"
+        ],
+        "min_chars": 200,
+        "is_identical_to": "temporal-antibiotics-s3-v1"
+      },
+      "source_file": "30_02_Antibiotics/90909.md"
+    },
+    {
+      "id": "nested-antibiotics-s3-sub1",
+      "category": "nested_reference",
+      "citation": {
+        "chapter": "30:02",
+        "act": "Antibiotics",
+        "section": "3",
+        "subsection": "1"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition"
+      },
+      "expected": {
+        "text_contains": "For the purposes of this Act, a Committee shall be",
+        "must_contain": [
+          "Committee",
+          "Antibiotics Control Committee",
+          "Chief"
+        ],
+        "min_chars": 100
+      },
+      "source_file": "30_02_Antibiotics/106044.md"
+    },
+    {
+      "id": "nested-antibiotics-s3-sub4",
+      "category": "nested_reference",
+      "citation": {
+        "chapter": "30:02",
+        "act": "Antibiotics",
+        "section": "3",
+        "subsection": "4"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition"
+      },
+      "expected": {
+        "text_contains": "Council of the Medical Board",
+        "must_contain": [
+          "Council of the Medical Board",
+          "appoint"
+        ],
+        "min_chars": 80
+      },
+      "source_file": "30_02_Antibiotics/106044.md"
+    },
+    {
+      "id": "nested-antibiotics-s14-sub2",
+      "category": "nested_reference",
+      "citation": {
+        "chapter": "30:02",
+        "act": "Antibiotics",
+        "section": "14",
+        "subsection": "2"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition"
+      },
+      "expected": {
+        "text_contains": "prescription",
+        "must_contain": [
+          "prescription"
+        ],
+        "min_chars": 80
+      },
+      "source_file": "30_02_Antibiotics/106044.md"
+    },
+    {
+      "id": "nested-anatomy-s14-sub3-para-a",
+      "category": "nested_reference",
+      "citation": {
+        "chapter": "28:06",
+        "act": "Anatomy",
+        "section": "14",
+        "subsection": "3",
+        "paragraph": "a"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition"
+      },
+      "expected": {
+        "text_contains": "the deceased had expressed an objection",
+        "must_contain": [
+          "objection",
+          "deceased"
+        ],
+        "min_chars": 50
+      },
+      "source_file": "28_06_Anatomy/106753.md"
+    },
+    {
+      "id": "nested-anatomy-s2-nearest-relative",
+      "category": "nested_reference",
+      "citation": {
+        "chapter": "28:06",
+        "act": "Anatomy",
+        "section": "2"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition"
+      },
+      "expected": {
+        "text_contains": "nearest relative",
+        "must_contain": [
+          "nearest relative",
+          "spouse",
+          "son or daughter"
+        ],
+        "min_chars": 150
+      },
+      "source_file": "28_06_Anatomy/106753.md"
+    },
+    {
+      "id": "edge-antibiotics-schedule",
+      "category": "edge_case",
+      "citation": {
+        "chapter": "30:02",
+        "act": "Antibiotics",
+        "schedule": "SCHEDULE"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition"
+      },
+      "expected": {
+        "text_contains": "Antibiotic",
+        "must_contain": [
+          "Penicillin",
+          "Aureomycin",
+          "Chloramphenicol"
+        ],
+        "min_chars": 200
+      },
+      "source_file": "30_02_Antibiotics/106044.md"
+    },
+    {
+      "id": "edge-income-tax-first-schedule-repealed",
+      "category": "edge_case",
+      "citation": {
+        "chapter": "85:04",
+        "act": "Income Tax In Aid of Industry",
+        "schedule": "FIRST SCHEDULE"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition"
+      },
+      "expected": {
+        "text_contains": "Repealed",
+        "must_contain": [
+          "Repealed"
+        ],
+        "min_chars": 8
+      },
+      "source_file": "85_04_Income_Tax_In_Aid_of_Industry/106435.md"
+    },
+    {
+      "id": "edge-absconding-s99-nonexistent",
+      "category": "edge_case",
+      "citation": {
+        "chapter": "8:08",
+        "act": "Absconding Debtors",
+        "section": "99"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition"
+      },
+      "expected": {
+        "should_not_exist": true,
+        "reason": "Chapter 8:08 has only 17 sections (1-17)"
+      },
+      "source_file": "8_08_Absconding_Debtors/105522.md"
+    },
+    {
+      "id": "edge-summary-courts-s3A",
+      "category": "edge_case",
+      "citation": {
+        "chapter": "4:20",
+        "act": "Summary Courts",
+        "section": "3A"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition"
+      },
+      "expected": {
+        "text_contains": "No person shall be appointed a Magistrate unless",
+        "must_contain": [
+          "Magistrate",
+          "Qualification of"
+        ],
+        "min_chars": 100
+      },
+      "source_file": "4_20_Summary_Courts/105711.md"
+    },
+    {
+      "id": "edge-income-tax-s3-sub3-para-a",
+      "category": "edge_case",
+      "citation": {
+        "chapter": "85:04",
+        "act": "Income Tax In Aid of Industry",
+        "section": "3",
+        "subsection": "3",
+        "paragraph": "a"
+      },
+      "temporal_context": {
+        "as_at_date": "2016-12-31",
+        "version_label": "2006 Revised Edition"
+      },
+      "expected": {
+        "text_contains": "expenditure incurred",
+        "must_contain": [
+          "expenditure"
+        ],
+        "min_chars": 50
+      },
+      "source_file": "85_04_Income_Tax_In_Aid_of_Industry/106435.md"
+    }
+  ]
+}

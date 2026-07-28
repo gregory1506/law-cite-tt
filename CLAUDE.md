@@ -2,30 +2,53 @@
 
 ## Purpose
 
-A legal citation tool/software for the **Laws of Trinidad and Tobago**. It sources statute data (chapters, acts, revisions, amendments) from the official Digital Law Library at:
-
-https://laws.gov.tt/ttdll-web/revision/list
-
-The goal is to let users look up, browse, and generate properly formatted legal citations for T&T legislation (chapters, acts, sections) instead of manually tracking revisions and PDFs on the government site.
-
-## Data Source
-
-- **Origin**: laws.gov.tt Digital Law Library (Government of the Republic of Trinidad and Tobago), revised laws current to **31 December 2016** as of last check.
-- **Organization**: Laws are catalogued by chapter number (e.g. `Chapter 8:08`) with a title, classification (e.g. "CIVIL LAW AND PROCEDURE"), year of original enactment, act number, and commencement date.
-- **Revisions**: Each chapter/act may have multiple PDF versions across years (official and unofficial updates) plus amendment/alert metadata.
-- **Browse modes on source site**: Constitution, recent updates, unproclaimed acts, revised acts, repealed acts, omitted acts; list views by alphabetical / chronological / legal notice year; keyword search.
-- **Observed URL patterns**:
-  - List/search: `/ttdll-web/revision/list?offset=0&q=[keyword]&currentid=[ID]`
-  - PDF download: `/ttdll-web/revision/download/[ID]?type=act`
-- These patterns were captured by manual inspection and are **not guaranteed stable** — verify against the live site before relying on them for scraping/ingestion, and re-check periodically since the site is unofficial-looking gov infrastructure that could change without notice.
-
-## Scope Notes
-
-- This project is a **consumer/aggregator** of the laws.gov.tt data, not a legal-authority source of truth. Always link back to or reference the official chapter/act/PDF for the authoritative text.
-- Citation formatting should follow standard Trinidad & Tobago / Caribbean legal citation conventions (chapter number, act/title, year, section) — confirm exact style requirements with the user before hardcoding a citation format.
-- Because source PDFs are the canonical documents, expect to need PDF text extraction or parsing as part of any ingestion pipeline.
-- Be mindful of scraping etiquette/rate limits against a government site; prefer caching fetched data locally rather than re-fetching on every request.
+A legal citation engine for the **Laws of Trinidad and Tobago**. Sources statute data from the official Digital Law Library at https://laws.gov.tt/ttdll-web/revision/list. Answers "what did provision X say on date Y?" by chunking 10,060 PDF markdown files into 407,008 section-aware chunks with FTS5 + vector search.
 
 ## Status
 
-Greenfield — no code yet. See `next_steps.md` for current priorities and `work_log.md` / `lessons_learned.md` for ongoing history.
+**Phase 1 complete** — chunker, DB (SQLite + FTS5), embeddings, vector search, goldset validation, demo app. All 61 tests pass.
+
+## Project architecture
+
+Two surfaces (both in this repo):
+
+1. **Customer app** (Svelte, planned) — logged-in experience: Explore (search/lookup/browse), Cite, Chat tabs
+2. **Marketing site** (separate project, not yet built) — landing pages, pricing, sign-up
+
+## Current codebase
+
+- `scraper/` — Python modules: chunker, SQLite DB layer, embeddings (sentence-transformers), FTS + vector + hybrid search
+- `demo_app.py` + `templates/index.html` — FastAPI demo (run: `uvicorn demo_app:app --reload`)
+- `tests/` — 61 tests across 8 test files
+- `docs/superpowers/` — specs, plans, decision records
+
+## Data
+
+- **Markdown:** `/Volumes/Extreme SSD/law-cite-tt-data/markdown/` — 533 chapters, 10,060 files
+- **SQLite DB:** `/Volumes/Extreme SSD/law-cite-tt-data/law_cite.db` — 407,008 chunks, all embedded (384-dim)
+- **Source PDFs:** `https://laws.gov.tt/ttdll-web/revision/download/{id}?type=act`
+
+## Next move
+
+See `next_steps.md` for priorities. Key upcoming work:
+- Migrate SQLite → PostgreSQL + pgvector (plan at `docs/superpowers/plans/2026-07-27-postgres-switch-plan.md`)
+- Build Svelte customer app with Explore/Cite/Chat tabs
+- Deploy marketing site on Cloudflare Pages
+
+## Key files for context
+
+- `work_log.md` — chronological work record
+- `lessons_learned.md` — gotchas and non-obvious discoveries
+- `next_steps.md` — priority queue
+
+## Git
+
+- **Remote:** `https://github.com/gregory1506/law-cite-tt` (private)
+- **Branch:** `master`
+
+## Virtual env
+
+```sh
+source .venv/bin/activate
+uv pip install <pkg>  # use uv pip, not pip
+```
