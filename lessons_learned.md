@@ -88,3 +88,23 @@ Each entry:
 **Lesson:** Always use `uv pip install` inside the virtual environment to ensure packages go to the right location. The system `pip` may default to a different Python version's site-packages.
 
 **Tags:** #python #venv #dependency-management
+
+## [2026-07-28] CORS failures in the browser look identical to a dead server
+
+**Context:** Wiring the Svelte frontend to the FastAPI backend during the Postgres migration (Phase F/G).
+
+**What happened:** `curl` to the API worked perfectly, but the browser's fetch calls all failed with `net::ERR_FAILED` and no CORS error message in the console — it looked exactly like the server was unreachable. The actual cause was `allow_origins=["http://localhost:5173"]` in FastAPI's CORSMiddleware, but Vite had picked port 5174 because something else already held 5173. A second, subtler version of the same bug: `allow_origin_regex=r"http://localhost:\d+"` still rejected `http://localhost` (port 80) because browsers omit the port from the Origin header when it's the default for the scheme (80 for http, 443 for https) — the regex required a port number that wasn't there.
+
+**Lesson:** When a frontend fetch to a known-good API fails with `ERR_FAILED` and zero server-side logs of the request, suspect CORS before anything else — Chrome doesn't surface CORS as a distinguishable error to `fetch()`'s catch handler. Also: don't hardcode a dev port in CORS config, and if using a regex for allowed origins, always make the port group optional (`(:\d+)?`) to cover default-port origins.
+
+**Tags:** #cors #fastapi #debugging #docker
+
+## [2026-07-28] `git worktree` doesn't inherit gitignored directories like `.venv`
+
+**Context:** Setting up an isolated worktree for the Postgres migration phase.
+
+**What happened:** The new worktree had no `.venv/` (correctly gitignored), so `python`/`pip` weren't found via the usual relative path. Rather than creating a duplicate venv per worktree, pointing directly at the main checkout's `.venv/bin/python` worked fine since the interpreter and installed packages don't depend on cwd.
+
+**Lesson:** For lightweight worktree-based phases, it's fine to share one venv across the main checkout and its worktrees by absolute path — no need to reinstall dependencies per worktree unless the worktree needs genuinely different package versions.
+
+**Tags:** #git #worktrees #venv

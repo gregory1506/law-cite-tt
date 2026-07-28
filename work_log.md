@@ -131,3 +131,23 @@ Each entry:
 - Obsidian vault (5 new lesson notes, updated Structure.md, Overview.md, _Index.md)
 
 **Status:** complete
+
+## [2026-07-28] Phase 2 — Full Postgres + pgvector migration, Svelte customer app, Docker Compose
+
+**What was done:**
+- Phase A: moved scraper/ and run_recon.py into backend/, requirements.txt into backend/, pytest pythonpath extended so imports are unchanged
+- Phase B: wrote data/init.sql (chapters/versions/chunks with GIN + ivfflat indexes), stood up pgvector/pg16 via docker-compose
+- Phase C: built backend/scraper/db_pg.py — async asyncpg-backed store merging the old LawCiteDB + SearchEngine (ingest, lookup_section, search_fts/vector/hybrid)
+- Phase D: moved demo_app.py -> backend/api/main.py, swapped in db_pg, added lifespan pool management, CORS, /api/health, backend/Dockerfile
+- Phase E: wrote backend/scripts/migrate_sqlite_to_pg.py; ran it against the full 407,008-chunk database — chapters=533 versions=4989 chunks=407008 embedded=407008, exact match to source
+- Phase F: scaffolded citation-tool/ (Vite + Svelte 5) with Explore (search/lookup/browse, ported from templates/index.html), stubbed Cite/Chat tabs, stub auth gate
+- Phase G: wired db+api+citation-tool into docker-compose.yml; verified full stack via `docker compose up` in a real browser
+- Ran the whole thing in Chrome via chrome-devtools MCP against real data at every phase boundary, not just pytest
+
+**Files touched:**
+- backend/ (new: scraper/, api/, scripts/, Dockerfile, requirements.txt)
+- data/init.sql, docker-compose.yml, .env.example
+- citation-tool/ (new Svelte app + Dockerfile)
+- tests/test_db_pg.py, tests/test_api.py, tests/test_migrate_sqlite_to_pg.py (12 new tests, 73 total)
+
+**Status:** complete (on worktree branch `worktree-phase2-postgres`, not yet merged to master)

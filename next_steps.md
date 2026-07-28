@@ -5,21 +5,14 @@ Concrete, actionable items for continuing work here. Review this before starting
 ## Priority
 
 ### Now
-- **Phase 2: PostgreSQL migration.** Plan at `docs/superpowers/plans/2026-07-27-postgres-switch-plan.md`.
-  - Phase A: Directory reorg (backend/, citation-tool/, data/)
-  - Phase B: PG schema + pgvector
-  - Phase C: Refactor db.py → async with asyncpg
-  - Phase D: Move FastAPI into backend/api/
-  - Phase E: Migration script (SQLite → PG)
-  - Phase F: Svelte customer app (Explore/Cite/Chat)
-  - Phase G: Docker Compose
-  - Phase H: Deploy
+- **Merge Phase 2 branch.** Work is complete on worktree branch `worktree-phase2-postgres` (commits: dir reorg, PG schema, async db_pg.py, FastAPI refactor, migration script, Svelte app, full docker-compose). Review and merge to master.
+- Real auth for the customer app (citation-tool currently has a stub token gate in `src/lib/auth.js` — real login flow depends on the marketing site)
+- Decide production Postgres hosting (self-managed VPS + Docker Compose vs. managed/Neon) per Phase H options in the plan doc
 
 ### Soon
 - Build marketing site landing page (separate project, Cloudflare Pages)
-- Citation formatter following T&T legal conventions
-- AI Chat tab for the customer app
-- Auth/login gate for customer app
+- Citation formatter following T&T legal conventions (Cite tab is stubbed in citation-tool/src/routes/Cite.svelte)
+- AI Chat tab for the customer app (stubbed in citation-tool/src/routes/Chat.svelte)
 
 ### Later
 - Rate-limited background re-crawl for new revisions
@@ -44,3 +37,10 @@ Concrete, actionable items for continuing work here. Review this before starting
 - PDF source links on all results
 - Documentation + Obsidian vault sync
 - Private GitHub repo created
+- Phase 2A: Directory reorg into backend/, citation-tool/, data/
+- Phase 2B: Postgres + pgvector schema (data/init.sql), docker-compose db service
+- Phase 2C: Async db_pg.py (asyncpg pool, FTS/vector/hybrid search)
+- Phase 2D: FastAPI moved to backend/api/main.py, backed by db_pg
+- Phase 2E: SQLite -> Postgres migration script, run against full 407,008-chunk dataset (exact count match)
+- Phase 2F: Svelte customer app (citation-tool/) with working Explore tab (search/lookup/browse), stubbed Cite/Chat
+- Phase 2G: Full docker-compose stack (db + api + citation-tool) verified end-to-end in browser
