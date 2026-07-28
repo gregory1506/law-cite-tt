@@ -16,5 +16,27 @@ services:
       timeout: 5s
       retries: 10
 
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PG_DSN: postgresql://lawcite:${PG_PASSWORD}@db:5432/lawcite
+    ports:
+      - "8000:8000"
+
+  citation-tool:
+    build:
+      context: ./citation-tool
+      args:
+        VITE_API_BASE: ${VITE_API_BASE:-http://localhost:8000}
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
 volumes:
   pgdata:
