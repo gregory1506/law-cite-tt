@@ -34,6 +34,7 @@ if __name__ == "__main__":
         report_path=REPORT_PATH,
     )
     ok = sum(1 for r in rows if r["status"] == "ok")
+    skipped = sum(1 for r in rows if r["status"] == "skipped")
     scanned = sum(1 for r in rows if r.get("likely_scanned") is True)
-    print(f"Processed {len(rows)} chapters: {ok} ok, {scanned} likely scanned.")
+    print(f"Processed {len(rows)} chapters: {ok} ok, {skipped} skipped (up-to-date), {scanned} likely scanned.")
     print(f"Report written to {REPORT_PATH}")
