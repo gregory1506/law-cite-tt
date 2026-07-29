@@ -50,7 +50,7 @@ Record these before starting:
 | Database name | `lawcite` |
 | Database user | `lawcite` |
 | API domain | `srv1629323.hstgr.cloud` |
-| Traefik network | `traefik-proxy` |
+| Traefik network mode | `host` |
 | Expected chapters | `533` |
 | Expected versions | `4989` |
 | Expected chunks | `407008` |
@@ -110,24 +110,61 @@ In **Docker Manager → Projects**:
 2. Expand it and confirm the Traefik container is running.
 3. Open its logs and confirm there is no certificate or Docker-provider error.
 
-In **Browser terminal**, run:
+This VPS uses Hostinger Traefik with `NetworkMode=host`. Confirm it:
 
 ```bash
-docker network inspect traefik-proxy
+docker inspect $(docker ps --filter name=traefik -q | head -1) \
+  --format 'NetworkMode={{.HostConfig.NetworkMode}}'
 ```
 
-Expected: JSON describing an existing Docker bridge network.
+Expected:
 
-If the network does not exist:
+```text
+NetworkMode=host
+```
 
-1. Return to **Docker Manager**.
-2. Open the Docker application catalog.
-3. Locate Hostinger's Traefik template.
-4. Deploy it once.
-5. Wait until its container is running.
-6. Run `docker network inspect traefik-proxy` again.
+Confirm the static Traefik arguments include Docker discovery, the two
+entrypoints, and the certificate resolver:
 
-Do not continue until `traefik-proxy` exists. Only Traefik should publish host
+```bash
+docker inspect $(docker ps --filter name=traefik -q | head -1) \
+  --format '{{json .Config.Cmd}}'
+```
+
+Required settings:
+
+```text
+--providers.docker=true
+--providers.docker.exposedbydefault=false
+--entrypoints.web.address=:80
+--entrypoints.websecure.address=:443
+--certificatesresolvers.letsencrypt.acme.httpchallenge=true
+--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+```
+
+Confirm Traefik owns the public listeners:
+
+```bash
+ss -lntp | grep -E ':(80|443)\s'
+```
+
+Confirm its persistent certificate storage and Docker socket:
+
+```bash
+docker inspect $(docker ps --filter name=traefik -q | head -1) \
+  --format '{{range .Mounts}}{{.Source}} -> {{.Destination}}{{"\n"}}{{end}}'
+```
+
+Required destinations:
+
+```text
+/letsencrypt
+/var/run/docker.sock
+```
+
+Because Traefik runs in the host network namespace, LawCite does not join a
+`traefik-proxy` network. Traefik discovers the API through Docker labels and
+reaches its IP on the `lawcite_backend` bridge. Only Traefik publishes host
 ports 80 and 443.
 
 ## Step 3: Confirm DNS
@@ -339,7 +376,6 @@ volumes:
 networks:
   backend:
     name: lawcite_backend
-    internal: true
 ```
 
 Expected after deployment:
@@ -517,10 +553,8 @@ services:
       start_period: 180s
     networks:
       - backend
-      - traefik-proxy
     labels:
       - traefik.enable=true
-      - traefik.docker.network=traefik-proxy
       - traefik.http.routers.lawcite-api.rule=Host(`srv1629323.hstgr.cloud`)
       - traefik.http.routers.lawcite-api.entrypoints=websecure
       - traefik.http.routers.lawcite-api.tls=true
@@ -545,10 +579,6 @@ volumes:
 networks:
   backend:
     name: lawcite_backend
-    internal: true
-  traefik-proxy:
-    external: true
-    name: traefik-proxy
 ```
 
 The first API start can take several minutes while FastEmbed downloads
@@ -740,23 +770,17 @@ cat /docker/lawcite/.build.log
 
 Hostinger documents project build logs under `/docker/[project-name]/.build.log`.
 
-### `network traefik-proxy declared as external, but could not be found`
-
-Hostinger Traefik is not installed or its shared network has a different name.
-Run `docker network ls` and inspect the Traefik project. Update both the
-network declaration and `traefik.docker.network` label to the actual name.
-
 ### Traefik returns 502
 
 Check:
 
 ```bash
 docker inspect lawcite-api --format '{{json .NetworkSettings.Networks}}'
-docker inspect <traefik-container> --format '{{json .NetworkSettings.Networks}}'
+docker inspect <traefik-container> --format '{{.HostConfig.NetworkMode}}'
 ```
 
-Both containers must be on `traefik-proxy`, and the API must listen on
-`0.0.0.0:8000`.
+The API must be on `lawcite_backend` and listen on `0.0.0.0:8000`. Traefik
+must report network mode `host`.
 
 ### API is unhealthy
 
