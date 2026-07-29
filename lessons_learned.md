@@ -108,3 +108,13 @@ Each entry:
 **Lesson:** For lightweight worktree-based phases, it's fine to share one venv across the main checkout and its worktrees by absolute path — no need to reinstall dependencies per worktree unless the worktree needs genuinely different package versions.
 
 **Tags:** #git #worktrees #venv
+
+## [2026-07-29] Token swaps still require checking inherited native control colors
+
+**Context:** Finishing the citation-tool dark theme after the shared CSS tokens and sidebar shell were already in place.
+
+**What happened:** Inactive Explore tabs inherited the browser's black button text and became nearly invisible, while the mobile menu button overlapped the sidebar brand even though the desktop shell and production build both looked correct.
+
+**Lesson:** A dark-theme pass needs visual checks of every interactive state at desktop and mobile widths; successful compilation and shared color tokens do not cover browser defaults or fixed-position overlap.
+
+**Tags:** #frontend #css #responsive #visual-qa

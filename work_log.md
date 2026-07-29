@@ -151,3 +151,19 @@ Each entry:
 - tests/test_db_pg.py, tests/test_api.py, tests/test_migrate_sqlite_to_pg.py (12 new tests, 73 total)
 
 **Status:** complete (on worktree branch `worktree-phase2-postgres`, not yet merged to master)
+
+## [2026-07-29 11:48] Citation-tool dark frontend redesign
+
+**What was done:**
+- Completed the dark legal-tech redesign across the app shell, Explore components, and Cite/Chat placeholders
+- Corrected button contrast, inactive tab legibility, mobile sidebar overflow/brand overlap, and result highlight colors
+- Verified desktop and 390px layouts in Playwright, including search, lookup, browse, login, and navigation states
+- Built against the production API and deployed Cloudflare Worker version `f9ac7d82-d394-46ef-9a20-bf9f14cc3788`
+
+**Files touched:**
+- citation-tool/src/App.svelte
+- citation-tool/src/components/ChapterBrowser.svelte, LookupPanel.svelte, ResultCard.svelte, SearchBar.svelte, StatsBar.svelte
+- citation-tool/src/routes/Chat.svelte, Cite.svelte, Explore.svelte
+- work_log.md, lessons_learned.md, next_steps.md
+
+**Status:** complete

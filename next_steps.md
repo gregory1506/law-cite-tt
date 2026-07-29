@@ -43,3 +43,4 @@ Concrete, actionable items for continuing work here. Review this before starting
 - Phase 2E: SQLite -> Postgres migration script, run against full 407,008-chunk dataset (exact count match)
 - Phase 2F: Svelte customer app (citation-tool/) with working Explore tab (search/lookup/browse), stubbed Cite/Chat
 - Phase 2G: Full docker-compose stack (db + api + citation-tool) verified end-to-end in browser
+- Citation-tool dark legal-tech redesign: sidebar shell, stat tiles, responsive mobile navigation, polished Explore states, and styled Cite/Chat placeholders deployed to Cloudflare Workers
