@@ -48,7 +48,7 @@
     gap: 12px;
     flex-wrap: wrap;
   }
-  .chapter-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .chapter-card:hover { border-color: var(--accent-light); box-shadow: 0 2px 8px rgba(34, 211, 238, 0.15); }
   .chapter { font-weight: 600; color: var(--accent); }
   .no-results { text-align: center; padding: 48px 16px; color: var(--muted); }
 </style>

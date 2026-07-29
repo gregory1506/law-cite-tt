@@ -60,6 +60,7 @@
   }
   .result-text :global(mark) {
     background: var(--highlight);
+    color: var(--highlight-text);
     padding: 0 2px;
   }
   .source-link { font-size: 0.78rem; margin-top: 6px; }
