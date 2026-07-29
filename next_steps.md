@@ -5,7 +5,6 @@ Concrete, actionable items for continuing work here. Review this before starting
 ## Priority
 
 ### Now
-- **Merge Phase 2 branch.** Work is complete on worktree branch `worktree-phase2-postgres` (commits: dir reorg, PG schema, async db_pg.py, FastAPI refactor, migration script, Svelte app, full docker-compose). Review and merge to master.
 - Real auth for the customer app (citation-tool currently has a stub token gate in `src/lib/auth.js` — real login flow depends on the marketing site)
 - Decide production Postgres hosting (self-managed VPS + Docker Compose vs. managed/Neon) per Phase H options in the plan doc
 

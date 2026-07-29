@@ -7,25 +7,31 @@ from pathlib import Path
 import numpy as np
 
 try:
-    from sentence_transformers import SentenceTransformer
+    from fastembed import TextEmbedding
 
     _MODEL = None
 except ImportError:
-    SentenceTransformer = None  # type: ignore
+    TextEmbedding = None  # type: ignore
+
+
+def _fastembed_name(model_name: str) -> str:
+    if "/" in model_name:
+        return model_name
+    return f"sentence-transformers/{model_name}"
 
 
 def _get_model(model_name: str = "all-MiniLM-L6-v2"):
     global _MODEL
-    if SentenceTransformer is None:
-        raise ImportError("sentence-transformers not installed")
+    if TextEmbedding is None:
+        raise ImportError("fastembed not installed")
     if _MODEL is None:
-        _MODEL = SentenceTransformer(model_name)
+        _MODEL = TextEmbedding(model_name=_fastembed_name(model_name))
     return _MODEL
 
 
 def embed_text(text: str, model_name: str = "all-MiniLM-L6-v2") -> list[float]:
     model = _get_model(model_name)
-    vec = model.encode(text, normalize_embeddings=True)
+    vec = next(model.embed([text]))
     return vec.tolist()
 
 
@@ -33,8 +39,8 @@ def embed_batch(
     texts: list[str], model_name: str = "all-MiniLM-L6-v2", batch_size: int = 32
 ) -> list[list[float]]:
     model = _get_model(model_name)
-    vecs = model.encode(texts, normalize_embeddings=True, batch_size=batch_size)
-    return vecs.tolist()
+    vecs = list(model.embed(texts, batch_size=batch_size))
+    return [v.tolist() for v in vecs]
 
 
 def cosine_similarity(a: list[float], b: list[float]) -> float:
