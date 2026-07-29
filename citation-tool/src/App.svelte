@@ -31,8 +31,14 @@
   </div>
 {:else}
   <div class="app-shell">
-    <button class="nav-toggle" onclick={() => (navOpen = !navOpen)} aria-label="Toggle navigation">☰</button>
-    <aside class="sidebar" class:open={navOpen}>
+    <button
+      class="nav-toggle"
+      onclick={() => (navOpen = !navOpen)}
+      aria-label="Toggle navigation"
+      aria-expanded={navOpen}
+      aria-controls="primary-navigation"
+    >☰</button>
+    <aside id="primary-navigation" class="sidebar" class:open={navOpen}>
       <div class="brand">LawCite <span class="accent-text">TT</span></div>
       <nav>
         <button class:active={tab === "explore"} onclick={() => selectTab("explore")}>Explore</button>
@@ -76,6 +82,7 @@
     line-height: 1.6;
     margin: 0;
   }
+  :global(*) { box-sizing: border-box; }
   :global(input),
   :global(select) {
     background: var(--bg);
@@ -145,6 +152,7 @@
       position: fixed; top: 0; left: 0; height: 100vh; z-index: 10;
       transform: translateX(-100%); transition: transform 0.2s ease;
     }
+    .sidebar .brand { padding-left: 48px; }
     .sidebar.open { transform: translateX(0); }
     main { padding: 24px 16px; margin-top: 48px; }
   }
