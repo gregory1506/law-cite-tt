@@ -182,3 +182,20 @@ Each entry:
 - lessons_learned.md
 
 **Status:** complete
+
+## [2026-07-29] Hostinger Compose manually runbook
+
+**What was done:**
+- Adapted the VPS deployment to Hostinger Docker Manager's Compose manually workflow
+- Split deployment into database-only restore and verified full-stack update stages
+- Added exact image transfer, hPanel navigation, Compose YAML, validation gates, backups, updates, rollback, and troubleshooting steps
+- Validated both copy-paste Compose stages with Docker Compose
+
+**Files touched:**
+- docs/superpowers/plans/2026-07-29-hostinger-compose-manually-runbook.md
+- docs/superpowers/plans/2026-07-29-vps-backend-postgres-deployment.md
+- next_steps.md
+- work_log.md
+- lessons_learned.md
+
+**Status:** complete

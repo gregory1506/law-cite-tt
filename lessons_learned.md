@@ -128,3 +128,13 @@ Each entry:
 **Lesson:** Every Traefik-backed Compose service should explicitly join the proxy's external network and set `traefik.docker.network` when it also joins a private application network.
 
 **Tags:** #docker #traefik #networking #deployment
+
+## [2026-07-29] Manual Compose needs a distributable image and self-contained initialization
+
+**Context:** Adapting the LawCite deployment to Hostinger Docker Manager's Compose manually editor.
+
+**What happened:** The repository-oriented Compose used `build:` and mounted `data/init.sql`, but a manually pasted Hostinger project has neither the private repository build context nor that host file.
+
+**Lesson:** For manual Compose platforms, load or publish a versioned application image and make database initialization self-contained. For this deployment, restore the full PostgreSQL dump before adding the API.
+
+**Tags:** #docker #hostinger #deployment #images

@@ -6,7 +6,7 @@ Concrete, actionable items for continuing work here. Review this before starting
 
 ### Now
 - Real auth for the customer app (citation-tool currently has a stub token gate in `src/lib/auth.js` — real login flow depends on the marketing site)
-- Execute `docs/superpowers/plans/2026-07-29-vps-backend-postgres-deployment.md`: confirm the VPS Traefik network, prepare the backend-only Compose stack, transfer the validated database, and verify the live API
+- Execute `docs/superpowers/plans/2026-07-29-hostinger-compose-manually-runbook.md`: confirm Hostinger Traefik, load the API image, deploy/restore PostgreSQL, update the manual Compose project with the API, and verify the live frontend
 
 ### Soon
 - Build marketing site landing page (separate project, Cloudflare Pages)

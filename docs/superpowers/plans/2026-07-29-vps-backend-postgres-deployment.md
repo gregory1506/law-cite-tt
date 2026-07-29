@@ -1,5 +1,12 @@
 # LawCite TT VPS Backend + PostgreSQL Deployment Plan
 
+> **Hostinger implementation runbook:** For the exact hPanel **Compose
+> manually** workflow, use
+> `docs/superpowers/plans/2026-07-29-hostinger-compose-manually-runbook.md`.
+> The Hostinger workflow uses a prebuilt API image and a two-stage database
+> restore because the manual editor does not provide this repository as a
+> Docker build context.
+
 **Goal:** Deploy the FastAPI backend and the existing 407,008-chunk
 PostgreSQL/pgvector dataset to the VPS, expose the API through the VPS's
 existing Traefik instance at `https://srv1629323.hstgr.cloud`, and connect the
