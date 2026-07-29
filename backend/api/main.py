@@ -61,7 +61,7 @@ app = FastAPI(title="LawCite TT — Laws of Trinidad and Tobago", lifespan=lifes
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"http://localhost(:\d+)?",
+    allow_origin_regex=r"http://localhost(:\d+)?|https://law-cite-tt\.gjo-ai\.workers\.dev",
     allow_methods=["*"],
     allow_headers=["*"],
 )

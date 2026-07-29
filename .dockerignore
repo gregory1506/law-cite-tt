@@ -1,0 +1,17 @@
+.git
+.gitignore
+.venv
+.pytest_cache
+.superpowers
+.wrangler
+**/__pycache__
+**/*.pyc
+.env
+backups
+citation-tool
+data
+docs
+output
+tests
+*.db
+*.dump
