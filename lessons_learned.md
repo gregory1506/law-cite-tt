@@ -118,3 +118,13 @@ Each entry:
 **Lesson:** A dark-theme pass needs visual checks of every interactive state at desktop and mobile widths; successful compilation and shared color tokens do not cover browser defaults or fixed-position overlap.
 
 **Tags:** #frontend #css #responsive #visual-qa
+
+## [2026-07-29] Traefik labels do not create network reachability
+
+**Context:** Turning the existing Docker Compose deployment sketch into a production VPS plan.
+
+**What happened:** The API had correct-looking Traefik router and service labels but was only on its Compose default network. An independently deployed Traefik container cannot route to that service unless both containers share an external Docker network.
+
+**Lesson:** Every Traefik-backed Compose service should explicitly join the proxy's external network and set `traefik.docker.network` when it also joins a private application network.
+
+**Tags:** #docker #traefik #networking #deployment

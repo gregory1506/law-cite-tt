@@ -6,7 +6,7 @@ Concrete, actionable items for continuing work here. Review this before starting
 
 ### Now
 - Real auth for the customer app (citation-tool currently has a stub token gate in `src/lib/auth.js` — real login flow depends on the marketing site)
-- Decide production Postgres hosting (self-managed VPS + Docker Compose vs. managed/Neon) per Phase H options in the plan doc
+- Execute `docs/superpowers/plans/2026-07-29-vps-backend-postgres-deployment.md`: confirm the VPS Traefik network, prepare the backend-only Compose stack, transfer the validated database, and verify the live API
 
 ### Soon
 - Build marketing site landing page (separate project, Cloudflare Pages)

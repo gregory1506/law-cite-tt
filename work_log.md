@@ -167,3 +167,18 @@ Each entry:
 - work_log.md, lessons_learned.md, next_steps.md
 
 **Status:** complete
+
+## [2026-07-29] VPS backend and PostgreSQL deployment planning
+
+**What was done:**
+- Chose the production topology: Cloudflare-hosted frontend with FastAPI, PostgreSQL 16, and pgvector on the self-managed VPS
+- Wrote an executable deployment plan with the target backend-only Compose file, environment, data transfer, health gates, backups, operations, and rollback
+- Validated the proposed Compose YAML using `docker compose config --quiet`
+
+**Files touched:**
+- docs/superpowers/plans/2026-07-29-vps-backend-postgres-deployment.md
+- next_steps.md
+- work_log.md
+- lessons_learned.md
+
+**Status:** complete
