@@ -76,12 +76,12 @@
   .tab-bar { display: flex; gap: 0; margin-bottom: 16px; }
   .tab-bar button {
     padding: 10px 20px; font-size: 0.85rem; font-weight: 600;
-    border: 1px solid var(--border); background: var(--bg);
+    border: 1px solid var(--border); background: var(--bg); color: var(--muted);
     cursor: pointer;
   }
   .tab-bar button:first-child { border-radius: var(--radius) 0 0 var(--radius); }
   .tab-bar button:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
-  .tab-bar button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tab-bar button.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
   .no-results { text-align: center; padding: 48px 16px; color: var(--muted); }
   .count { font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; }
   .spinner { text-align: center; padding: 32px; color: var(--muted); }

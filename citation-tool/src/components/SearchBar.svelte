@@ -68,7 +68,7 @@
   }
   .search-row button {
     padding: 12px 24px; font-size: 0.95rem; font-weight: 600;
-    background: var(--accent); color: #fff;
+    background: var(--accent); color: var(--accent-text);
     border: none; border-radius: var(--radius); cursor: pointer;
   }
   .search-row button:hover { background: var(--accent-light); }

@@ -88,7 +88,7 @@
   }
   .lookup-row button {
     padding: 8px 16px; font-size: 0.85rem; font-weight: 600;
-    background: var(--accent); color: #fff;
+    background: var(--accent); color: var(--accent-text);
     border: none; border-radius: var(--radius); cursor: pointer;
   }
   .version-timeline { margin-top: 16px; }
