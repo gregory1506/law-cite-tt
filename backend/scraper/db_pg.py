@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
+import re
 from typing import Any
 
 import asyncpg
@@ -141,6 +142,143 @@ class LawCitePGDB:
         if min_chars:
             results = [r for r in results if len(r["chunk_text"]) >= min_chars]
         return results
+
+    async def resolve_citation(
+        self,
+        chapter: str,
+        section: str,
+        as_at_date: str | None = None,
+    ) -> dict[str, Any]:
+        """Resolve one normalized statutory reference to one provable version."""
+        pool = await self.connect()
+        requested_date = self._parse_date(as_at_date or "")
+        async with pool.acquire() as conn:
+            chapter_row = await conn.fetchrow(
+                """
+                SELECT chapter_number, title
+                FROM chapters
+                WHERE chapter_number = $1
+                """,
+                chapter,
+            )
+            if chapter_row is None:
+                alternatives = await conn.fetch(
+                    """
+                    SELECT title, chapter_number, ''::text AS section_ref,
+                           NULL::date AS as_at_date, ''::text AS version_label,
+                           NULL::int AS download_id
+                    FROM chapters
+                    WHERE replace(chapter_number, ':', '') LIKE
+                          replace($1, ':', '') || '%'
+                    ORDER BY chapter_number
+                    LIMIT 5
+                    """,
+                    chapter,
+                )
+                return {
+                    "status": "not_found",
+                    "authority": None,
+                    "alternatives": [dict(row) for row in alternatives],
+                }
+
+            params: list[Any] = [chapter, section]
+            date_filter = ""
+            if requested_date is not None:
+                params.append(requested_date)
+                date_filter = (
+                    "AND COALESCE(v.as_at_date, c.as_at_date) IS NOT NULL "
+                    f"AND COALESCE(v.as_at_date, c.as_at_date) <= ${len(params)}"
+                )
+
+            rows = await conn.fetch(
+                f"""
+                SELECT
+                    ch.title,
+                    c.chapter_number,
+                    c.section_ref,
+                    c.heading,
+                    c.chunk_text,
+                    c.chunk_index,
+                    c.id AS chunk_id,
+                    v.id AS version_id,
+                    v.download_id,
+                    COALESCE(v.as_at_date, c.as_at_date) AS as_at_date,
+                    COALESCE(NULLIF(v.version_label, ''), c.version_label, '')
+                        AS version_label
+                FROM chunks c
+                JOIN versions v ON c.version_id = v.id
+                JOIN chapters ch ON v.chapter_id = ch.id
+                WHERE c.chapter_number = $1
+                  AND upper(regexp_replace(c.section_ref, '\\s+', '', 'g'))
+                      = upper($2)
+                  {date_filter}
+                ORDER BY
+                    COALESCE(v.as_at_date, c.as_at_date) DESC NULLS LAST,
+                    v.download_id DESC,
+                    c.chunk_index,
+                    c.id
+                """,
+                *params,
+            )
+
+            if not rows:
+                section_prefix = re.sub(r"[^0-9A-Za-z]", "", section)[:2]
+                alternatives = await conn.fetch(
+                    """
+                    SELECT DISTINCT ON (c.section_ref)
+                           ch.title, c.chapter_number, c.section_ref,
+                           COALESCE(v.as_at_date, c.as_at_date) AS as_at_date,
+                           COALESCE(NULLIF(v.version_label, ''), c.version_label, '')
+                               AS version_label,
+                           v.download_id
+                    FROM chunks c
+                    JOIN versions v ON c.version_id = v.id
+                    JOIN chapters ch ON v.chapter_id = ch.id
+                    WHERE c.chapter_number = $1
+                      AND c.section_ref ILIKE $2
+                    ORDER BY c.section_ref,
+                             COALESCE(v.as_at_date, c.as_at_date) DESC NULLS LAST,
+                             v.download_id DESC
+                    LIMIT 5
+                    """,
+                    chapter,
+                    f"{section_prefix}%",
+                )
+                return {
+                    "status": "not_found",
+                    "authority": None,
+                    "alternatives": [dict(row) for row in alternatives],
+                }
+
+        selected_version_id = rows[0]["version_id"]
+        selected = [dict(row) for row in rows if row["version_id"] == selected_version_id]
+        materially_distinct: dict[str, dict[str, Any]] = {}
+        for row in selected:
+            text_key = " ".join(row["chunk_text"].split())
+            materially_distinct.setdefault(text_key, row)
+
+        if len(materially_distinct) > 1:
+            return {
+                "status": "ambiguous",
+                "authority": None,
+                "alternatives": [
+                    {
+                        "title": row["title"],
+                        "chapter_number": row["chapter_number"],
+                        "section_ref": row["section_ref"],
+                        "as_at_date": row["as_at_date"],
+                        "version_label": row["version_label"],
+                        "download_id": row["download_id"],
+                    }
+                    for row in materially_distinct.values()
+                ],
+            }
+
+        return {
+            "status": "found",
+            "authority": next(iter(materially_distinct.values())),
+            "alternatives": [],
+        }
 
     @staticmethod
     def _group_key(row: dict[str, Any]) -> str:

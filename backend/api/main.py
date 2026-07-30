@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import os
 from contextlib import asynccontextmanager
+from datetime import date
 from pathlib import Path
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-from api.models import GroupedSearchResponse
+from api.citations import format_citation, normalize_chapter, normalize_section
+from api.models import CitationResolveResponse, GroupedSearchResponse
 from scraper.db_pg import LawCitePGDB
 from scraper.embed import _get_model
 
@@ -62,7 +64,10 @@ app = FastAPI(title="LawCite TT — Laws of Trinidad and Tobago", lifespan=lifes
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"http://localhost(:\d+)?|https://law-cite-tt\.gjo-ai\.workers\.dev",
+    allow_origin_regex=(
+        r"http://(?:localhost|127\.0\.0\.1)(:\d+)?|"
+        r"https://law-cite-tt\.gjo-ai\.workers\.dev"
+    ),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -154,6 +159,61 @@ async def search_grouped(
                 item["latest_available"]["download_id"]
             )
     return payload
+
+
+@app.get("/api/citations/resolve", response_model=CitationResolveResponse)
+async def resolve_citation(
+    chapter: str = Query(..., min_length=1),
+    section: str = Query(..., min_length=1),
+    as_at_date: date | None = Query(None, alias="date"),
+):
+    try:
+        normalized_chapter = normalize_chapter(chapter)
+        normalized_section = normalize_section(section)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+    result = await get_db().resolve_citation(
+        normalized_chapter,
+        normalized_section,
+        as_at_date.isoformat() if as_at_date else None,
+    )
+    normalized_input = {
+        "chapter": normalized_chapter,
+        "section": normalized_section,
+        "date": as_at_date,
+    }
+    if result["status"] != "found":
+        return {
+            "status": result["status"],
+            "normalized_input": normalized_input,
+            "alternatives": result["alternatives"],
+        }
+
+    authority = result["authority"]
+    full, short = format_citation(
+        authority["title"],
+        normalized_chapter,
+        normalized_section,
+        as_at_date,
+    )
+    return {
+        "status": "found",
+        "normalized_input": normalized_input,
+        "citation": {"full": full, "short": short},
+        "authority": {
+            "title": authority["title"],
+            "chapter_number": authority["chapter_number"],
+            "section_ref": authority["section_ref"],
+            "heading": authority["heading"] or "",
+            "as_at_date": authority["as_at_date"],
+            "version_label": authority["version_label"] or "",
+            "download_id": authority["download_id"],
+            "pdf_url": pdf_url(authority["download_id"]),
+        },
+        "text": authority["chunk_text"],
+        "alternatives": [],
+    }
 
 
 @app.get("/api/stats")

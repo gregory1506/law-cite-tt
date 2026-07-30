@@ -322,3 +322,78 @@ async def test_lookup_section_can_select_exact_download(db):
     assert len(rows) == 1
     assert rows[0]["download_id"] == 1003
     assert "archive" in rows[0]["version_label"]
+
+
+@pytest.mark.asyncio
+async def test_resolve_citation_selects_latest_available_version(db):
+    await _seed_grouped_search_data(db)
+
+    result = await db.resolve_citation("9:70", "244")
+
+    assert result["status"] == "found"
+    assert result["authority"]["title"] == "Bankruptcy Act"
+    assert result["authority"]["download_id"] == 1002
+    assert result["authority"]["as_at_date"] == date(2012, 12, 31)
+
+
+@pytest.mark.asyncio
+async def test_resolve_citation_selects_historical_version(db):
+    await _seed_grouped_search_data(db)
+
+    result = await db.resolve_citation("9:70", "244", "2010-01-01")
+
+    assert result["status"] == "found"
+    assert result["authority"]["download_id"] == 1001
+    assert result["authority"]["as_at_date"] == date(2009, 12, 31)
+
+
+@pytest.mark.asyncio
+async def test_resolve_citation_uses_migrated_chunk_date(db):
+    await _seed_grouped_search_data(db)
+    pool = await db.connect()
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE versions SET as_at_date = NULL WHERE download_id = 1001"
+        )
+
+    result = await db.resolve_citation("9:70", "244", "2010-01-01")
+
+    assert result["status"] == "found"
+    assert result["authority"]["download_id"] == 1001
+
+
+@pytest.mark.asyncio
+async def test_resolve_citation_returns_not_found_and_section_alternatives(db):
+    await _seed_grouped_search_data(db)
+
+    result = await db.resolve_citation("9:70", "245")
+
+    assert result["status"] == "not_found"
+    assert result["authority"] is None
+    assert any(item["section_ref"] == "244" for item in result["alternatives"])
+
+
+@pytest.mark.asyncio
+async def test_resolve_citation_reports_materially_ambiguous_rows(db):
+    await _seed_grouped_search_data(db)
+    pool = await db.connect()
+    async with pool.acquire() as conn:
+        version_id = await conn.fetchval(
+            "SELECT id FROM versions WHERE download_id = 1002"
+        )
+        await conn.execute(
+            """
+            INSERT INTO chunks
+                (version_id, chapter_number, section_ref, heading, chunk_text,
+                 as_at_date, version_label, chunk_index)
+            VALUES ($1, '9:70', '244', 'Alternate text', 'Conflicting text.',
+                    $2, '2012 revision', 99)
+            """,
+            version_id,
+            date(2012, 12, 31),
+        )
+
+    result = await db.resolve_citation("9:70", "244")
+
+    assert result["status"] == "ambiguous"
+    assert len(result["alternatives"]) == 2

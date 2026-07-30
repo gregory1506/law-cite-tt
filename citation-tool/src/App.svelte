@@ -1,7 +1,8 @@
 <script>
-  import { Menu, MessageSquareText, Search, X } from "@lucide/svelte";
+  import { FileCheck2, Menu, MessageSquareText, Search, X } from "@lucide/svelte";
   import { isAuthenticated, setToken } from "./lib/auth.js";
   import Explore from "./routes/Explore.svelte";
+  import Cite from "./routes/Cite.svelte";
   import Chat from "./routes/Chat.svelte";
 
   let authed = $state(isAuthenticated());
@@ -54,6 +55,13 @@
           Research
         </button>
         <button
+          class:active={route === "cite"}
+          onclick={() => navigate("cite")}
+        >
+          <FileCheck2 size={17} aria-hidden="true" />
+          Cite
+        </button>
+        <button
           class:active={route === "chat"}
           onclick={() => navigate("chat")}
         >
@@ -74,6 +82,8 @@
       <div class="main-inner">
         {#if route === "research"}
           <Explore />
+        {:else if route === "cite"}
+          <Cite />
         {:else}
           <Chat />
         {/if}

@@ -43,6 +43,20 @@ async def test_health(client):
 
 
 @pytest.mark.asyncio
+async def test_local_preview_origin_is_allowed(client):
+    response = await client.options(
+        "/api/health",
+        headers={
+            "Origin": "http://127.0.0.1:5173",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:5173"
+
+
+@pytest.mark.asyncio
 async def test_stats_on_empty_db(client):
     resp = await client.get("/api/stats")
     assert resp.status_code == 200
@@ -140,5 +154,99 @@ async def test_grouped_search_rejects_unknown_mode(client):
         "/api/search/grouped",
         params={"q": "debtor", "mode": "unknown"},
     )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_citation_resolve_contract_normalizes_and_formats(client, monkeypatch):
+    from api.main import get_db
+
+    async def fake_resolve(*args, **kwargs):
+        return {
+            "status": "found",
+            "authority": {
+                "title": "Absconding Debtors",
+                "chapter_number": "8:08",
+                "section_ref": "12(3)(a)",
+                "heading": "Power to arrest",
+                "as_at_date": date(2009, 12, 31),
+                "version_label": "2009 revision",
+                "download_id": 1001,
+                "chunk_text": "A debtor may be arrested in the prescribed case.",
+            },
+            "alternatives": [],
+        }
+
+    monkeypatch.setattr(get_db(), "resolve_citation", fake_resolve)
+    response = await client.get(
+        "/api/citations/resolve",
+        params={
+            "chapter": "Chap. 8-8",
+            "section": "section 12 (3) (A)",
+            "date": "2010-01-01",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "found"
+    assert body["normalized_input"] == {
+        "chapter": "8:08",
+        "section": "12(3)(a)",
+        "date": "2010-01-01",
+    }
+    assert body["citation"]["full"] == (
+        "Absconding Debtors Act, Chap. 8:08, s. 12(3)(a) "
+        "(version available as at 1 January 2010)"
+    )
+    assert body["citation"]["short"] == "Chap. 8:08, s. 12(3)(a)"
+    assert body["authority"]["pdf_url"].endswith("/1001?type=act")
+    assert body["text"].startswith("A debtor")
+
+
+@pytest.mark.asyncio
+async def test_citation_resolve_returns_explicit_not_found(client, monkeypatch):
+    from api.main import get_db
+
+    async def fake_resolve(*args, **kwargs):
+        return {
+            "status": "not_found",
+            "authority": None,
+            "alternatives": [
+                {
+                    "title": "Absconding Debtors",
+                    "chapter_number": "8:08",
+                    "section_ref": "12",
+                    "as_at_date": None,
+                    "version_label": "",
+                    "download_id": 1001,
+                }
+            ],
+        }
+
+    monkeypatch.setattr(get_db(), "resolve_citation", fake_resolve)
+    response = await client.get(
+        "/api/citations/resolve",
+        params={"chapter": "8:08", "section": "13"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "not_found"
+    assert response.json()["citation"] is None
+    assert response.json()["alternatives"][0]["section_ref"] == "12"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"chapter": "chapter eight", "section": "12"},
+        {"chapter": "8:08", "section": "section twelve"},
+        {"chapter": "8:08", "section": "12", "date": "31-12-2012"},
+    ],
+)
+async def test_citation_resolve_rejects_malformed_input(client, params):
+    response = await client.get("/api/citations/resolve", params=params)
 
     assert response.status_code == 422
