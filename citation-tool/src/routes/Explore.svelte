@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
-  import { getChapters, search } from "../lib/api.js";
-  import StatsBar from "../components/StatsBar.svelte";
+  import { ChevronDown } from "@lucide/svelte";
+  import { getChapters, searchGrouped } from "../lib/api.js";
   import SearchBar from "../components/SearchBar.svelte";
   import ResultCard from "../components/ResultCard.svelte";
   import LookupPanel from "../components/LookupPanel.svelte";
@@ -9,62 +9,171 @@
 
   let subTab = $state("search");
   let chapters = $state([]);
-  let results = $state(null);
+  let results = $state([]);
+  let searched = $state(false);
   let loading = $state(false);
+  let loadingMore = $state(false);
   let error = $state("");
-  let lastQuery = $state("");
-  let searchChapterField = $state("");
+  let nextOffset = $state(null);
+  let hasMore = $state(false);
+
+  let query = $state("");
+  let mode = $state("fts");
+  let chapter = $state("");
+  let date = $state("");
+  let lastSearch = $state({ query: "", mode: "fts", chapter: "", date: "" });
 
   onMount(async () => {
     try {
       chapters = await getChapters();
-    } catch (e) {
-      // chapter list is a nice-to-have (autocomplete); don't block the page on it
-      console.error("Failed to load chapters", e);
+    } catch (loadError) {
+      console.error("Failed to load chapters", loadError);
     }
   });
 
-  async function runSearch({ query, mode, chapter }) {
+  async function runSearch(searchInput) {
     loading = true;
     error = "";
-    results = null;
-    lastQuery = query;
+    searched = true;
+    results = [];
+    nextOffset = null;
+    hasMore = false;
+    lastSearch = searchInput;
     try {
-      results = await search(query, { mode, chapter, limit: 20 });
-    } catch (e) {
-      error = e.message;
+      const response = await searchGrouped(searchInput.query, {
+        mode: searchInput.mode,
+        chapter: searchInput.chapter,
+        date: searchInput.date,
+        limit: 20,
+      });
+      results = response.items;
+      nextOffset = response.next_offset;
+      hasMore = response.has_more;
+    } catch (searchError) {
+      error = searchError.message;
     } finally {
       loading = false;
     }
   }
 
-  function browseToSearch(chapter) {
-    searchChapterField = chapter;
+  async function loadMore() {
+    if (nextOffset == null || loadingMore) return;
+    loadingMore = true;
+    error = "";
+    try {
+      const response = await searchGrouped(lastSearch.query, {
+        mode: lastSearch.mode,
+        chapter: lastSearch.chapter,
+        date: lastSearch.date,
+        limit: 20,
+        offset: nextOffset,
+      });
+      results = [...results, ...response.items];
+      nextOffset = response.next_offset;
+      hasMore = response.has_more;
+    } catch (searchError) {
+      error = searchError.message;
+    } finally {
+      loadingMore = false;
+    }
+  }
+
+  function clearSearch() {
+    results = [];
+    searched = false;
+    loading = false;
+    loadingMore = false;
+    error = "";
+    nextOffset = null;
+    hasMore = false;
+    lastSearch = { query: "", mode, chapter: "", date: "" };
+  }
+
+  function browseToSearch(selectedChapter) {
+    chapter = selectedChapter;
     subTab = "search";
+    if (query.trim()) {
+      runSearch({ query, mode, chapter: selectedChapter, date });
+      return;
+    }
+    results = [];
+    searched = false;
+    error = "";
+    nextOffset = null;
+    hasMore = false;
   }
 </script>
 
-<StatsBar />
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">Laws of Trinidad and Tobago</p>
+    <h1>Research</h1>
+  </div>
+  <p class="coverage">533 chapters · historical versions included</p>
+</div>
 
-<div class="tab-bar">
-  <button class:active={subTab === "search"} onclick={() => (subTab = "search")}>Search</button>
-  <button class:active={subTab === "lookup"} onclick={() => (subTab = "lookup")}>Section Lookup</button>
-  <button class:active={subTab === "browse"} onclick={() => (subTab = "browse")}>Browse Chapters</button>
+<div class="tab-bar" role="tablist" aria-label="Research tools">
+  <button
+    role="tab"
+    aria-selected={subTab === "search"}
+    class:active={subTab === "search"}
+    onclick={() => (subTab = "search")}
+  >Search</button>
+  <button
+    role="tab"
+    aria-selected={subTab === "lookup"}
+    class:active={subTab === "lookup"}
+    onclick={() => (subTab = "lookup")}
+  >Section lookup</button>
+  <button
+    role="tab"
+    aria-selected={subTab === "browse"}
+    class:active={subTab === "browse"}
+    onclick={() => (subTab = "browse")}
+  >Browse chapters</button>
 </div>
 
 {#if subTab === "search"}
-  <SearchBar {chapters} onSearch={runSearch} initialChapter={searchChapterField} />
+  <SearchBar
+    {chapters}
+    onSearch={runSearch}
+    onClear={clearSearch}
+    bind:query
+    bind:mode
+    bind:chapter
+    bind:date
+  />
+
   {#if loading}
-    <div class="spinner"></div>
-  {:else if error}
-    <div class="no-results">Error: {error}</div>
-  {:else if results && results.length === 0}
-    <div class="no-results">No matching provisions found.</div>
-  {:else if results}
-    <p class="count">{results.length} result{results.length > 1 ? "s" : ""}</p>
-    {#each results as r (r.id ?? r.chapter_number + r.section_ref + r.as_at_date)}
-      <ResultCard result={r} query={lastQuery} />
+    <div class="loading-state" role="status">Searching provisions…</div>
+  {:else if error && results.length === 0}
+    <div class="message error" role="alert">Search unavailable: {error}</div>
+  {:else if searched && results.length === 0}
+    <div class="message">No matching provisions found.</div>
+  {:else if results.length}
+    <div class="result-summary">
+      <p>Showing {results.length} provision{results.length === 1 ? "" : "s"}</p>
+      {#if lastSearch.date}<span>Available as at {lastSearch.date}</span>{/if}
+    </div>
+
+    {#each results as item (item.key)}
+      <ResultCard
+        {item}
+        query={lastSearch.query}
+        historicalDate={lastSearch.date}
+      />
     {/each}
+
+    {#if error}
+      <div class="message error" role="alert">More results unavailable: {error}</div>
+    {/if}
+
+    {#if hasMore}
+      <button class="load-more" type="button" onclick={loadMore} disabled={loadingMore}>
+        <ChevronDown size={17} aria-hidden="true" />
+        {loadingMore ? "Loading…" : "Load more provisions"}
+      </button>
+    {/if}
   {/if}
 {:else if subTab === "lookup"}
   <LookupPanel {chapters} />
@@ -73,16 +182,92 @@
 {/if}
 
 <style>
-  .tab-bar { display: flex; gap: 0; margin-bottom: 16px; }
+  .page-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .eyebrow {
+    margin: 0 0 2px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1.55rem;
+    line-height: 1.2;
+  }
+  .coverage {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+  .tab-bar {
+    display: flex;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
   .tab-bar button {
-    padding: 10px 20px; font-size: 0.85rem; font-weight: 600;
-    border: 1px solid var(--border); background: var(--bg); color: var(--muted);
+    padding: 9px 16px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--muted-strong);
+    font-size: 0.84rem;
+    font-weight: 700;
     cursor: pointer;
   }
-  .tab-bar button:first-child { border-radius: var(--radius) 0 0 var(--radius); }
-  .tab-bar button:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
-  .tab-bar button.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
-  .no-results { text-align: center; padding: 48px 16px; color: var(--muted); }
-  .count { font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; }
-  .spinner { text-align: center; padding: 32px; color: var(--muted); }
+  .tab-bar button.active {
+    border-bottom-color: var(--accent);
+    color: var(--text);
+  }
+  .tab-bar button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .result-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  .result-summary p { margin: 0; }
+  .result-summary span { color: var(--muted-strong); }
+  .loading-state,
+  .message {
+    padding: 44px 16px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .message.error { color: var(--danger); }
+  .load-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    min-height: 42px;
+    margin-top: 8px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .load-more:hover:not(:disabled) { border-color: var(--accent); }
+  .load-more:disabled { cursor: wait; opacity: 0.65; }
+  @media (max-width: 600px) {
+    .page-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
+    .tab-bar button { flex: 1; padding-inline: 8px; }
+    .result-summary { align-items: flex-start; flex-direction: column; gap: 3px; }
+  }
 </style>

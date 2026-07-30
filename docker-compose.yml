@@ -44,25 +44,5 @@ services:
       - traefik.http.routers.lawcite-api.tls.certresolver=letsencrypt
       - traefik.http.services.lawcite-api.loadbalancer.server.port=8000
 
-  citation-tool:
-    build:
-      context: ./citation-tool
-      args:
-        VITE_API_BASE: https://${API_DOMAIN}
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: 256M
-    depends_on:
-      - api
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.lawcite-app.rule=Host(`${APP_DOMAIN}`)
-      - traefik.http.routers.lawcite-app.entrypoints=websecure
-      - traefik.http.routers.lawcite-app.tls.certresolver=letsencrypt
-      - traefik.http.services.lawcite-app.loadbalancer.server.port=80
-
 volumes:
   pgdata:

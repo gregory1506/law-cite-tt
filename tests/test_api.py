@@ -1,4 +1,5 @@
 import os
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -72,3 +73,72 @@ async def test_search_and_lookup_after_ingest(client):
     resp = await client.get("/api/search", params={"q": "affidavit", "mode": "fts"})
     assert resp.status_code == 200
     assert len(resp.json()) >= 1
+
+
+@pytest.mark.asyncio
+async def test_grouped_search_contract_and_pdf_urls(client, monkeypatch):
+    from api.main import get_db
+
+    async def fake_search_grouped(*args, **kwargs):
+        return {
+            "items": [
+                {
+                    "key": "9:70::244",
+                    "title": "Bankruptcy Act",
+                    "chapter_number": "9:70",
+                    "section_ref": "244",
+                    "heading": "Summary administration",
+                    "matched_version": {
+                        "version_id": 2,
+                        "download_id": 1002,
+                        "as_at_date": date(2012, 12, 31),
+                        "version_label": "2012 revision",
+                        "chunk_id": 8,
+                        "chunk_text": "Where the debtor has absconded.",
+                    },
+                    "latest_available": {
+                        "version_id": 2,
+                        "download_id": 1002,
+                        "as_at_date": date(2012, 12, 31),
+                        "version_label": "2012 revision",
+                    },
+                    "versions": [
+                        {
+                            "version_id": 2,
+                            "download_id": 1002,
+                            "as_at_date": date(2012, 12, 31),
+                            "version_label": "2012 revision",
+                        }
+                    ],
+                    "score": 0.75,
+                }
+            ],
+            "next_offset": None,
+            "has_more": False,
+        }
+
+    monkeypatch.setattr(get_db(), "search_grouped", fake_search_grouped)
+    response = await client.get(
+        "/api/search/grouped",
+        params={"q": "absconding debtor", "mode": "fts"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["items"][0]["title"] == "Bankruptcy Act"
+    assert body["items"][0]["matched_version"]["pdf_url"].endswith(
+        "/1002?type=act"
+    )
+    assert body["items"][0]["latest_available"]["pdf_url"].endswith(
+        "/1002?type=act"
+    )
+
+
+@pytest.mark.asyncio
+async def test_grouped_search_rejects_unknown_mode(client):
+    response = await client.get(
+        "/api/search/grouped",
+        params={"q": "debtor", "mode": "unknown"},
+    )
+
+    assert response.status_code == 422
