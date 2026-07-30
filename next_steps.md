@@ -5,7 +5,6 @@ Concrete, actionable items for continuing work here. Review this before starting
 ## Priority
 
 ### Now
-- Implement the Cite MVP in `docs/superpowers/plans/2026-07-29-cite-validation-mvp.md`: restore Cite as a primary route, resolve chapter/section/date references against exact statutory text, return explicit validation states, generate copyable T&T citations, test against synthetic and golden cases, then deploy backend-first
 - Secure the production frontend and API before broader release: replace the UI-only token gate with real authentication, enforce authorization in FastAPI, add Traefik/API rate limiting, and verify unauthenticated requests are rejected
 
 ### Soon
@@ -53,3 +52,4 @@ Concrete, actionable items for continuing work here. Review this before starting
 - Lawyer/paralegal UX implementation phases 1-5: grouped provision search, legal metadata and version controls, safe contextual excerpts, legal-first search/lookup/browse workflows, frontend tests, and desktop/mobile browser QA
 - Lawyer/paralegal UX production rollout: backend image `lawcite-api:ux-grouped-20260729` deployed on Hostinger and frontend Worker version `8b112881-4092-4202-bc49-41c54f2baa91` deployed and verified
 - Frontend follow-up: persistent Clear search action and visible Chat coming-soon route deployed as Worker version `98837494-e732-4872-ac61-76751aadc8da`
+- Cite validation MVP: source-backed chapter/section/date resolution, explicit found/not-found/ambiguous states, exact statutory text, official PDFs, full/short citation copy, and responsive desktop/mobile workflows deployed with API image `lawcite-api:a87fc7b` and Worker version `f74a010e-2548-4749-96c4-21f388a141c0`

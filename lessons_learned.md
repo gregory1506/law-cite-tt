@@ -158,3 +158,13 @@ Each entry:
 **Lesson:** Once authority metadata becomes prominent, validate catalog joins against document text and source IDs. UI polish cannot compensate for a wrong title-to-version relationship, so this requires a separate corpus reconciliation pass.
 
 **Tags:** #data-quality #legal-research #metadata #validation
+
+## [2026-07-30] Local preview CORS must cover loopback host variants
+
+**Context:** Running the Cite workflow in a real browser against the production API before deployment.
+
+**What happened:** The API allowed `http://localhost:<port>` but rejected the equivalent `http://127.0.0.1:<port>` origin, so the page loaded while chapter requests failed. A second unrelated app was already using the IPv6 `localhost` listener, making a host swap unsafe.
+
+**Lesson:** Development CORS should explicitly permit both `localhost` and `127.0.0.1` with optional ports. Browser QA should inspect the console immediately and reuse a fixed host/port pair so origin-specific failures are not mistaken for API outages.
+
+**Tags:** #cors #browser-qa #localhost #deployment

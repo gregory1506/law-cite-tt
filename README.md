@@ -12,7 +12,9 @@ PostgreSQL 16, and pgvector backend on Hostinger:
 - Corpus: 533 chapters, 4,989 versions, and 407,008 embedded statutory chunks
 - Research workflow: grouped provision search, exact lookup, chapter browsing,
   historical cutoffs, version selection, and official PDF links
-- Next product milestone: structured citation validation and formatting
+- Citation workflow: structured resolution, explicit validation states,
+  historical selection, exact source text, official PDFs, and copyable citations
+- Next release gate: real authentication, API authorization, and rate limiting
 
 The original reconnaissance pipeline remains available for rebuilding the source
 corpus. The production application lives under `backend/` and `citation-tool/`.

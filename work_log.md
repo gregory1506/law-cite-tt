@@ -244,3 +244,19 @@ Each entry:
 - next_steps.md, work_log.md
 
 **Status:** complete
+
+## [2026-07-30 19:10] Source-backed Cite validation production rollout
+
+**What was done:**
+- Added deterministic chapter/section/date resolution with explicit found, not-found, and ambiguous API states
+- Built the responsive Cite workflow with exact source text, official PDFs, historical labels, and full/short copy controls
+- Verified 87 production-relevant Python tests, 12 frontend tests, real-corpus desktop/mobile flows, CORS, and existing Research behavior
+- Deployed Hostinger image `lawcite-api:a87fc7b` and Cloudflare Worker version `f74a010e-2548-4749-96c4-21f388a141c0`, retaining the prior API image for rollback
+
+**Files touched:**
+- backend/api/citations.py, backend/api/main.py, backend/api/models.py, backend/scraper/db_pg.py
+- citation-tool/src/App.svelte, citation-tool/src/lib/api.js, citation-tool/src/routes/Cite.svelte
+- tests/test_citations.py, tests/test_api.py, tests/test_db_pg.py, citation-tool/src/routes/Cite.test.js
+- README.md, CLAUDE.md, next_steps.md, lessons_learned.md
+
+**Status:** complete

@@ -4,6 +4,8 @@
 **Estimate:** 4-6 focused hours
 **Priority:** Next product feature
 
+**Status:** Complete and deployed on 2026-07-30
+
 ## Objective
 
 Restore the project's original citation-engine workflow. A lawyer or paralegal

@@ -8,14 +8,15 @@ A legal citation engine for the **Laws of Trinidad and Tobago**. Sources statute
 
 **Production research release live** — the Cloudflare-hosted Svelte app uses a
 FastAPI, PostgreSQL 16, and pgvector backend on Hostinger. The production corpus
-contains 533 chapters, 4,989 versions, and 407,008 embedded chunks. The next
-product milestone is the Cite validation workflow.
+contains 533 chapters, 4,989 versions, and 407,008 embedded chunks. Research
+and Cite are live; the next release gate is production authentication and
+authorization.
 
 ## Project architecture
 
 Two surfaces (both in this repo):
 
-1. **Customer app** (Svelte, live) — Explore is live; Cite is the next milestone; Chat is a placeholder
+1. **Customer app** (Svelte, live) — Explore and Cite are live; Chat is a placeholder
 2. **Marketing site** (separate project, not yet built) — landing pages, pricing, sign-up
 
 ## Current codebase
@@ -35,7 +36,6 @@ Two surfaces (both in this repo):
 ## Next move
 
 See `next_steps.md` for priorities. Key upcoming work:
-- Implement `docs/superpowers/plans/2026-07-29-cite-validation-mvp.md`
 - Add production authentication, authorization, and rate limiting
 - Reconcile known chapter/version metadata mismatches
 
