@@ -6,20 +6,24 @@ A legal citation engine for the **Laws of Trinidad and Tobago**. Sources statute
 
 ## Status
 
-**Phase 1 complete** — chunker, DB (SQLite + FTS5), embeddings, vector search, goldset validation, demo app. All 61 tests pass.
+**Production research release live** — the Cloudflare-hosted Svelte app uses a
+FastAPI, PostgreSQL 16, and pgvector backend on Hostinger. The production corpus
+contains 533 chapters, 4,989 versions, and 407,008 embedded chunks. The next
+product milestone is the Cite validation workflow.
 
 ## Project architecture
 
 Two surfaces (both in this repo):
 
-1. **Customer app** (Svelte, planned) — logged-in experience: Explore (search/lookup/browse), Cite, Chat tabs
+1. **Customer app** (Svelte, live) — Explore is live; Cite is the next milestone; Chat is a placeholder
 2. **Marketing site** (separate project, not yet built) — landing pages, pricing, sign-up
 
 ## Current codebase
 
-- `scraper/` — Python modules: chunker, SQLite DB layer, embeddings (sentence-transformers), FTS + vector + hybrid search
-- `demo_app.py` + `templates/index.html` — FastAPI demo (run: `uvicorn demo_app:app --reload`)
-- `tests/` — 61 tests across 8 test files
+- `backend/scraper/` — ingestion, SQLite compatibility, PostgreSQL, embeddings, and search modules
+- `backend/api/` — production FastAPI application
+- `citation-tool/` — production Svelte customer app
+- `tests/` — scraper, database, migration, and API coverage
 - `docs/superpowers/` — specs, plans, decision records
 
 ## Data
@@ -31,9 +35,9 @@ Two surfaces (both in this repo):
 ## Next move
 
 See `next_steps.md` for priorities. Key upcoming work:
-- Migrate SQLite → PostgreSQL + pgvector (plan at `docs/superpowers/plans/2026-07-27-postgres-switch-plan.md`)
-- Build Svelte customer app with Explore/Cite/Chat tabs
-- Deploy marketing site on Cloudflare Pages
+- Implement `docs/superpowers/plans/2026-07-29-cite-validation-mvp.md`
+- Add production authentication, authorization, and rate limiting
+- Reconcile known chapter/version metadata mismatches
 
 ## Key files for context
 

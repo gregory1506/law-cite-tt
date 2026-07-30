@@ -241,14 +241,17 @@ shasum -a 256 "/tmp/lawcite-api-${IMAGE_TAG}.tar.gz" \
 Start the local PostgreSQL container if needed:
 
 ```bash
-docker compose up -d db
-docker compose ps db
+docker compose -p phase2-postgres up -d db
+docker compose -p phase2-postgres ps db
 ```
+
+The explicit project name is required because the populated volume is
+`phase2-postgres_pgdata`. Omitting it can create and use a new empty volume.
 
 Confirm the local source counts before dumping:
 
 ```bash
-docker compose exec -T db \
+docker compose -p phase2-postgres exec -T db \
   psql -U lawcite -d lawcite -v ON_ERROR_STOP=1 -c "
     SELECT
       (SELECT count(*) FROM chapters) AS chapters,
@@ -269,7 +272,7 @@ Stop if these counts differ.
 Create a full custom-format dump:
 
 ```bash
-docker compose exec -T db \
+docker compose -p phase2-postgres exec -T db \
   pg_dump \
   -U lawcite \
   -d lawcite \
@@ -757,6 +760,52 @@ For every API release:
 
 Keep the previous image tag on the VPS until the new release is verified.
 Rollback means editing `api.image` back to the prior tag and clicking Update.
+
+### Prepared Grouped-Search Release
+
+The lawyer/paralegal UX backend is prepared locally as:
+
+```text
+/tmp/lawcite-api-ux-grouped-20260729.tar.gz
+/tmp/lawcite-api-ux-grouped-20260729.tar.gz.sha256
+```
+
+Upload from the local Mac:
+
+```bash
+scp \
+  /tmp/lawcite-api-ux-grouped-20260729.tar.gz \
+  /tmp/lawcite-api-ux-grouped-20260729.tar.gz.sha256 \
+  root@srv1629323.hstgr.cloud:/root/lawcite-import/
+```
+
+Then, on the VPS:
+
+```bash
+cd /root/lawcite-import
+sha256sum -c lawcite-api-ux-grouped-20260729.tar.gz.sha256
+gunzip -c lawcite-api-ux-grouped-20260729.tar.gz | docker load
+docker image inspect lawcite-api:ux-grouped-20260729 \
+  --format 'Architecture={{.Architecture}} OS={{.Os}} ID={{.Id}}'
+```
+
+In the existing Hostinger `lawcite` Compose project, change only:
+
+```yaml
+api:
+  image: lawcite-api:ux-grouped-20260729
+```
+
+Click **Update**, then verify both the old and new contracts before deploying
+the frontend:
+
+```bash
+curl -fsS https://srv1629323.hstgr.cloud/api/health
+curl -fsS 'https://srv1629323.hstgr.cloud/api/search?q=absconding%20debtor&mode=fts&limit=1'
+curl -fsS 'https://srv1629323.hstgr.cloud/api/search/grouped?q=absconding%20debtor&mode=fts&date=2013-12-31&limit=1'
+```
+
+Keep `lawcite-api:ce84113` on the VPS as the rollback image.
 
 ## Troubleshooting
 

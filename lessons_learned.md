@@ -138,3 +138,23 @@ Each entry:
 **Lesson:** For manual Compose platforms, load or publish a versioned application image and make database initialization self-contained. For this deployment, restore the full PostgreSQL dump before adding the API.
 
 **Tags:** #docker #hostinger #deployment #images
+
+## [2026-07-29] Historical dates must use the migrated canonical fallback
+
+**Context:** Verifying grouped search with an as-at date against the full PostgreSQL corpus.
+
+**What happened:** Synthetic fixtures stored dates on both `versions` and `chunks`, but migrated production-shaped rows can have `versions.as_at_date` null while `chunks.as_at_date` is populated. Filtering only the version column returned no valid historical provisions.
+
+**Lesson:** Search filters and response metadata must use the same canonical expression, `COALESCE(versions.as_at_date, chunks.as_at_date)`. Include a migrated-shape regression fixture, not only idealized new-schema rows.
+
+**Tags:** #postgresql #migration #temporal-search #testing
+
+## [2026-07-29] Catalog metadata needs independent corpus validation
+
+**Context:** Reviewing legal-first search results in a real browser after adding legislation titles.
+
+**What happened:** Some bankruptcy provisions are associated with the catalog title `30:50 Burial Grounds`, even though the matched text and official PDF are bankruptcy material. The frontend accurately exposed an existing chapter/version association problem.
+
+**Lesson:** Once authority metadata becomes prominent, validate catalog joins against document text and source IDs. UI polish cannot compensate for a wrong title-to-version relationship, so this requires a separate corpus reconciliation pass.
+
+**Tags:** #data-quality #legal-research #metadata #validation

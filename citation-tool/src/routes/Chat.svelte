@@ -1,22 +1,55 @@
-<div class="stub">
-  <div class="stub-card">
-    <h2>Chat</h2>
-    <p>Ask questions about the Laws of Trinidad and Tobago in plain English.</p>
-    <p class="soon">Coming soon.</p>
+<script>
+  import { MessageSquareText } from "@lucide/svelte";
+</script>
+
+<section class="chat-placeholder" aria-labelledby="chat-heading">
+  <header>
+    <p>Research assistant</p>
+    <h1 id="chat-heading">Chat</h1>
+  </header>
+
+  <div class="empty-state">
+    <MessageSquareText size={28} strokeWidth={1.7} aria-hidden="true" />
+    <h2>Chat is coming soon</h2>
+    <p>Use Research to search legislation and review official source PDFs.</p>
   </div>
-</div>
+</section>
 
 <style>
-  .stub { padding: 48px 16px; display: flex; justify-content: center; }
-  .stub-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 40px 32px;
-    text-align: center;
-    max-width: 420px;
-    color: var(--muted);
+  header {
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
   }
-  .stub-card h2 { color: var(--text); margin-bottom: 8px; }
-  .soon { margin-top: 16px; font-size: 0.85rem; }
+  header p {
+    margin: 0 0 2px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin: 0;
+    font-size: 1.55rem;
+    line-height: 1.2;
+  }
+  .empty-state {
+    display: grid;
+    min-height: 360px;
+    place-items: center;
+    align-content: center;
+    padding: 48px 20px;
+    color: var(--muted-strong);
+    text-align: center;
+  }
+  .empty-state h2 {
+    margin: 13px 0 4px;
+    color: var(--text);
+    font-size: 1rem;
+  }
+  .empty-state p {
+    max-width: 440px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+  }
 </style>

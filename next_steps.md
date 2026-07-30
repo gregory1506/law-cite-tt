@@ -5,12 +5,18 @@ Concrete, actionable items for continuing work here. Review this before starting
 ## Priority
 
 ### Now
-- Real auth for the customer app (citation-tool currently has a stub token gate in `src/lib/auth.js` — real login flow depends on the marketing site)
-- Execute `docs/superpowers/plans/2026-07-29-hostinger-compose-manually-runbook.md`: confirm Hostinger Traefik, load the API image, deploy/restore PostgreSQL, update the manual Compose project with the API, and verify the live frontend
+- Implement the Cite MVP in `docs/superpowers/plans/2026-07-29-cite-validation-mvp.md`: restore Cite as a primary route, resolve chapter/section/date references against exact statutory text, return explicit validation states, generate copyable T&T citations, test against synthetic and golden cases, then deploy backend-first
+- Secure the production frontend and API before broader release: replace the UI-only token gate with real authentication, enforce authorization in FastAPI, add Traefik/API rate limiting, and verify unauthenticated requests are rejected
 
 ### Soon
+- Audit and repair chapter/version associations in the migrated corpus; for example, bankruptcy text and sections are currently attached to the `30:50 Burial Grounds` catalog title in some historical rows
+- Add GitHub Actions CI/CD: run tests, build and publish versioned `linux/amd64` API images to GHCR, deploy the selected image to the VPS over a restricted SSH key, verify `/api/health`, and retain the previous tag for rollback
+- Add a separate citation-tool workflow that builds and deploys the frontend to Cloudflare Workers, then verifies the production URL
+- Introduce Alembic migrations and run backward-compatible database migrations before switching the API container during backend deployments
+- Make PostgreSQL ingestion idempotent before automating it: replace a version's chunks transactionally and enforce a unique constraint such as `(version_id, chunk_index)`
+- Package reconciliation and ingestion as a dedicated Compose job, schedule it on the VPS, preserve original PDFs in R2/S3-compatible storage, and record source IDs/checksums so only new or changed documents are processed
+- Add nightly off-host PostgreSQL backups with retention, checksum verification, monitoring, and periodic restore tests
 - Build marketing site landing page (separate project, Cloudflare Pages)
-- Citation formatter following T&T legal conventions (Cite tab is stubbed in citation-tool/src/routes/Cite.svelte)
 - AI Chat tab for the customer app (stubbed in citation-tool/src/routes/Chat.svelte)
 
 ### Later
@@ -44,3 +50,6 @@ Concrete, actionable items for continuing work here. Review this before starting
 - Phase 2F: Svelte customer app (citation-tool/) with working Explore tab (search/lookup/browse), stubbed Cite/Chat
 - Phase 2G: Full docker-compose stack (db + api + citation-tool) verified end-to-end in browser
 - Citation-tool dark legal-tech redesign: sidebar shell, stat tiles, responsive mobile navigation, polished Explore states, and styled Cite/Chat placeholders deployed to Cloudflare Workers
+- Lawyer/paralegal UX implementation phases 1-5: grouped provision search, legal metadata and version controls, safe contextual excerpts, legal-first search/lookup/browse workflows, frontend tests, and desktop/mobile browser QA
+- Lawyer/paralegal UX production rollout: backend image `lawcite-api:ux-grouped-20260729` deployed on Hostinger and frontend Worker version `8b112881-4092-4202-bc49-41c54f2baa91` deployed and verified
+- Frontend follow-up: persistent Clear search action and visible Chat coming-soon route deployed as Worker version `98837494-e732-4872-ac61-76751aadc8da`

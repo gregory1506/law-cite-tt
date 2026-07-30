@@ -199,3 +199,48 @@ Each entry:
 - lessons_learned.md
 
 **Status:** complete
+
+## [2026-07-29 17:18] Lawyer and paralegal research workflow implementation
+
+**What was done:**
+- Added backward-compatible grouped provision search with legal metadata, historical cutoffs, deterministic pagination, and exact version lookup
+- Rebuilt the Svelte research workflow around scannable provisions, safe excerpts, version selection, plain-language search modes, filters, lookup, and chapter browsing
+- Added backend and frontend regression tests, then verified desktop and mobile workflows against the full PostgreSQL corpus
+- Fixed migrated historical-date fallback and browse-to-filter stale results discovered during live browser QA
+
+**Files touched:**
+- backend/api/, backend/scraper/db_pg.py, tests/test_api.py, tests/test_db_pg.py
+- citation-tool/src/, citation-tool/package.json, citation-tool/vite.config.js
+- docs/superpowers/plans/2026-07-29-lawyer-paralegal-ux-implementation.md, next_steps.md, lessons_learned.md
+
+**Status:** partial — implementation and QA complete; backend-first VPS and frontend deployment remain
+
+## [2026-07-29 17:46] Lawyer and paralegal UX production rollout
+
+**What was done:**
+- Verified the new grouped-search image healthy on Hostinger while preserving `lawcite-api:ce84113` for rollback
+- Built the frontend against `https://srv1629323.hstgr.cloud` and deployed Cloudflare Worker version `8b112881-4092-4202-bc49-41c54f2baa91`
+- Verified production exact search and historical cutoff at desktop and mobile viewports
+- Confirmed zero production console errors and no 390px mobile overflow
+
+**Files touched:**
+- citation-tool/dist/ build output
+- docs/superpowers/plans/2026-07-29-lawyer-paralegal-ux-implementation.md
+- next_steps.md, work_log.md
+
+**Status:** complete
+
+## [2026-07-29 17:52] Clear search and Chat placeholder follow-up
+
+**What was done:**
+- Added a persistent Clear action that resets query, chapter, date, and displayed results
+- Restored Chat navigation with a responsive coming-soon view while keeping Cite hidden
+- Added regression coverage and verified desktop/mobile layouts with zero console errors
+- Deployed Cloudflare Worker version `98837494-e732-4872-ac61-76751aadc8da`
+
+**Files touched:**
+- citation-tool/src/App.svelte, citation-tool/src/routes/Explore.svelte, citation-tool/src/routes/Chat.svelte
+- citation-tool/src/components/SearchBar.svelte, citation-tool/src/App.test.js, citation-tool/src/components/SearchBar.test.js
+- next_steps.md, work_log.md
+
+**Status:** complete

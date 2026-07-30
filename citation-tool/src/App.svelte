@@ -1,21 +1,20 @@
 <script>
+  import { Menu, MessageSquareText, Search, X } from "@lucide/svelte";
   import { isAuthenticated, setToken } from "./lib/auth.js";
   import Explore from "./routes/Explore.svelte";
-  import Cite from "./routes/Cite.svelte";
   import Chat from "./routes/Chat.svelte";
 
   let authed = $state(isAuthenticated());
-  let tab = $state("explore");
   let navOpen = $state(false);
+  let route = $state("research");
 
   function login() {
-    // Stub: real auth will be issued by the marketing site's login flow.
     setToken("stub-session-token");
     authed = true;
   }
 
-  function selectTab(t) {
-    tab = t;
+  function navigate(nextRoute) {
+    route = nextRoute;
     navOpen = false;
   }
 </script>
@@ -30,30 +29,52 @@
     </div>
   </div>
 {:else}
-  <div class="app-shell">
+  <div class="mobile-header">
     <button
       class="nav-toggle"
       onclick={() => (navOpen = !navOpen)}
-      aria-label="Toggle navigation"
+      aria-label={navOpen ? "Close navigation" : "Open navigation"}
       aria-expanded={navOpen}
       aria-controls="primary-navigation"
-    >☰</button>
+    >
+      {#if navOpen}<X size={20} />{:else}<Menu size={20} />{/if}
+    </button>
+    <div class="mobile-brand">LawCite <span class="accent-text">TT</span></div>
+  </div>
+
+  <div class="app-shell">
     <aside id="primary-navigation" class="sidebar" class:open={navOpen}>
       <div class="brand">LawCite <span class="accent-text">TT</span></div>
       <nav>
-        <button class:active={tab === "explore"} onclick={() => selectTab("explore")}>Explore</button>
-        <button class:active={tab === "cite"} onclick={() => selectTab("cite")}>Cite</button>
-        <button class:active={tab === "chat"} onclick={() => selectTab("chat")}>Chat</button>
+        <button
+          class:active={route === "research"}
+          onclick={() => navigate("research")}
+        >
+          <Search size={17} aria-hidden="true" />
+          Research
+        </button>
+        <button
+          class:active={route === "chat"}
+          onclick={() => navigate("chat")}
+        >
+          <MessageSquareText size={17} aria-hidden="true" />
+          Chat
+        </button>
       </nav>
       <div class="auth-status">Signed in (stub)</div>
     </aside>
+    {#if navOpen}
+      <button
+        class="backdrop"
+        aria-label="Close navigation"
+        onclick={() => (navOpen = false)}
+      ></button>
+    {/if}
     <main>
       <div class="main-inner">
-        {#if tab === "explore"}
+        {#if route === "research"}
           <Explore />
-        {:else if tab === "cite"}
-          <Cite />
-        {:else if tab === "chat"}
+        {:else}
           <Chat />
         {/if}
       </div>
@@ -63,97 +84,164 @@
 
 <style>
   :global(:root) {
-    --bg: #0a0e17;
-    --surface: #111827;
-    --border: #1e293b;
-    --text: #f1f5f9;
-    --muted: #64748b;
+    --bg: #090d14;
+    --surface: #111823;
+    --surface-raised: #151e2a;
+    --border: #243040;
+    --border-strong: #354256;
+    --text: #f3f5f7;
+    --text-soft: #d7dde5;
+    --muted: #8190a5;
+    --muted-strong: #a8b3c3;
     --accent: #22d3ee;
-    --accent-light: #0e7490;
-    --accent-text: #0a0e17;
-    --highlight: rgba(34, 211, 238, 0.2);
-    --highlight-text: #67e8f9;
-    --radius: 8px;
+    --accent-hover: #67e8f9;
+    --accent-strong: #67e8f9;
+    --accent-text: #061016;
+    --positive: #5eead4;
+    --danger: #fca5a5;
+    --highlight: rgba(250, 204, 21, 0.2);
+    --highlight-text: #fef08a;
+    --radius: 7px;
   }
   :global(body) {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
     background: var(--bg);
     color: var(--text);
-    line-height: 1.6;
-    margin: 0;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55;
   }
   :global(*) { box-sizing: border-box; }
   :global(input),
-  :global(select) {
-    background: var(--bg);
-    color: var(--text);
-    font-family: inherit;
-  }
+  :global(select),
+  :global(button) { font: inherit; }
   :global(input::placeholder) { color: var(--muted); }
-  :global(button) { font-family: inherit; }
-
   .accent-text { color: var(--accent); }
-
   .app-shell { display: flex; min-height: 100vh; }
-
   .sidebar {
-    width: 200px;
+    width: 216px;
     flex-shrink: 0;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    padding: 20px 12px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 10px;
+    padding: 22px 14px;
+    border-right: 1px solid var(--border);
+    background: var(--surface);
   }
-  .sidebar .brand { color: var(--text); font-weight: 700; font-size: 1.1rem; padding: 0 8px 20px; }
-  .sidebar nav { display: flex; flex-direction: column; gap: 6px; }
+  .brand {
+    padding: 0 9px 18px;
+    color: var(--text);
+    font-size: 1.08rem;
+    font-weight: 800;
+  }
+  .sidebar nav { display: grid; gap: 5px; }
   .sidebar nav button {
-    text-align: left;
-    padding: 10px 12px; font-size: 0.9rem; font-weight: 600;
-    border: none; border-left: 3px solid transparent;
-    background: transparent; color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 12px;
+    border: 0;
+    border-left: 3px solid transparent;
     border-radius: 0 var(--radius) var(--radius) 0;
+    background: transparent;
+    color: var(--muted-strong);
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-align: left;
     cursor: pointer;
   }
   .sidebar nav button.active {
-    background: var(--border); color: var(--accent); border-left-color: var(--accent);
+    border-left-color: var(--accent);
+    background: #1b2636;
+    color: var(--accent);
   }
-  .sidebar .auth-status { margin-top: auto; color: var(--muted); font-size: 0.75rem; padding: 0 8px; }
-
-  main { flex: 1; padding: 24px 28px; min-width: 0; }
-  .main-inner { max-width: 900px; margin: 0 auto; }
-
-  .nav-toggle { display: none; }
-
+  .auth-status {
+    margin-top: auto;
+    padding: 0 9px;
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+  main {
+    min-width: 0;
+    flex: 1;
+    padding: 26px 30px 48px;
+  }
+  .main-inner { max-width: 980px; margin: 0 auto; }
+  .mobile-header,
+  .backdrop { display: none; }
   .login-gate {
-    min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px;
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
   }
   .login-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 40px 32px; text-align: center; max-width: 420px;
+    width: min(420px, 100%);
+    padding: 38px 30px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    text-align: center;
   }
-  .login-card h1 { font-size: 1.5rem; margin: 0 0 8px; }
-  .login-card p { color: var(--muted); margin: 4px 0; }
+  .login-card h1 { margin: 0 0 8px; font-size: 1.5rem; }
+  .login-card p { margin: 4px 0; color: var(--muted); }
   .login-card .prompt { margin-top: 20px; color: var(--text); }
   .login-card button {
-    margin-top: 16px; padding: 10px 24px; font-size: 0.95rem; font-weight: 600;
-    background: var(--accent); color: var(--accent-text); border: none; border-radius: var(--radius);
+    margin-top: 16px;
+    padding: 10px 22px;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: var(--accent-text);
+    font-weight: 750;
     cursor: pointer;
   }
-
   @media (max-width: 768px) {
+    .mobile-header {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 30;
+      display: flex;
+      height: 54px;
+      align-items: center;
+      gap: 12px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 13, 20, 0.96);
+    }
+    .mobile-brand { font-size: 0.98rem; font-weight: 800; }
     .nav-toggle {
-      display: block; position: fixed; top: 12px; left: 12px; z-index: 20;
-      background: var(--surface); color: var(--text); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 8px 12px; font-size: 1.1rem; cursor: pointer;
+      display: inline-grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
     }
     .sidebar {
-      position: fixed; top: 0; left: 0; height: 100vh; z-index: 10;
-      transform: translateX(-100%); transition: transform 0.2s ease;
+      position: fixed;
+      inset: 54px auto 0 0;
+      z-index: 25;
+      height: calc(100vh - 54px);
+      transform: translateX(-100%);
+      transition: transform 0.18s ease;
     }
-    .sidebar .brand { padding-left: 48px; }
     .sidebar.open { transform: translateX(0); }
-    main { padding: 24px 16px; margin-top: 48px; }
+    .sidebar .brand { display: none; }
+    .backdrop {
+      position: fixed;
+      inset: 54px 0 0;
+      z-index: 20;
+      display: block;
+      border: 0;
+      background: rgba(0, 0, 0, 0.5);
+    }
+    main {
+      padding: 76px 14px 40px;
+    }
   }
 </style>

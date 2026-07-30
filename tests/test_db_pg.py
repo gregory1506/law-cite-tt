@@ -1,4 +1,5 @@
 import os
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -35,6 +36,113 @@ async def _seed_chapter(tmp_path, name="8_08_Absconding_Debtors"):
         REAL_DATA.read_text(encoding="utf-8", errors="replace")
     )
     return folder.parent
+
+
+async def _seed_grouped_search_data(db):
+    pool = await db.connect()
+    vector = "[" + ",".join(["1"] + ["0"] * 383) + "]"
+    async with pool.acquire() as conn:
+        chapter_id = await conn.fetchval(
+            """
+            INSERT INTO chapters (chapter_number, title)
+            VALUES ('9:70', 'Bankruptcy Act')
+            RETURNING id
+            """
+        )
+        old_version_id = await conn.fetchval(
+            """
+            INSERT INTO versions
+                (chapter_id, download_id, version_label, as_at_date)
+            VALUES ($1, 1001, '2009 revision', $2)
+            RETURNING id
+            """,
+            chapter_id,
+            date(2009, 12, 31),
+        )
+        latest_version_id = await conn.fetchval(
+            """
+            INSERT INTO versions
+                (chapter_id, download_id, version_label, as_at_date)
+            VALUES ($1, 1002, '2012 revision', $2)
+            RETURNING id
+            """,
+            chapter_id,
+            date(2012, 12, 31),
+        )
+        undated_version_id = await conn.fetchval(
+            """
+            INSERT INTO versions
+                (chapter_id, download_id, version_label, as_at_date)
+            VALUES ($1, 1003, 'archive scan', NULL)
+            RETURNING id
+            """,
+            chapter_id,
+        )
+        rows = [
+            (
+                old_version_id,
+                "244",
+                "Summary administration",
+                "The debtor has absconded and may be adjudged bankrupt.",
+                date(2009, 12, 31),
+                "2009 revision",
+                0,
+            ),
+            (
+                latest_version_id,
+                "244",
+                "Summary administration",
+                "Where the debtor has absconded the Court may act.",
+                date(2012, 12, 31),
+                "2012 revision",
+                0,
+            ),
+            (
+                undated_version_id,
+                "244",
+                "Summary administration",
+                "An absconding debtor may be adjudged bankrupt.",
+                None,
+                "archive scan",
+                0,
+            ),
+            (
+                latest_version_id,
+                "180",
+                "Adjudication",
+                "The absconding debtor may be adjudged bankrupt.",
+                date(2012, 12, 31),
+                "2012 revision",
+                1,
+            ),
+            (
+                old_version_id,
+                "",
+                "Schedule",
+                "A schedule concerning an absconding debtor.",
+                date(2009, 12, 31),
+                "2009 revision",
+                2,
+            ),
+            (
+                latest_version_id,
+                "",
+                "Preliminary text",
+                "Preliminary text concerning an absconding debtor.",
+                date(2012, 12, 31),
+                "2012 revision",
+                3,
+            ),
+        ]
+        await conn.executemany(
+            """
+            INSERT INTO chunks
+                (version_id, chapter_number, section_ref, heading, chunk_text,
+                 as_at_date, version_label, chunk_index, embedding)
+            VALUES ($1, '9:70', $2, $3, $4, $5, $6, $7, $8::vector)
+            """,
+            [(*row, vector) for row in rows],
+        )
 
 
 @pytest.mark.asyncio
@@ -114,3 +222,103 @@ async def test_search_vector_and_hybrid_run_without_embeddings(db, tmp_path):
 
     hybrid_results = await db.search_hybrid("affidavit")
     assert len(hybrid_results) >= 1
+
+
+@pytest.mark.asyncio
+async def test_grouped_fts_returns_one_provision_with_ordered_versions(db):
+    await _seed_grouped_search_data(db)
+
+    result = await db.search_grouped("absconding debtor", mode="fts", limit=20)
+
+    keys = [item["key"] for item in result["items"]]
+    assert keys.count("9:70::244") == 1
+    item = next(item for item in result["items"] if item["key"] == "9:70::244")
+    assert item["title"] == "Bankruptcy Act"
+    assert item["heading"] == "Summary administration"
+    assert item["matched_version"]["download_id"] in {1001, 1002, 1003}
+    assert item["latest_available"]["download_id"] == 1002
+    assert [version["download_id"] for version in item["versions"]] == [
+        1002,
+        1001,
+        1003,
+    ]
+    fallback_keys = [key for key in keys if "::chunk:" in key]
+    assert len(fallback_keys) == 2
+
+
+@pytest.mark.asyncio
+async def test_grouped_search_historical_date_excludes_later_and_undated_versions(db):
+    await _seed_grouped_search_data(db)
+
+    result = await db.search_grouped(
+        "absconding debtor",
+        mode="fts",
+        as_at_date="2010-01-01",
+        limit=20,
+    )
+
+    item = next(item for item in result["items"] if item["key"] == "9:70::244")
+    assert item["matched_version"]["download_id"] == 1001
+    assert item["latest_available"]["download_id"] == 1001
+    assert [version["download_id"] for version in item["versions"]] == [1001]
+
+
+@pytest.mark.asyncio
+async def test_grouped_search_historical_date_uses_migrated_chunk_date(db):
+    await _seed_grouped_search_data(db)
+    pool = await db.connect()
+    async with pool.acquire() as conn:
+        await conn.execute(
+            "UPDATE versions SET as_at_date = NULL WHERE download_id = 1001"
+        )
+
+    result = await db.search_grouped(
+        "absconding debtor",
+        mode="fts",
+        as_at_date="2010-01-01",
+        limit=20,
+    )
+
+    item = next(item for item in result["items"] if item["key"] == "9:70::244")
+    assert item["matched_version"]["download_id"] == 1001
+    assert item["latest_available"]["download_id"] == 1001
+    assert [version["download_id"] for version in item["versions"]] == [1001]
+
+
+@pytest.mark.asyncio
+async def test_grouped_search_paginates_unique_provisions(db):
+    await _seed_grouped_search_data(db)
+
+    first = await db.search_grouped("absconding debtor", mode="fts", limit=1)
+    second = await db.search_grouped(
+        "absconding debtor",
+        mode="fts",
+        limit=1,
+        offset=first["next_offset"],
+    )
+
+    assert first["has_more"] is True
+    assert first["next_offset"] == 1
+    assert second["items"][0]["key"] != first["items"][0]["key"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("mode", ["vector", "hybrid"])
+async def test_grouped_vector_and_hybrid_collapse_versions(db, mode):
+    await _seed_grouped_search_data(db)
+
+    result = await db.search_grouped("absconding debtor", mode=mode, limit=20)
+
+    keys = [item["key"] for item in result["items"]]
+    assert keys.count("9:70::244") == 1
+
+
+@pytest.mark.asyncio
+async def test_lookup_section_can_select_exact_download(db):
+    await _seed_grouped_search_data(db)
+
+    rows = await db.lookup_section("9:70", "244", download_id=1003)
+
+    assert len(rows) == 1
+    assert rows[0]["download_id"] == 1003
+    assert "archive" in rows[0]["version_label"]

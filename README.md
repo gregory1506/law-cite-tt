@@ -4,7 +4,18 @@ Citation validation service for the Laws of Trinidad and Tobago. See `CLAUDE.md`
 
 ## Current status
 
-Phase 0 (reconnaissance scraper) is implemented and tested (16 passing tests). It has **not yet been run to completion** with its current scope (full version history per chapter) — an earlier run only fetched the latest version per chapter and has since been superseded by code that fetches every historical version.
+LawCite is live with a Svelte customer app on Cloudflare Workers and a FastAPI,
+PostgreSQL 16, and pgvector backend on Hostinger:
+
+- Frontend: https://law-cite-tt.gjo-ai.workers.dev
+- API: https://srv1629323.hstgr.cloud
+- Corpus: 533 chapters, 4,989 versions, and 407,008 embedded statutory chunks
+- Research workflow: grouped provision search, exact lookup, chapter browsing,
+  historical cutoffs, version selection, and official PDF links
+- Next product milestone: structured citation validation and formatting
+
+The original reconnaissance pipeline remains available for rebuilding the source
+corpus. The production application lives under `backend/` and `citation-tool/`.
 
 ## Running the Phase 0 reconnaissance crawl
 

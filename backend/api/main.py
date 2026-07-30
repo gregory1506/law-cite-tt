@@ -8,6 +8,7 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
+from api.models import GroupedSearchResponse
 from scraper.db_pg import LawCitePGDB
 from scraper.embed import _get_model
 
@@ -95,10 +96,16 @@ async def lookup_section(
     chapter: str = Query(..., description="Chapter number e.g. 8:08"),
     section: str = Query(..., description="Section reference e.g. 1, 3A"),
     date: str = Query("", description="As-at date e.g. 2016-12-31"),
+    download_id: int | None = Query(None, description="Exact source download ID"),
 ):
     db = get_db()
-    results = await db.lookup_section(chapter, section, as_at_date=date or None)
-    if not results:
+    results = await db.lookup_section(
+        chapter,
+        section,
+        as_at_date=date or None,
+        download_id=download_id,
+    )
+    if not results and date and download_id is None:
         results = await db.lookup_section(chapter, section)
     return [enrich_row(r) for r in results]
 
@@ -118,6 +125,35 @@ async def search(
     else:
         results = await db.search_hybrid(q, chapter=chapter, limit=limit)
     return [enrich_row(r) for r in results]
+
+
+@app.get("/api/search/grouped", response_model=GroupedSearchResponse)
+async def search_grouped(
+    q: str = Query(..., description="Search query"),
+    chapter: str = Query("", description="Filter by chapter number"),
+    mode: str = Query("fts", pattern="^(fts|hybrid|vector)$"),
+    date: str = Query("", description="Only versions available by this date"),
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+):
+    payload = await get_db().search_grouped(
+        q,
+        mode=mode,
+        chapter=chapter,
+        as_at_date=date,
+        limit=limit,
+        offset=offset,
+    )
+    for item in payload["items"]:
+        matched = item["matched_version"]
+        matched["pdf_url"] = pdf_url(matched["download_id"])
+        for version in item["versions"]:
+            version["pdf_url"] = pdf_url(version["download_id"])
+        if item["latest_available"]:
+            item["latest_available"]["pdf_url"] = pdf_url(
+                item["latest_available"]["download_id"]
+            )
+    return payload
 
 
 @app.get("/api/stats")
