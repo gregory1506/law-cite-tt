@@ -260,3 +260,16 @@ Each entry:
 - README.md, CLAUDE.md, next_steps.md, lessons_learned.md
 
 **Status:** complete
+
+## [2026-07-30 19:40] Private beta authentication planning
+
+**What was done:**
+- Selected Cloudflare Access email one-time PINs with an explicit beta allowlist
+- Designed a same-origin Worker API gateway with FastAPI JWT verification and rate limiting
+- Documented deployment ordering, production acceptance checks, and rollback
+
+**Files touched:**
+- docs/superpowers/plans/2026-07-30-private-beta-authentication.md
+- work_log.md, lessons_learned.md, next_steps.md
+
+**Status:** complete

@@ -168,3 +168,18 @@ Each entry:
 **Lesson:** Development CORS should explicitly permit both `localhost` and `127.0.0.1` with optional ports. Browser QA should inspect the console immediately and reuse a fixed host/port pair so origin-specific failures are not mistaken for API outages.
 
 **Tags:** #cors #browser-qa #localhost #deployment
+
+## [2026-07-30] Cloudflare Access can protect a workers.dev route directly
+
+**Context:** Planning invite-only authentication without purchasing a custom
+domain for the private beta.
+
+**What happened:** Cloudflare's current Workers configuration supports enabling
+Access directly on the existing `workers.dev` route. A custom DNS zone is only
+needed later for branded production routing, not for the beta access gate.
+
+**Lesson:** Use the existing Worker hostname to validate the beta before paying
+for a branded domain, while still enforcing origin-side JWT verification so the
+public API cannot bypass Access.
+
+**Tags:** #cloudflare-access #authentication #workers #private-beta

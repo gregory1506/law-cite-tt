@@ -5,7 +5,7 @@ Concrete, actionable items for continuing work here. Review this before starting
 ## Priority
 
 ### Now
-- Secure the production frontend and API before broader release: replace the UI-only token gate with real authentication, enforce authorization in FastAPI, add Traefik/API rate limiting, and verify unauthenticated requests are rejected
+- Implement `docs/superpowers/plans/2026-07-30-private-beta-authentication.md`: protect the existing `workers.dev` frontend with Cloudflare Access, proxy `/api/*` through the Worker, enforce Access JWT verification in FastAPI, add rate limiting, and verify unauthenticated requests are rejected
 
 ### Soon
 - Audit and repair chapter/version associations in the migrated corpus; for example, bankruptcy text and sections are currently attached to the `30:50 Burial Grounds` catalog title in some historical rows
