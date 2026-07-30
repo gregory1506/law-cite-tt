@@ -14,11 +14,14 @@ describe("App shell", () => {
     );
   });
 
-  it("shows research and a navigable Chat placeholder without internal metrics", async () => {
+  it("shows Research, Cite, and Chat as primary routes without internal metrics", async () => {
     render(App);
 
     expect(screen.getByRole("heading", { name: "Research" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Cite" })).not.toBeInTheDocument();
+    await fireEvent.click(screen.getByRole("button", { name: "Cite" }));
+    expect(
+      screen.getByRole("heading", { name: "Validate a citation", level: 1 }),
+    ).toBeInTheDocument();
     await fireEvent.click(screen.getByRole("button", { name: "Chat" }));
     expect(screen.getByRole("heading", { name: "Chat", level: 1 })).toBeInTheDocument();
     expect(screen.getByText("Chat is coming soon")).toBeInTheDocument();

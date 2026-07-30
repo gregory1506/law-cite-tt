@@ -37,3 +37,9 @@ export function lookupSection(chapter, section, date = "", downloadId = null) {
   if (downloadId != null) params.set("download_id", String(downloadId));
   return getJSON(`/api/lookup?${params}`);
 }
+
+export function resolveCitation(chapter, section, date = "") {
+  const params = new URLSearchParams({ chapter, section });
+  if (date) params.set("date", date);
+  return getJSON(`/api/citations/resolve?${params}`);
+}

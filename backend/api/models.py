@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date as Date
+from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class VersionSummary(BaseModel):
     version_id: int
     download_id: int
-    as_at_date: date | None = None
+    as_at_date: Date | None = None
     version_label: str = ""
     pdf_url: str = ""
 
@@ -34,3 +35,49 @@ class GroupedSearchResponse(BaseModel):
     items: list[GroupedSearchItem]
     next_offset: int | None = None
     has_more: bool = False
+
+
+class CitationStatus(str, Enum):
+    found = "found"
+    not_found = "not_found"
+    ambiguous = "ambiguous"
+
+
+class NormalizedCitationInput(BaseModel):
+    chapter: str
+    section: str
+    date: Date | None = None
+
+
+class CitationFormats(BaseModel):
+    full: str
+    short: str
+
+
+class CitationAuthority(BaseModel):
+    title: str
+    chapter_number: str
+    section_ref: str
+    heading: str = ""
+    as_at_date: Date | None = None
+    version_label: str = ""
+    download_id: int
+    pdf_url: str
+
+
+class CitationAlternative(BaseModel):
+    title: str
+    chapter_number: str
+    section_ref: str = ""
+    as_at_date: Date | None = None
+    version_label: str = ""
+    download_id: int | None = None
+
+
+class CitationResolveResponse(BaseModel):
+    status: CitationStatus
+    normalized_input: NormalizedCitationInput
+    citation: CitationFormats | None = None
+    authority: CitationAuthority | None = None
+    text: str = ""
+    alternatives: list[CitationAlternative] = Field(default_factory=list)
