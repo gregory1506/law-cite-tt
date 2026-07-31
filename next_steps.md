@@ -5,7 +5,7 @@ Concrete, actionable items for continuing work here. Review this before starting
 ## Priority
 
 ### Now
-- Implement `docs/superpowers/plans/2026-07-30-private-beta-authentication.md`: protect the existing `workers.dev` frontend with Cloudflare Access, proxy `/api/*` through the Worker, enforce Access JWT verification in FastAPI, add rate limiting, and verify unauthenticated requests are rejected
+- Launch the YC-style MVP in `docs/superpowers/plans/2026-07-30-yc-mvp.md`, beginning with `docs/superpowers/plans/2026-07-30-private-beta-authentication.md`, then run the defined 14-day beta experiment with 5–10 legal professionals
 
 ### Soon
 - Audit and repair chapter/version associations in the migrated corpus; for example, bankruptcy text and sections are currently attached to the `30:50 Burial Grounds` catalog title in some historical rows

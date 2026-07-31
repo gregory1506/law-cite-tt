@@ -273,3 +273,17 @@ Each entry:
 - work_log.md, lessons_learned.md, next_steps.md
 
 **Status:** complete
+
+## [2026-07-30 20:25] YC-style MVP definition
+
+**What was done:**
+- Defined LawCite's narrow MVP promise around fast, verifiable T&T statutory research
+- Scoped a 2–4 day beta-readiness build and a 14-day experiment with 5–10 legal professionals
+- Added activation, usage, task-integrity, product-pull, and proceed/iterate/reconsider decision criteria
+- Explicitly deferred Chat, agents, law graphs, matters, case law, drafting, and billing
+
+**Files touched:**
+- docs/superpowers/plans/2026-07-30-yc-mvp.md
+- work_log.md, next_steps.md
+
+**Status:** complete
