@@ -50,14 +50,31 @@ def load_graph(graph_file: Path = GRAPH_FILE) -> dict:
 def load_cases(cases_dir: Path | str = CASES_DIR) -> list[dict]:
     cases_dir = Path(cases_dir)
     records = []
-    for p in sorted(cases_dir.glob("*.jsonl")):
+    for p in sorted(cases_dir.glob("*.json*")):
+        if p.name.startswith("._"):
+            continue
         for line in p.read_text().splitlines():
             if line.strip():
                 try:
-                    records.append(json.loads(line))
+                    records.append(normalize_case(json.loads(line)))
                 except json.JSONDecodeError:
                     continue
     return records
+
+
+def normalize_case(rec: dict) -> dict:
+    """Normalize a case record to the internal shape (id, title, body).
+
+    CCJ crawler records carry `id`/`body`; webOPAC records carry
+    `record_id`/`text` and a `pdf_url` in `source_url`. Both are reconciled
+    here so edge extraction is format-agnostic.
+    """
+    out = {
+        "id": rec.get("id") or rec.get("record_id"),
+        "title": rec.get("title"),
+        "body": rec.get("body") or rec.get("text") or "",
+    }
+    return {k: v for k, v in out.items() if v is not None}
 
 
 def build_act_index(nodes: dict) -> dict[str, list[str]]:
