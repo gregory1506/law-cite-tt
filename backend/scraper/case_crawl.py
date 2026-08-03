@@ -83,10 +83,22 @@ def extract_body(page_html: str) -> str:
     # The judgment body lives in the entry/content column; grab <p> text.
     paras = re.findall(r"<p[^>]*>(.*?)</p>", t, flags=re.S | re.I)
     body = []
+    NOISE = (
+        "click flags to find out more",
+        "caribbean court of justice 134 henry street",
+        "general information:",
+        "copyright 20",
+        "follow follow follow follow",
+        "skip navigation",
+        "accessibility tools",
+        "press release",
+        "media releases",
+    )
     for p in paras:
         txt = re.sub(r"<[^>]+>", " ", p)
         txt = html.unescape(re.sub(r"\s+", " ", txt)).strip()
-        if len(txt) > 40:
+        low = txt.lower()
+        if len(txt) > 40 and not any(seed in low[:90] for seed in NOISE):
             body.append(txt)
     text = " ".join(body)
 

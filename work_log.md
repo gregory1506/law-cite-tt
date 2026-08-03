@@ -334,3 +334,54 @@ Each entry:
 - work_log.md, lessons_learned.md
 
 **Status:** complete
+
+## [2026-08-03 17:30] WebOPAC judgments recon + crawler + one-year pilot
+
+**What was done:**
+- Recon: ttlawcourts.org homepage redirects to Outlook /owa/ (dead end); the real source is the Judiciary webOPAC — webopac.ttlawcourts.org (IIS + Minisys minisa.dll OPAC), a searchable catalog exposing full-text judgment PDFs under /LibraryJud/Judgments/<court>/<judge>/<year>/<file>.pdf
+- Mapped the enumeration contract: load the direct-search form, parse its per-session action URL (session id rotates on every load), POST pub_yr_deldate=<year>; RECLIST result pages; each RECORD page carries the PDF link (as an href and as a bare URL in the "Full text" field)
+- Built backend/scraper/webopac_crawl.py mirroring case_crawl.py etiquette (honest UA, no cookies/proxies/PII, RateLimitedClient delay, idempotent). It dedupes RECLIST pagination by the page-offset segment because session ids rotate on every response — full-URL dedup caused an infinite loop
+- Storaged as PDF + text + parsed line: raw PDFs in case_law/webopac_pdfs/<year>/, one JSON-L record in case_law/webopac.jsonld (text via scraper.pdf_to_markdown)
+- Ran a one-year pilot (2023): 606 record URLs enumerated; cap 5 PDFs downloaded and parsed end-to-end (20k-42k chars each, native so unprovided text -> not scanned), artifacts on the SSD
+
+**Files touched:**
+- backend/scraper/webopac_crawl.py (new)
+- /Volumes/Extreme SSD/law-cite-tt-data/case_law/ (webopac_pdfs/2023/, webopac.jsonld)
+- lessons_learned.md, next_steps.md
+
+**Status:** complete (pilot); full-index sweep pending
+
+## [2026-08-03 18:00] WebOPAC crawl scaled + CITES_STATUTE edges wired into graph
+
+**What was done:**
+- Fixed crawler idempotency: record_id was a per-run counter; now it is a sha256 hash of the source RECORD url (matches CCJ convention), so re-runs skip and edge sources are stable
+- Reconciled case_edges.py to read both corpora: it now globs *.json*, normalizes CCJ (id/body) and webOPAC (record_id text combined by code) records
+- Ran a scaled 2023 crawl (cap 40, delay 1.0s) -> 40 judgments downloaded+parsed (3k-226k chars, none scanned); ~11 realized CoA/HC PDFs incl. multi-year decisions
+- Regenerated CITES_STATUTE edges across the merged corpus (40 webvalidity + 10 CCJ = 50 cases, 27 case nodes, 90 edges; 38 REGEX + 52 TITLE_MATCH; 47 high / 35 med / 8 low)
+- Verified integration: retriever loads case_coledges (90), and a case seed traverses case -> chapter -> statutory ideas (e.g. case:8eec.. -> chapter:5:01 Arbitration -> its sections) — the design's "case as transit entry" works end-to-end
+
+**Files touched:**
+- backend/scraper/webopac_crawl.py (stable record_id)
+- backend/graphrag/case_edges.py (dual-format load)
+- graphify-out/case_edges.json (90 edges)
+- /Volumes/Extreme SSD/law-cite-tt-data/case_law/webopac.jsonld (40), webocr p pdf repository
+
+**Status:** complete; full-index sweep (all years, no cap) remains next
+
+## [2026-08-03 18:45] GraphRAG proof-of-concept complete (with case-law edges)
+
+**What was done:**
+- Confirmed the GraphRAG PoC is complete end-to-end: graph build (23k idea nodes / 125k edges / 535 clusters), semantic retriever, and golden recall
+- Idea-node recall@20 against the 30-entry golden set: 19/27 = 70% (3 skipped - no section ref)
+- Wired the judicial case-law layer on top and re-verified both traversal directions:
+  - statute query seeds surface the relevant ideas (e.g. "arbitration agreement enforcement" -> 5:01|20, 5:01|3, 54:70|82)
+  - case seed walks case -> cited chapter -> its ideas (e.g. case:8eec.. -> chapter:5:01 -> sections)
+- 90 CITES_STATUTE edges (38 REGEX + 52 TITLE_MATCH; 47 high/35 med/8 low) over 50 merged cases / 27 case nodes; retriever auto-loads case_enorte.json
+- Updated graphify-out/GRAPH_REPORT.md: case-law section now documents BOTH CCJ and webOPAC sources, the 90-edge result, upstream years, and the modern 70% recall
+- DIAGNOSED a false alarm: the "0 results/year" probes were parsing raw HTML where a tag splits "Search Results" from ":606"; the live OPAC index actually spans 1873-2024 (dense 1980-2024, 200-650/yr)
+
+**Files touched:**
+- graphify-out/GRAPH_REPORT.md (updated case-law + evaluation sections)
+- work_log (this), next_steps.md
+
+**Status:** PoC complete; full webOPAC sweep (1873-2024) is a background run

@@ -53,3 +53,13 @@ Concrete, actionable items for continuing work here. Review this before starting
 - Lawyer/paralegal UX production rollout: backend image `lawcite-api:ux-grouped-20260729` deployed on Hostinger and frontend Worker version `8b112881-4092-4202-bc49-41c54f2baa91` deployed and verified
 - Frontend follow-up: persistent Clear search action and visible Chat coming-soon route deployed as Worker version `98837494-e732-4872-ac61-76751aadc8da`
 - Cite validation MVP: source-backed chapter/section/date resolution, explicit found/not-found/ambiguous states, exact statutory text, official PDFs, full/short citation copy, and responsive desktop/mobile workflows deployed with API image `lawcite-api:a87fc7b` and Worker version `f74a010e-2548-4749-96c4-21f388a141c0`
+
+- WebOPAC case-law layer (backend/scraper/webopac_crawl.py): pilot (2023, cap 5) validated end-to-end; queue the full-index sweep (all years, no cap)
+- Reconcile backend/graphrag/case_edges.py to read the webopac JSON-L format (text/record_id fields, .jsonld glob) so CITES_STATUTE edges can be generated from webopac judgments
+- Re-run case_edges.py and attach case -> chapter -> idea traversal for the webopac corpus once edges land
+- [done] WebOPAC crawler (backend/scraper/webopac_crawl.py) validated via 2023 pilot (cap 5) then scaled (cap 40)
+- [done] case_edges.py reconciles webOPAC (record_id/text) and CCJ (id/body) corpora; 90 CITES_STATUTE edges written to graphify-out/case_edges.json
+- [done] Retriever verified: case seed traverses case -> chapter -> idea (e.g. case -> chapter:5:01 Arbitration)
+- NEXT: full-index webOPAC sweep across all delivery years (no --cap, background run, several hours at 1s).
+- NEXT: consider whether statute-to-case reverse edges should be surfaced in the API/Explore (currently lookup is statute->idea only; cases are reachable only when seeded by a case id).
+- [done] GraphRAG proof-of-concept is COMPLETE: graph + retriever (recall@20 = 70%) + judicial case-law layer (90 CITES_STATUTE edges, both traversal directions verified); GRAPH_REPORT.md updated for both sources

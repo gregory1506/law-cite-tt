@@ -223,3 +223,23 @@ for a branded domain, while still enforcing origin-side JWT verification so the
 public API cannot bypass Access.
 
 **Tags:** #cloudflare-access #authentication #workers #private-beta
+
+## [2026-08-03] WebOPAC judgment source sits behind a rotating session-token URL
+
+**Context:** Crawling the TT Judiciary webOPAC (webopac.ttlawcourts.org) for full-text judgment PDFs.
+
+**What happened:** The homepage-level campaign redirect goes to Outlook /owa/ — the actual OPAC lives on the same host, and g. Every search action URL embeds a per-load session id and every RECLIST response carries the "next page" links with fresh session ids. Doing URL-based dedup for pagination produced an infinite loop (each response's page links were always "new").
+
+**Lesson:** (1) Probe the published OPAC, not the marketing homepage, for real content. (2) When paginated listing URLs embed a session token, dedup by the stable semantic key (the record/page offset), not the full URL. (3) Rediscover the form action per search rather than hardcoding a session-bearing URL.
+
+**Tags:** #webopac #scraping #session-token #crawler
+
+## [2026-08-03] The OPAC exposes the same PDF as both an href and a bare URL
+
+**Context:** Extracting full-text judgment links from RECORD pages.
+
+**What happened:** The judgment PDF URL appears twice on a record page: once as an <a href> and again as a bare URL inside the "Full text/Additional Information" MARC field. Preferring the /Judgments/ path avoids pulling ancillary items (e.g. CJ law-term speeches under /LawTermOpen/) into the judgment corpus.
+
+**Lesson:** Crawl by the full-text field but filter/rank by path prefix so the corpus stays judgment-only.
+
+**Tags:** #webopac #pdf-links #marc
