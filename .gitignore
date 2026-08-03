@@ -8,3 +8,6 @@ __pycache__/
 .playwright-cli/
 .wrangler/
 output/
+
+# regenerable graph artifacts (rebuild via backend/graphrag/build.py)
+graphify-out/

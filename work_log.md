@@ -287,3 +287,50 @@ Each entry:
 - work_log.md, next_steps.md
 
 **Status:** complete
+
+## [2026-08-03 15:00] GraphRAG idea graph from the existing chunk cache
+
+**What was done:**
+- Built a GraphRAG over the Laws of TT entirely from the existing `law_cite.db` (no re-embedding): 23,175 idea nodes (chapter|section, embeddings averaged across versions), 533 chapter nodes, 136 cross-chapter concept nodes
+- Extracted audited edges: PART_OF / CROSS_REF / MENTIONS (EXTRACTED) + SEMANTIC (INFERRED via top-k cosine, blocked matmul to avoid a 23k x 23k matrix)
+- Ran greedy-modularity community detection -> 535 clusters; persisted idea embeddings as .npy for fast retrieval
+- Built a BFS/DFS semantic retriever (query embedded with the same all-MiniLM-L6-v2 model) and a golden-set recall harness
+- Idea-node recall@20 = 70% against the 30-entry golden set; "police supervision after conviction" returns Prevention of Crimes 10:01|5 at rank 1
+- Exported graph.json, clusters.json, interactive graph.html, Neo4j graph.cypher, GRAPH_REPORT.md
+
+**Files touched:**
+- backend/graphrag/build.py, backend/graphrag/retrieve.py, backend/graphrag/eval_golden.py, backend/graphrag/export_viz.py
+- graphify-out/ (graph.json, clusters.json, graph.html, graph.cypher, idea_embeddings.npy, idea_ids.json, GRAPH_REPORT.md)
+- docs/superpowers/specs/graphrag-report.md
+
+**Status:** complete
+
+## [2026-08-03 16:00] CCJ case-law layer (crawler + CITES_STATUTE extractor)
+
+**What was done:**
+- Recon against ccj.org: robots.txt is permissive (sitemap published); judgment posts are decision summaries/metadata, not full PDFs — og:description carries the fuller case note on older pages
+- Built a controlled + anonymized crawler (backend/scraper/case_crawl.py): consumes only the category RSS feeds the site advertises; fixed honest research UA, no IP rotation / proxies / cookie jars / fingerprint evasion; 3s rate limit, --limit cap, idempotent JSONL, PII-free, hashed node ids, utm params stripped
+- Built the CITES_STATUTE edge extractor (backend/graphrag/case_edges.py): resolves Ch./Cap. NN:NN (REGEX) and act-title names (TITLE_MATCH) against the idea graph, tagged evidence/method/confidence
+- Added tests/test_case_law.py (7 tests); full suite 38 passing
+- Did NOT run a live crawl (bounded offline dry-run only) — real RAG runs are left to the user against the live site
+
+**Files touched:**
+- backend/scraper/case_crawl.py, backend/graphrag/case_edges.py, tests/test_case_law.py
+- graphify-out/GRAPH_REPORT.md (appended case-law section)
+
+**Status:** complete
+
+## [2026-08-03 17:00] Wire case edges into retriever + fix dangling PART_OF edges
+
+**What was done:**
+- Retriever auto-loads graphify-out/case_edges.json; `_expandable` makes chapters transit-only bridges (case -> chapter -> idea) so a case node expands into its cited chapters' ideas without ideas fanning out into whole chapters
+- Fixed a dangling-edge bug: PART_OF edges used the bare chapter number ("10:01") as source while chapter nodes are id ("chapter:10:01") — all 23,143 PART_OF edges referenced nonexistent nodes. Traversal stopped at chapters; recall/stat metrics were unaffected so the eval harness hid it
+- Added a post-build invariant in build.py that fails loudly on any dangling edge
+- Rebuilt graph.json/httpserver (0 dangling), re-exported graph.html + graph.cypher; recall unchanged at 70% (Node-embedding-based)
+- Logged lessons: edge-endpoint validation at build time; chapters-as-transit
+
+**Files touched:**
+- backend/graphrag/build.py, backend/graphrag/retrieve.py, backend/graphrag/eval_golden.py, exported graphify-out/graph.json, clusters.json, graph.html, graph.cypher
+- work_log.md, lessons_learned.md
+
+**Status:** complete

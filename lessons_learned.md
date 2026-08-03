@@ -49,6 +49,46 @@ Each entry:
 
 **Tags:** #testing #golden-set #debugging
 
+## [2026-08-03] Averaging embeddings across all versions flattens idea discrimination
+
+**Context:** Building a GraphRAG idea graph where each chapter|section gets one embedding by averaging all its historical-version chunk embeddings.
+
+**What happened:** Averaged vectors are near-identical to the latest-version vector (cosine 0.93) — fine for stable sections — but sections that changed a lot across decades (or that are boilerplate "Interpretation" sections repeated verbatim across many chapters) collapse into a mushy middle. Retrieval seeds then tie-scored across unrelated chapters.
+
+**Lesson:** Average only when the versions agree; otherwise prefer the latest dated version's embedding. At minimum, don't expect one canonical vector to serve both "what is this idea now" (latest) and "what did it say in 1950" (temporal) — keep per-version idea nodes for the temporal layer.
+
+**Tags:** #graphrag #embeddings #retrieval
+
+## [2026-08-03] Government legal sites hide full judgments behind summaries
+
+**Context:** Prototyping a CCJ case-law crawl for the graph.
+
+**What happened:** ccj.org judgment posts are short decision summaries (recent ~4 paragraphs; older posts bare citations with the real case note only in the og:description meta tag). No embedded PDFs on the post pages at all.
+
+**Lesson:** Recon the page structure before writing the crawler — the extraction target is often a meta tag, not the <p> body. And "has a judgments page" does not mean "full-text judgments available"; you may need the court's judgment database / neutral-citation system, not the site's blog HTML.
+
+**Tags:** #crawling #case-law #data-quality
+
+## [2026-08-03] Anonymized crawling means honest identity, not hidden identity
+
+**Context:** Asked to make the CCJ crawler "controlled and anonymized."
+
+**What happened:** The correct interpretation is the opposite of proxy-rotating / IP-masking / cookie-evading — that's evasive and often violates ToS. Politeness = robots.txt-aware discovery (RSS feeds), one fixed identifiable research User-Agent, no personal identifiers, rate limits, idempotent storage, provenance params stripped, hashed node ids.
+
+**Lesson:** For public research data, "anonymous" = "auditable but not personally identifiable", achieved via restraint (single honest UA, no evasion) not concealment. Always engage the site owner for large runs.
+
+**Tags:** #crawling #etiquette #ethics
+
+## [2026-08-03] Edge endpoints must be validated against node ids at build time
+
+**Context:** Wiring case->chapter->idea traversal into the GraphRAG retriever and finding that traversal stopped at chapters.
+
+**What happened:** PART_OF edges were emitted with `source: "10:01"` (the dict key / bare chapter number) while chapter nodes were stored with `id: "chapter:10:01"`. All 23,143 PART_OF edges silently referenced a nonexistent node, so a case could reach its cited chapters but never their ideas. Recall/statistics were unaffected (embeddings are node-based), so the bug hid from the eval harness.
+
+**Lesson:** For any graph build, add a post-build invariant check — `len([e for e in edges if e.source not in node_ids or e.target not in node_ids]) == 0` — and fail loudly. Dangling edges are invisible to global metrics but break traversal.
+
+**Tags:** #graphrag #graph-build #data-quality
+
 ## [2026-07-27] Embedding 407k chunks: batch size matters more than expected
 
 **Context:** Generating embeddings for all chunks to enable vector search.
