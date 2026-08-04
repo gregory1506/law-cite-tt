@@ -54,16 +54,13 @@ Concrete, actionable items for continuing work here. Review this before starting
 - Frontend follow-up: persistent Clear search action and visible Chat coming-soon route deployed as Worker version `98837494-e732-4872-ac61-76751aadc8da`
 - Cite validation MVP: source-backed chapter/section/date resolution, explicit found/not-found/ambiguous states, exact statutory text, official PDFs, full/short citation copy, and responsive desktop/mobile workflows deployed with API image `lawcite-api:a87fc7b` and Worker version `f74a010e-2548-4749-96c4-21f388a141c0`
 
-- WebOPAC case-law layer (backend/scraper/webopac_crawl.py): pilot (2023, cap 5) validated end-to-end; queue the full-index sweep (all years, no cap)
-- Reconcile backend/graphrag/case_edges.py to read the webopac JSON-L format (text/record_id fields, .jsonld glob) so CITES_STATUTE edges can be generated from webopac judgments
-- Re-run case_edges.py and attach case -> chapter -> idea traversal for the webopac corpus once edges land
-- [done] WebOPAC crawler (backend/scraper/webopac_crawl.py) validated via 2023 pilot (cap 5) then scaled (cap 40)
-- [done] case_edges.py reconciles webOPAC (record_id/text) and CCJ (id/body) corpora; 90 CITES_STATUTE edges written to graphify-out/case_edges.json
-- [done] Retriever verified: case seed traverses case -> chapter -> idea (e.g. case -> chapter:5:01 Arbitration)
-- NEXT: full-index webOPAC sweep across all delivery years (no --cap, background run, several hours at 1s).
-- NEXT: consider whether statute-to-case reverse edges should be surfaced in the API/Explore (currently lookup is statute->idea only; cases are reachable only when seeded by a case id).
-- [done] GraphRAG proof-of-concept is COMPLETE: graph + retriever (recall@20 = 70%) + judicial case-law layer (90 CITES_STATUTE edges, both traversal directions verified); GRAPH_REPORT.md updated for both sources
-- [done] webOPAC sweep 2018-2024 complete: 3,344 judgments -> 7,914 CITES_STATUTE edges over 2,236 case nodes; edges regenerated in graphify-out/case_edges.json
-- [done] Crawler resilience fix (SSLError on external-host PDFs) pushed as 1b43fe0
-- NEXT: optional historical band (1873-2017) if fuller citation coverage is wanted
-- NEXT: decide how case edges surface in the product (statute page "cited by N judgments", reverse edges in Explore/API)
+### Case-law layer (webOPAC) - current status
+
+- [done] webOPAC crawler + CCJ crawler both live; sweep 2018-2024 COMPLETE: 3,344 judgments on SSD
+- [done] CITES_STATUTE edges regenerated over full corpus: 7,914 edges / 2,236 case nodes / 3,354 cases
+- [done] GraphRAG PoC complete (recall@20 = 70%); retriever integrates case edges both directions
+- NEXT: optional historical band (1873-2017) for fuller citation coverage
+- NEXT: decide how case edges surface in product - statute page 'cited by N judgments', reverse edges in Explore/API
+- NEXT: refresh GRAPH_REPORT.md case-law numbers (now 7,914 edges, not 90)
+- NEXT: reconcile chapter/version metadata mismatches (pre-existing queue item)
+- NEXT: production authentication, authorization, rate limiting (release gate)

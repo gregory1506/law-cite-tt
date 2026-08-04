@@ -401,3 +401,16 @@ Each entry:
 - work_log.md, next_steps.md
 
 **Status:** complete (2018-2024); historical 1873-2017 band remains optional
+
+## [2026-08-03 21:00] Housekeeping: docs updated for sweep completion
+
+**What was done:**
+- lessons_learned.md: added two entries from this session's operational learnings
+  - validate crawl resilience by running at scale (unhandled SSLError from an external-host PDF killed the first sweep; wrap per-record ops and relaunch idempotently; use python -u for unbuffered logs)
+  - a "0 results" probe can be a parser bug, not a real zero (count regex hit a tag between "Search Results" and ":606")
+- next_steps.md: removed stale done items, added a "Case-law layer (webOPAC) - current status" section with forward-looking NEXT items (historical band 1873-2017, case edges surfacing in product, GRAPH_REPORT.md refresh, metadata reconciliation, auth/rate-limit release gate)
+
+**Files touched:**
+- lessons_learned.md, next_steps.md
+
+**Status:** complete

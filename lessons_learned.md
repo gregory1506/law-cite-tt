@@ -243,3 +243,37 @@ public API cannot bypass Access.
 **Lesson:** Crawl by the full-text field but filter/rank by path prefix so the corpus stays judgment-only.
 
 **Tags:** #webopac #pdf-links #marc
+
+## [2026-08-03] Validate crawl resilience by running it, not just a dry-run
+
+**Context:** Full-index webOPAC judgment sweep.
+
+**What happened:** A ~40-record pilot validated every happy path but the full
+sweep died mid-2020 on an **unhandled SSLError**: one record's full-text PDF
+pointed at an external host (`www.ttparliament.org`) with a cert that failed
+verification. `RateLimitedClient` only retried `ConnectionError`/`Timeout`, so
+the `SSLError` propagated and killed the whole process losing minutes of work.
+
+**Lesson:** In a long autonomous crawl, treat *every* per-record operation as
+fallible — external/third-party content, transient TLS, and parse edge cases
+all leak in at scale. Wrap each unit in its own try/except and `continue`
+(rather than abort). Also: relaunch idempotently (by stable record hash) so a
+crash never wastes already-done work. Prefer `python -u` for unbuffered logs so
+progress is observable in a detached run.
+
+**Tags:** #crawlers #sslerror #resilience #background #idempotent
+
+## [2026-08-03] A "0 results" probe can be a parser bug, not a real zero
+
+**Context:** Bracket-checking the OPAC year range.
+
+**What happened:** Multiple year probes reported 0 results when the index was
+clearly populated. Root cause: the count regex ran against the raw HTML where a
+tag sits between `Search Results` and `:606`. The same page in the visible/text
+form shows `Search Results :606`.
+
+**Lesson:** When "nothing found" is surprising, verify by stripping tags and
+re-reading the count before concluding the source is empty. A probing
+false-negative cost us a re-scoping question and a delay.
+
+**Tags:** #scraping #regex #false-negative #probe
