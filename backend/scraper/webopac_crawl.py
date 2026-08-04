@@ -123,14 +123,23 @@ def extract_pdf_link(record_html: str) -> str | None:
 # --- download & persist --------------------------------------------------
 
 def fetch_pdf(client, pdf_url, record_id, year):
+    import requests as _requests
     pdf_dir = PDF_DIR / year
     pdf_dir.mkdir(parents=True, exist_ok=True)
     label = hashlib.sha256(pdf_url.encode()).hexdigest()[:10]
     pdf_path = pdf_dir / f"{record_id}_{label}.pdf"
-    data = client.get(pdf_url)
-    pdf_path.write_bytes(data.content)
-    result = extract_pdf_to_markdown(str(pdf_path), str(record_id))
-    return pdf_path, result, result.likely_scanned
+    try:
+        data = client.get(pdf_url)
+    except (_requests.RequestException, Exception) as exc:
+        print(f"  !! skip {pdf_url}: {type(exc).__name__}")
+        return None
+    try:
+        pdf_path.write_bytes(data.content)
+        result = extract_pdf_to_markdown(str(pdf_path), str(record_id))
+        return pdf_path, result, result.likely_scanned
+    except Exception as exc:
+        print(f"  !! parse fail {pdf_url}: {type(exc).__name__}")
+        return None
 
 def crawl(year, cap, delay):
     JSONL_OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -152,11 +161,18 @@ def crawl(year, cap, delay):
         rid = hashlib.sha256(rec_url.encode()).hexdigest()[:16]
         if rid in done:
             continue
-        page_html = client.get(rec_url).text
-        pdf_url = extract_pdf_link(page_html)
-        if not pdf_url:
+        try:
+            page_html = client.get(rec_url).text
+            pdf_url = extract_pdf_link(page_html)
+            if not pdf_url:
+                continue
+            fetched = fetch_pdf(client, pdf_url, rid, year)
+            if fetched is None:
+                continue
+            pdf_path, result, scanned = fetched
+        except Exception as exc:
+            print(f"  !! record fail {rec_url}: {type(exc).__name__} {exc}")
             continue
-        pdf_path, result, scanned = fetch_pdf(client, pdf_url, rid, year)
         rec = {
             "record_id": rid,
             "source_url": rec_url,
