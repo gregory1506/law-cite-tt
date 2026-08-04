@@ -385,3 +385,19 @@ Each entry:
 - work_log (this), next_steps.md
 
 **Status:** PoC complete; full webOPAC sweep (1873-2024) is a background run
+
+## [2026-08-03 20:30] webOPAC full-index sweep COMPLETE: 3,344 judgments, 7,914 case edges
+
+**What was done:**
+- Completed the webOPAC judgment sweep for 2018-2024 (all 7 dense years): 3,344 judgments downloaded + parsed to the SSD (2018: 529, 2019: 476, 2020: 505, 2021: 380, 2022: 386, 2023: 537, 2024: 525)
+- Ran a resilience fix after the first crash: the crawl died mid-2020 on an unhandled SSLError from an external-host PDF (www.ttparliament.org); fetch_pdf and the per-record block now catch request/parse errors and skip instead of dying. Relaunched idempotently from 2020; completed to 2024
+- Regenerated CITES_STATUTE edges over the full corpus: 3,354 cases -> 2,236 case nodes -> 7,914 edges (3,284 REGEX + 4,630 TITLE_MATCH; 4,230 high / 2,957 medium / 727 low)
+- Top cited chapters: 7:08 (635), 4:01 (488), 56:03 (323), 15:01 (245), 7:09 (240), 81:01 (231)
+- Verified retriever integration at full scale: 7,914 case edges load, graph = 26,080 nodes; statute seeds and case -> chapter -> idea traversal both still work
+
+**Files touched:**
+- backend/scraper/webopac_crawl.py (resilience fix, already pushed as 1b43fe0)
+- graphify-out/case_edges.json (regenerated, gitignored)
+- work_log.md, next_steps.md
+
+**Status:** complete (2018-2024); historical 1873-2017 band remains optional

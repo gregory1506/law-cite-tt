@@ -63,3 +63,7 @@ Concrete, actionable items for continuing work here. Review this before starting
 - NEXT: full-index webOPAC sweep across all delivery years (no --cap, background run, several hours at 1s).
 - NEXT: consider whether statute-to-case reverse edges should be surfaced in the API/Explore (currently lookup is statute->idea only; cases are reachable only when seeded by a case id).
 - [done] GraphRAG proof-of-concept is COMPLETE: graph + retriever (recall@20 = 70%) + judicial case-law layer (90 CITES_STATUTE edges, both traversal directions verified); GRAPH_REPORT.md updated for both sources
+- [done] webOPAC sweep 2018-2024 complete: 3,344 judgments -> 7,914 CITES_STATUTE edges over 2,236 case nodes; edges regenerated in graphify-out/case_edges.json
+- [done] Crawler resilience fix (SSLError on external-host PDFs) pushed as 1b43fe0
+- NEXT: optional historical band (1873-2017) if fuller citation coverage is wanted
+- NEXT: decide how case edges surface in the product (statute page "cited by N judgments", reverse edges in Explore/API)
