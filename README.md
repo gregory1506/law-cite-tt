@@ -109,9 +109,28 @@ flowchart TD
     FastAPI <-->|SSL-Bypass Proxy /api/pdf/*| GovTT
 ```
 
+## 🤖 AI Engineering & System Architecture
+
+This project serves as a production-grade demonstration of modern **AI Engineering, RAG Systems, Agentic Workflows, and High-Performance Legal Search Architecture**.
+
+### 1. Autonomous Tool-Calling Agent Loop
+* **Multi-Tool Orchestration**: Powered by a custom agent runtime (`backend/api/agent.py`) using OpenAI-compatible tool specifications (`search_provisions`, `lookup_section`, `citing_cases`, `search_cases`, `expand_case`).
+* **Grounding & Provenance Guardrails**: Enforces strict anti-hallucination system prompts. Answers are required to cite specific statutory provisions or case nodes, returning structured source references (`sources`) for every statement.
+* **Precedent Graph Navigation**: The agent can autonomously traverse from a statutory chapter to its citing judicial decisions and expand multi-hop precedent chains.
+
+### 2. Hybrid RAG & Vector Search
+* **Dual Retrieval Pipeline**: Combines lexical Full-Text Search (PostgreSQL `tsvector` / `tsquery`) with dense 384-dimensional vector embeddings (`FastEmbed` `BAAI/bge-small-en-v1.5`).
+* **Scale & Indexing**: Indexes **407,008 statutory chunks** in PostgreSQL 16 using `pgvector` with HNSW cosine distance indexing (`vector_cosine_ops`), delivering sub-100ms vector similarity queries over large legal datasets.
+* **Temporal Filtering**: Native support for point-in-time statutory cutoffs (`as_at_date <= target_date`) to accurately reconstruct legal states on historical dates.
+
+### 3. GraphRAG & Case Law Citations
+* **Entity Edge Network**: Extracted 7,914 citation edges linking 2,236 Judgments, Court of Appeal, and High Court decisions to specific statutory chapters.
+* **Graph Traversal**: Enables bidirectional navigation (*Statute $\rightarrow$ Citing Cases* and *Case $\rightarrow$ Cited Statutes*).
+
 ---
 
 ## 🛠️ Technology Stack
+
 
 * **Frontend**: [Svelte 5](https://svelte.dev) (Runes API), Vite, Lucide Icons, Vanilla CSS Design Tokens
 * **Edge Deployment**: [Cloudflare Workers](https://workers.cloudflare.com) (Static Assets + Worker Reverse Proxy)
