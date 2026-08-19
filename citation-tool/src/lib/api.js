@@ -2,10 +2,13 @@ const defaultBase =
   typeof window !== "undefined" &&
   window.location.hostname !== "localhost" &&
   window.location.hostname !== "127.0.0.1"
-    ? "https://srv1629323.hstgr.cloud"
+    ? ""
     : "http://localhost:8000";
 
-const API_BASE = import.meta.env.VITE_API_BASE || defaultBase;
+const API_BASE = import.meta.env.VITE_API_BASE !== undefined
+  ? import.meta.env.VITE_API_BASE
+  : defaultBase;
+
 
 
 async function getJSON(path) {
