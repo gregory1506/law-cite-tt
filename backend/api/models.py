@@ -107,3 +107,25 @@ class ChatResponse(BaseModel):
     status: str = Field(pattern="^(ok|refused|error|unconfigured)$")
     answer: str
     sources: list[ChatSource] = Field(default_factory=list)
+
+
+class CaseSummary(BaseModel):
+    id: str
+    title: str = ""
+    source: str = ""
+    record_id: str = ""
+    court: str = ""
+    year: int | None = None
+
+
+class CaseCitation(BaseModel):
+    case_id: str
+    chapter_number: str
+    confidence: str = "medium"
+    method: str = "REGEX"
+    detail: str = ""
+
+
+class CaseDetail(CaseSummary):
+    citations: list[CaseCitation] = Field(default_factory=list)
+    related_cases: list[CaseSummary] = Field(default_factory=list)
