@@ -2,7 +2,8 @@
 
 ## Purpose
 
-A legal citation engine for the **Laws of Trinidad and Tobago**. Sources statute data from the official Digital Law Library at https://laws.gov.tt/ttdll-web/revision/list. Answers "what did provision X say on date Y?" by chunking 10,060 PDF markdown files into 407,008 section-aware chunks with FTS5 + vector search.
+A legal citation engine for the **Laws of Trinidad and Tobago**. Sources statute data from the official Digital Law Library. Answers "what did provision X say on date Y?" by chunking 10,060 PDF markdown files into 407,008 section-aware chunks with FTS5 + vector search.
+
 
 ## Status
 

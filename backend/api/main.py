@@ -115,7 +115,8 @@ async def proxy_pdf(download_id: int):
             continue
     return HTMLResponse(
         status_code=502,
-        content=f"<!DOCTYPE html><html><head><title>PDF Source Unavailable</title></head><body style='font-family:sans-serif;padding:40px;background:#090d14;color:#f3f5f7;'><h2>PDF Source Temporarily Unavailable</h2><p>The official government server (laws.gov.tt) is currently unreachable for PDF ID {download_id}. Please try again in a few moments.</p></body></html>",
+        content=f"<!DOCTYPE html><html><head><title>PDF Source Unavailable</title></head><body style='font-family:sans-serif;padding:40px;background:#090d14;color:#f3f5f7;'><h2>PDF Source Temporarily Unavailable</h2><p>The official digital law repository is currently unreachable for PDF ID {download_id}. Please try again in a few moments.</p></body></html>",
+
     )
 
 

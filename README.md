@@ -94,9 +94,10 @@ flowchart TD
         PGDB[("🐘 PostgreSQL 16 + pgvector")]
     end
 
-    subgraph External ["External Government Sources"]
-        GovTT["🏛️ laws.gov.tt (Statute PDFs & Revision Lists)"]
+    subgraph External ["External Repository Sources"]
+        GovTT["🏛️ Official Digital Law Repository"]
     end
+
 
     User <-->|HTTPS| CFWorker
     CFWorker <-->|Static Files| CFAssets
@@ -175,7 +176,8 @@ npx wrangler deploy
 
 The statute corpus was constructed via a rate-limited ingestion pipeline (`backend/scraper/`). 
 
-* **Rate Limiting**: Crawling executes with a mandatory $\ge 1.5\text{s}$ delay between requests out of respect for public government infrastructure (`laws.gov.tt`).
+* **Rate Limiting**: Crawling executes with a mandatory $\ge 1.5\text{s}$ delay between requests out of respect for public digital law repository infrastructure.
+
 * **Pagination**: The government portal returns an HTTP 500 status when paging past the last catalog entry. The ingestion engine in `backend/scraper/catalog.py` treats this as a graceful end-of-catalog signal.
 * **Corpus Storage**: Raw extracted PDFs and markdown revisions reside on local SSD storage (`/Volumes/Extreme SSD/law-cite-tt-data/`), with indexed data migrated to PostgreSQL + pgvector for production search.
 
