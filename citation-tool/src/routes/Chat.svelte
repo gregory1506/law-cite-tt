@@ -98,12 +98,13 @@
                 </span>
                 <span class="source-title">{source.title}</span>
                 {#if source.date}<span class="source-date">{source.date}</span>{/if}
-                {#if source.url}
+                {#if resolveUrl(source.url)}
                   <a href={resolveUrl(source.url)} target="_blank" rel="noopener">
                     Official PDF
                     <ExternalLink size={12} aria-hidden="true" />
                   </a>
                 {/if}
+
 
               </div>
             {/each}
