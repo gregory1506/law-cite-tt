@@ -124,6 +124,41 @@ async def test_grounded_answer_returns_sources(monkeypatch, agent):
 
 
 @pytest.mark.asyncio
+async def test_echoes_gemini_thought_signature_on_tool_calls(monkeypatch, agent):
+    def gemini_tool_call():
+        return SimpleNamespace(
+            id="function-call-1",
+            type="function",
+            function=SimpleNamespace(
+                name="resolve_citation",
+                arguments='{"chapter": "8:08", "section": "4"}',
+            ),
+            model_extra={"extra_content": {"google": {"thought_signature": "SIG_A"}}},
+        )
+
+    client = _stub_client(
+        monkeypatch,
+        [
+            _response(_message("", [gemini_tool_call()])),
+            _response(
+                _message(
+                    '{"answer": "Section 4 allows arrest.", "source_ids": ["chunk:42"]}'
+                )
+            ),
+        ],
+    )
+    result = await agent.run([{"role": "user", "content": "What does s. 4 say?"}])
+    assert result["status"] == "ok"
+
+    second_request = client.calls[1]
+    echoed = second_request["messages"][2]
+    assert echoed["role"] == "assistant"
+    assert echoed["tool_calls"][0]["extra_content"] == {
+        "google": {"thought_signature": "SIG_A"}
+    }
+
+
+@pytest.mark.asyncio
 async def test_unknown_source_id_is_refused(monkeypatch, agent):
     _stub_client(
         monkeypatch,
@@ -164,6 +199,22 @@ async def test_conversational_plain_text_passes_through(monkeypatch, agent):
     )
     result = await agent.run([{"role": "user", "content": "Hi"}])
     assert result["status"] == "ok"
+    assert result["sources"] == []
+
+
+@pytest.mark.asyncio
+async def test_conversational_json_without_tools_passes_through(monkeypatch, agent):
+    _stub_client(
+        monkeypatch,
+        [
+            _response(
+                _message('{"answer": "I can look up statutes for you.", "source_ids": []}')
+            ),
+        ],
+    )
+    result = await agent.run([{"role": "user", "content": "Hi"}])
+    assert result["status"] == "ok"
+    assert result["answer"] == "I can look up statutes for you."
     assert result["sources"] == []
 
 

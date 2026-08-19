@@ -24,10 +24,14 @@ SYSTEM_PROMPT = (
     "Rules: never invent a statute, chapter, section, date, or quotation — every "
     "factual claim must come from a tool result. If the tools return nothing "
     "relevant, say so plainly. Cite only sources returned by the tools. "
-    'Reply with a single JSON object of the form '
+    "Stop after one or two tool calls once you have enough to answer concisely — "
+    "do not search exhaustively. "
+    "For any question about statutes, reply with a single JSON object of the form "
     '{"answer": "your answer to the user", "source_ids": ["ids of the tool '
     'sources your answer relies on"]}. Include every source you rely on in '
-    'source_ids; use exactly the ids given in tool results.'
+    'source_ids; use exactly the ids given in tool results. '
+    "For non-legal or conversational questions, answer in plain text without "
+    "calling tools and without JSON."
 )
 
 
@@ -127,22 +131,29 @@ class ChatAgent:
 
             if not tool_calls:
                 reply = _parse_structured_reply(message.content or "")
-                if reply is None:
-                    if allowed_ids:
-                        return {
-                            "status": "refused",
-                            "answer": (
-                                "I could not verify that answer against the Laws "
-                                "of Trinidad and Tobago, so I will not state it as "
-                                "fact. Use Research or Cite to check the source "
-                                "directly."
-                            ),
-                            "sources": collected_sources,
-                        }
+                if not allowed_ids:
                     return {
                         "status": "ok",
-                        "answer": message.content or "No answer was produced.",
+                        "answer": (
+                            (reply or {}).get("answer", message.content)
+                            or "No answer was produced."
+                        ),
                         "sources": [],
+                    }
+                if reply is None:
+                    logger.warning(
+                        "refused: non-JSON reply after tools; content=%r",
+                        (message.content or "")[:400],
+                    )
+                    return {
+                        "status": "refused",
+                        "answer": (
+                            "I could not verify that answer against the Laws "
+                            "of Trinidad and Tobago, so I will not state it as "
+                            "fact. Use Research or Cite to check the source "
+                            "directly."
+                        ),
+                        "sources": collected_sources,
                     }
                 if _grounded(reply, allowed_ids):
                     return {
@@ -150,6 +161,12 @@ class ChatAgent:
                         "answer": reply["answer"],
                         "sources": collected_sources,
                     }
+                logger.warning(
+                    "refused: ungrounded reply; source_ids=%r allowed=%s content=%r",
+                    reply["source_ids"],
+                    sorted(allowed_ids)[:5],
+                    (message.content or "")[:400],
+                )
                 return {
                     "status": "refused",
                     "answer": (
@@ -172,6 +189,13 @@ class ChatAgent:
                                 "name": tc.function.name,
                                 "arguments": tc.function.arguments,
                             },
+                            **(
+                                {"extra_content": tc.model_extra["extra_content"]}
+                                if (getattr(tc, "model_extra", None) or {}).get(
+                                    "extra_content"
+                                )
+                                else {}
+                            ),
                         }
                         for tc in tool_calls
                     ],
