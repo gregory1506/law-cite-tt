@@ -303,7 +303,8 @@ function renderResult(r, q) {
       text = text.replace(re, "<em>$1</em>");
     });
   }
-  const link = pdf ? `<div class="source-link">📄 <a href="${escHtml(pdf)}" target="_blank" rel="noopener">View official PDF on laws.gov.tt</a></div>` : "";
+  const link = pdf ? `<div class="source-link">📄 <a href="${escHtml(pdf)}" target="_blank" rel="noopener">View Official PDF Document</a></div>` : "";
+
   return `<div class="result-card">
     <div class="result-meta">
       <span class="chapter">${escHtml(ch)}</span>
@@ -339,7 +340,8 @@ function doLookup() {
         + data.map(r => `<div class="version-entry">
           <div class="date">${r.as_at_date || "No date"} ${r.version_label ? "— " + escHtml(r.version_label) : ""}</div>
           <div class="result-text">${escHtml(r.chunk_text)}</div>
-          ${r.pdf_url ? `<div class="source-link">📄 <a href="${escHtml(r.pdf_url)}" target="_blank" rel="noopener">View official PDF on laws.gov.tt</a></div>` : ""}
+          ${r.pdf_url ? `<div class="source-link">📄 <a href="${escHtml(r.pdf_url)}" target="_blank" rel="noopener">View Official PDF Document</a></div>` : ""}
+
         </div>`).join("");
     })
     .catch(err => {
