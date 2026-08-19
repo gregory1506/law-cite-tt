@@ -16,6 +16,22 @@ from api.tools import (
 )
 
 
+def test_case_summary_accepts_search_and_citing_row_shapes():
+    from api.main import _case_summary
+
+    citing_row = {
+        "case_id": "case:aaaa",
+        "title": "Smith v Jones",
+        "source": "webopac",
+        "record_id": "aaaa",
+        "court": "High Court",
+        "year": 2015,
+    }
+    search_row = {"id": "case:aaaa", **{k: v for k, v in citing_row.items() if k != "case_id"}}
+    assert _case_summary(citing_row)["id"] == "case:aaaa"
+    assert _case_summary(search_row)["id"] == "case:aaaa"
+
+
 class FakeConn:
     def __init__(self, rows):
         self.rows = rows
