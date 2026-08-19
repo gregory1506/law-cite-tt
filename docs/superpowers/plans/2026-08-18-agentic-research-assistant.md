@@ -2,8 +2,8 @@
 
 **Date:** 2026-08-18
 
-**Status:** Phase A implemented (code + tests); deployment and live model
-verification pending. Phase B not started.
+**Status:** Phase A LIVE (2026-08-18, image `lawcite-api:2cb6629`, Worker
+`fbfa1426`). Phase B not started.
 
 **Production frontend:** `https://law-cite-tt.gjo-ai.workers.dev`
 

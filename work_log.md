@@ -434,3 +434,23 @@ Each entry:
 - docs/superpowers/plans/2026-08-18-agentic-research-assistant.md
 
 **Status:** partial — code + tests complete; production deploy (image rebuild + OPENAI_API_KEY env on VPS + wrangler deploy) and live model verification remain
+
+## [2026-08-18 23:15] Agentic Chat Phase A production rollout (VPS + Cloudflare)
+
+**What was done:**
+- Deployed the agentic Chat end-to-end against production: image `lawcite-api:2cb6629` built on the VPS (/root/lawcite-build), compose /docker/lawcite/docker-compose.yml tagged and recreated; Gemini keys wired via hPanel env `${GEMINI_API_KEY}` → container OPENAI_API_KEY/OPENAI_BASE_URL/LAWCITE_AGENT_MODEL
+- Fixed two live-failures discovered during rollout:
+  - Gemini 3.x OpenAI-compat endpoint 400s unless the assistant's tool_calls echo back `extra_content.google.thought_signature`; the openai SDK surfaces it on `tc.model_extra`, so the loop now replays it on follow-up requests
+  - the model couldn't cite sources because tool text never exposed the source ids — added `[Source id: ...]` to every tool's output, which made grounding pass
+- Refined guardrail: conversational replies (plain or JSON) pass through when no tools ran; grounding is enforced only once tool results exist; system prompt nudges concise answers and plain-text chit-chat
+- Deployed frontend to Cloudflare Worker version `fbfa1426-47df-4e08-ab4a-edb1d6fb512f`; verified live Chat UI
+- Live verification: exact-section lookup returns grounded quote with 13 pinned sources; broad "fraud" question converges (7 sources); citation-validation returns honest not-found; chit-chat passes through
+- Tests: 23 backend + 3 frontnetend green; push `e8db3e3`
+
+**Files touched:**
+- backend/api/agent.py, backend/api/tools.py, tests/test_agent.py
+- work_log.md, lessons_learned.md, next_steps.md
+- VPS: /docker/lawcite/docker-compose.yml, /root/lawcite-build, images lawcite-api:2cb6629
+- Cloudflare Worker law-cite-tt (fbfa1426)
+
+**Status:** complete (Phase A live); Phase B precedent-chain agent pending

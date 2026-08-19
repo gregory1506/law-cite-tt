@@ -312,3 +312,25 @@ from "tools were used but not cited". Judge ungroundedness by the presence of
 tool activity, not by the shape of the reply alone.
 
 **Tags:** #agents #grounding #llm #legal-tech #guardrails
+
+## [2026-08-18] Gemini 3.x requires echoing thought_signature on tool calls
+
+**Context:** Wiring a tool-calling loop against Gemini through its OpenAI-compatible
+endpoint.
+
+**What happened:** The first model call returned a tool call, but the follow-up
+request (with the tool result) failed with `400 Function call is missing a
+thought_signature in functionCall parts`. Gemini 3.x models return
+`tool_calls[].extra_content.google.thought_signature` and strictly require it to
+be replayed on the echoed assistant tool call. The openai SDK keeps it in
+`tc.model_extra["extra_content"]`; frameworks that copy only the OpenAI-schema
+fields drop it and break. Also surfaced: if the model can't see the exact source
+ids in tool output, it invents/omits them and grounding refuses the answer —
+always print the ids the guardrail expects.
+
+**Lesson:** When a tool-calling loop talks to a non-OpenAI backend through the
+OpenAI-compat surface, preserve provider-specific fields on every tool call
+round-trip, and expose the grounding ids in the tool text the model reads. Test
+live against the actual model provider, not just a mock.
+
+**Tags:** #agents #gemini #thought-signature #openai-compatible #grounding #deployment

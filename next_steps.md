@@ -54,7 +54,8 @@ Concrete, actionable items for continuing work here. Review this before starting
 - Lawyer/paralegal UX production rollout: backend image `lawcite-api:ux-grouped-20260729` deployed on Hostinger and frontend Worker version `8b112881-4092-4202-bc49-41c54f2baa91` deployed and verified
 - Frontend follow-up: persistent Clear search action and visible Chat coming-soon route deployed as Worker version `98837494-e732-4872-ac61-76751aadc8da`
 - Cite validation MVP: source-backed chapter/section/date resolution, explicit found/not-found/ambiguous states, exact statutory text, official PDFs, full/short citation copy, and responsive desktop/mobile workflows deployed with API image `lawcite-api:a87fc7b` and Worker version `f74a010e-2548-4749-96c4-21f388a141c0`
-- Agentic research assistant Phase A (code + tests complete, pending deploy): grounded tool-calling Chat agent (`POST /api/chat`) over the statute API, Gemini-compatible via OPENAI_BASE_URL, with a grounding guardrail that refuses unverifiable answers and server-rendered Sources
+- Agentic research assistant Phase A LIVE: grounded tool-calling Chat agent (`POST /api/chat`) over the statute API, Gemini via OPENAI_BASE_URL, grounding guardrail refuses unverifiable answers, server-rendered Sources. API image `lawcite-api:2cb6629`, Worker `fbfa1426-47df-4e08-ab4a-edb1d6fb512f`
+- Agentic Phase B (precedent-chain agent): migrate case_edges.json + webOPAC metadata into Postgres (`cases`, `case_citations`), add `/api/cases/citing`, `/api/cases/{id}/citing`, `/api/cases`, then precedent agent tools
 
 ### Case-law layer (webOPAC) - current status
 
