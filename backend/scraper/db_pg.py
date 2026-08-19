@@ -667,3 +667,115 @@ class LawCitePGDB:
 
         combined.sort(key=lambda x: x["score"], reverse=True)
         return combined[:limit]
+
+    async def cases_citing_chapter(
+        self,
+        chapter: str,
+        limit: int = 20,
+    ) -> list[dict[str, Any]]:
+        """Cases that cite a given chapter, most-cited/confident first."""
+        pool = await self.connect()
+        sql = """
+            SELECT cc.case_id, cc.chapter_number, cc.confidence, cc.method,
+                   cc.detail, c.title, c.source, c.record_id, c.court, c.year
+            FROM case_citations cc
+            JOIN cases c ON c.id = cc.case_id
+            WHERE cc.chapter_number = $1
+            ORDER BY
+                (cc.confidence = 'high') DESC,
+                c.title,
+                cc.case_id
+            LIMIT $2
+        """
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(sql, chapter, limit)
+        return [dict(r) for r in rows]
+
+    async def case_citations_for(
+        self,
+        case_id: str,
+    ) -> list[dict[str, Any]]:
+        """The statutes a single case cites."""
+        pool = await self.connect()
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT cc.case_id, cc.chapter_number, cc.confidence, cc.method,
+                       cc.detail
+                FROM case_citations cc
+                WHERE cc.case_id = $1
+                ORDER BY (cc.confidence = 'high') DESC, cc.chapter_number
+                """,
+                case_id,
+            )
+        return [dict(r) for r in rows]
+
+    async def cases_citing_chapters(
+        self,
+        chapter_numbers: list[str],
+        *,
+        exclude_case_id: str = "",
+        limit: int = 20,
+    ) -> list[dict[str, Any]]:
+        """Cases citing any of the given chapters (two-hop precedent chain),
+        excluding an optional case id."""
+        if not chapter_numbers:
+            return []
+        pool = await self.connect()
+        sql = """
+            SELECT DISTINCT ON (c.id)
+                   cc.case_id, cc.chapter_number, cc.confidence, cc.method,
+                   cc.detail, c.title, c.source, c.record_id, c.court, c.year
+            FROM case_citations cc
+            JOIN cases c ON c.id = cc.case_id
+            WHERE cc.chapter_number = ANY($1::text[])
+        """
+        params: list[Any] = [chapter_numbers]
+        if exclude_case_id:
+            params.append(exclude_case_id)
+            sql += f" AND cc.case_id <> ${len(params)}"
+        params.append(limit)
+        sql += f" ORDER BY c.id, (cc.confidence = 'high') DESC LIMIT ${len(params)}"
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(sql, *params)
+        return [dict(r) for r in rows]
+
+    async def get_case(
+        self,
+        case_id: str,
+    ) -> dict[str, Any] | None:
+        pool = await self.connect()
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow(
+                """
+                SELECT id, title, source, record_id, court, year
+                FROM cases
+                WHERE id = $1
+                """,
+                case_id,
+            )
+        return dict(row) if row else None
+
+    async def search_cases(
+        self,
+        query: str,
+        limit: int = 20,
+    ) -> list[dict[str, Any]]:
+        """Search cases by title (falling back to id prefix match)."""
+        pool = await self.connect()
+        params: list[Any] = [f"%{query}%", f"%{query}%", f"{query}%"]
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT id, title, source, record_id, court, year
+                FROM cases
+                WHERE title ILIKE $1
+                   OR id ILIKE $2
+                   OR record_id ILIKE $3
+                ORDER BY title
+                LIMIT $4
+                """,
+                *params,
+                limit,
+            )
+        return [dict(r) for r in rows]

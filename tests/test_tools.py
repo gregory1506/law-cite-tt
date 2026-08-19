@@ -5,9 +5,12 @@ import pytest
 
 from api.tools import (
     HANDLERS,
+    _citing_cases,
+    _expand_case,
     _list_chapters,
     _lookup_section,
     _resolve_citation,
+    _search_cases,
     _search_provisions,
     pdf_url,
 )
@@ -78,11 +81,21 @@ class FakeDB:
         lookup=None,
         citation=None,
         chapters=None,
+        citing=None,
+        cases=None,
+        case=None,
+        citations_for=None,
+        related=None,
     ):
         self.grouped = grouped
         self.lookup = lookup
         self.citation = citation
         self.chapters = chapters
+        self.citing = citing
+        self.cases = cases
+        self.case = case
+        self.citations_for = citations_for
+        self.related = related
 
     async def search_grouped(self, query, **kwargs):
         return self.grouped
@@ -95,6 +108,21 @@ class FakeDB:
 
     async def connect(self):
         return FakePool(self.chapters)
+
+    async def cases_citing_chapter(self, chapter, limit=20):
+        return self.citing or []
+
+    async def search_cases(self, query, limit=20):
+        return self.cases or []
+
+    async def get_case(self, case_id):
+        return self.case
+
+    async def case_citations_for(self, case_id):
+        return self.citations_for or []
+
+    async def cases_citing_chapters(self, chapter_numbers, exclude_case_id="", limit=20):
+        return self.related or []
 
 
 def _grouped_payload():
@@ -231,4 +259,109 @@ def test_pdf_url_format():
 
 def test_all_handlers_are_async_and_registered():
     names = set(HANDLERS)
-    assert names == {"search_provisions", "lookup_section", "resolve_citation", "list_chapters"}
+    assert names == {
+        "search_provisions",
+        "lookup_section",
+        "resolve_citation",
+        "list_chapters",
+        "citing_cases",
+        "search_cases",
+        "expand_case",
+    }
+
+
+@pytest.mark.asyncio
+async def test_citing_cases_lists_cases_with_source_ids():
+    db = FakeDB(
+        citing=[
+            {
+                "case_id": "case:8eec828c74db14ee",
+                "chapter_number": "8:08",
+                "confidence": "high",
+                "method": "REGEX",
+                "detail": "Ch. 8:08",
+                "title": "Smith v Jones",
+            }
+        ]
+    )
+    result = await _citing_cases(db, chapter="Chap. 8:08")
+    assert "Smith v Jones" in result["text"]
+    assert "cites Chap. 8:08" in result["text"]
+    assert result["sources"][0]["id"] == "case:8eec828c74db14ee"
+    assert result["sources"][0]["kind"] == "case"
+
+
+@pytest.mark.asyncio
+async def test_citing_cases_invalid_chapter():
+    result = await _citing_cases(FakeDB(), chapter="not-a-chapter")
+    assert "Invalid chapter reference" in result["text"]
+    assert result["sources"] == []
+
+
+@pytest.mark.asyncio
+async def test_search_cases_matches_names():
+    db = FakeDB(
+        cases=[
+            {
+                "id": "case:0ee59724f387f344",
+                "title": "Jones v Ministry of Finance",
+                "source": "webopac",
+                "record_id": "0ee59724f387f344",
+                "court": "",
+                "year": 2015,
+            }
+        ]
+    )
+    result = await _search_cases(db, query="jones")
+    assert "Jones v Ministry of Finance" in result["text"]
+    assert "2015" in result["text"]
+    assert result["sources"][0]["id"] == "case:0ee59724f387f344"
+
+
+@pytest.mark.asyncio
+async def test_expand_case_builds_precedent_chain():
+    db = FakeDB(
+        case={
+            "id": "case:8eec828c74db14ee",
+            "title": "Smith v Jones",
+            "source": "webopac",
+            "record_id": "8eec828c74db14ee",
+            "court": "",
+            "year": None,
+        },
+        citations_for=[
+            {
+                "case_id": "case:8eec828c74db14ee",
+                "chapter_number": "8:08",
+                "confidence": "high",
+                "method": "REGEX",
+                "detail": "Ch. 8:08",
+            }
+        ],
+        related=[
+            {
+                "case_id": "case:838382c6b1196fd6",
+                "chapter_number": "8:08",
+                "confidence": "medium",
+                "method": "REGEX",
+                "detail": "Ch. 8:08",
+                "title": "Brown v State",
+            }
+        ],
+    )
+    result = await _expand_case(db, case_id="8eec828c74db14ee")
+    assert "Smith v Jones" in result["text"]
+    assert "Chap. 8:08" in result["text"]
+    assert "Brown v State" in result["text"]
+    ids = {s["id"] for s in result["sources"]}
+    assert ids == {
+        "case:8eec828c74db14ee",
+        "case:838382c6b1196fd6",
+    }
+
+
+@pytest.mark.asyncio
+async def test_expand_case_unknown_id():
+    result = await _expand_case(FakeDB(), case_id="case:deadbeef")
+    assert "No such case" in result["text"]
+    assert result["sources"] == []

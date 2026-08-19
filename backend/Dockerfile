@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/scraper ./scraper
 COPY backend/api ./api
+COPY backend/scripts ./scripts
 COPY templates ./templates
 
 EXPOSE 8000

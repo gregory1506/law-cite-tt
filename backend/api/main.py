@@ -12,6 +12,8 @@ from fastapi.responses import HTMLResponse
 from api.agent import ChatAgent
 from api.citations import format_citation, normalize_chapter, normalize_section
 from api.models import (
+    CaseDetail,
+    CaseSummary,
     ChatRequest,
     ChatResponse,
     CitationResolveResponse,
@@ -228,6 +230,62 @@ async def chat(payload: ChatRequest):
     agent = ChatAgent(get_db())
     result = await agent.run(messages, mode=payload.mode)
     return ChatResponse(**result)
+
+
+def _case_summary(row: dict) -> dict:
+    return {
+        "id": row["case_id"],
+        "title": row.get("title") or "",
+        "source": row.get("source") or "",
+        "record_id": row.get("record_id") or "",
+        "court": row.get("court") or "",
+        "year": row.get("year"),
+    }
+
+
+@app.get("/api/cases", response_model=list[CaseSummary])
+async def search_cases(
+    q: str = Query(..., min_length=1, description="Search cases by title"),
+    limit: int = Query(20, ge=1, le=100),
+):
+    rows = await get_db().search_cases(q, limit=limit)
+    return [_case_summary(r) for r in rows]
+
+
+@app.get("/api/cases/citing", response_model=list[CaseSummary])
+async def cases_citing(
+    chapter: str = Query(..., min_length=1, description="Chapter number e.g. 8:08"),
+    limit: int = Query(20, ge=1, le=100),
+):
+    rows = await get_db().cases_citing_chapter(chapter, limit=limit)
+    return [_case_summary(r) for r in rows]
+
+
+@app.get("/api/cases/{case_id}", response_model=CaseDetail)
+async def case_detail(case_id: str):
+    db = get_db()
+    case = await db.get_case(case_id)
+    if case is None:
+        raise HTTPException(status_code=404, detail=f"Unknown case: {case_id}")
+
+    citations = await db.case_citations_for(case_id)
+    chapters = sorted({c["chapter_number"] for c in citations})
+    related_rows = await db.cases_citing_chapters(
+        chapters,
+        exclude_case_id=case_id,
+        limit=50,
+    )
+    return {
+        **case,
+        "id": case["id"],
+        "title": case.get("title") or "",
+        "source": case.get("source") or "",
+        "record_id": case.get("record_id") or "",
+        "court": case.get("court") or "",
+        "year": case.get("year"),
+        "citations": citations,
+        "related_cases": [_case_summary(r) for r in related_rows],
+    }
 
 
 @app.get("/api/stats")

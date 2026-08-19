@@ -20,10 +20,16 @@ async def db():
     store = LawCitePGDB(TEST_DSN)
     pool = await store.connect()
     async with pool.acquire() as conn:
-        await conn.execute("TRUNCATE chunks, versions, chapters RESTART IDENTITY CASCADE")
+        await conn.execute(
+            "TRUNCATE chunks, versions, chapters, case_citations, cases "
+            "RESTART IDENTITY CASCADE"
+        )
     yield store
     async with pool.acquire() as conn:
-        await conn.execute("TRUNCATE chunks, versions, chapters RESTART IDENTITY CASCADE")
+        await conn.execute(
+            "TRUNCATE chunks, versions, chapters, case_citations, cases "
+            "RESTART IDENTITY CASCADE"
+        )
     await store.close()
 
 
@@ -397,3 +403,76 @@ async def test_resolve_citation_reports_materially_ambiguous_rows(db):
 
     assert result["status"] == "ambiguous"
     assert len(result["alternatives"]) == 2
+
+
+async def _seed_cases(db):
+    pool = await db.connect()
+    async with pool.acquire() as conn:
+        await conn.executemany(
+            """
+            INSERT INTO cases (id, title, source, record_id, court, year)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            """,
+            [
+                ("case:aaaa", "Smith v Jones", "webopac", "aaaa", "High Court", 2015),
+                ("case:bbbb", "Brown v State", "webopac", "bbbb", "", 2010),
+                ("case:cccc", "Green v Green", "ccj", "cccc", "CCJ", None),
+            ],
+        )
+        await conn.executemany(
+            """
+            INSERT INTO case_citations
+                (case_id, chapter_number, confidence, method, evidence, detail)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            """,
+            [
+                ("case:aaaa", "8:08", "high", "REGEX", "EXTRACTED", "Ch. 8:08"),
+                ("case:bbbb", "8:08", "medium", "TITLE_MATCH", "EXTRACTED", "Absconding Debtors Act"),
+                ("case:bbbb", "5:01", "medium", "REGEX", "EXTRACTED", "Ch. 5:01"),
+                ("case:cccc", "8:08", "low", "REGEX", "EXTRACTED", "Ch. 8:08"),
+            ],
+        )
+
+
+@pytest.mark.asyncio
+async def test_cases_citing_chapter_returns_titled_cases(db):
+    await _seed_cases(db)
+
+    rows = await db.cases_citing_chapter("8:08")
+
+    assert {r["case_id"] for r in rows} == {"case:aaaa", "case:bbbb", "case:cccc"}
+    assert rows[0]["case_id"] == "case:aaaa"  # high confidence sorts first
+    assert rows[0]["title"] == "Smith v Jones"
+
+
+@pytest.mark.asyncio
+async def test_case_citations_for_and_expansion(db):
+    await _seed_cases(db)
+
+    citations = await db.case_citations_for("case:bbbb")
+    assert [c["chapter_number"] for c in citations] == ["5:01", "8:08"]
+
+    related = await db.cases_citing_chapters(
+        ["5:01", "8:08"],
+        exclude_case_id="case:bbbb",
+    )
+    assert {r["case_id"] for r in related} == {"case:aaaa", "case:cccc"}
+    assert "case:bbbb" not in {r["case_id"] for r in related}
+
+
+@pytest.mark.asyncio
+async def test_search_cases_matches_title(db):
+    await _seed_cases(db)
+
+    rows = await db.search_cases("smith")
+    assert [r["id"] for r in rows] == ["case:aaaa"]
+
+
+@pytest.mark.asyncio
+async def test_get_case_returns_row(db):
+    await _seed_cases(db)
+
+    case = await db.get_case("case:aaaa")
+    assert case is not None
+    assert case["title"] == "Smith v Jones"
+    assert await db.get_case("case:nope") is None

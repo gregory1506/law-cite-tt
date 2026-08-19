@@ -28,6 +28,7 @@ def _source(
     section: str = "",
     date: str = "",
     url: str = "",
+    kind: str = "statute",
 ) -> dict[str, str]:
     return {
         "id": source_id,
@@ -36,7 +37,7 @@ def _source(
         "section": section,
         "date": date or "",
         "url": url,
-        "kind": "statute",
+        "kind": kind,
     }
 
 
@@ -228,11 +229,139 @@ async def _list_chapters(
     return {"text": text, "sources": sources}
 
 
+def _case_label(row: dict[str, Any]) -> str:
+    case_id = row.get("case_id") or row.get("id") or ""
+    title = (row.get("title") or "").strip()
+    return f"{title} ({case_id})" if title else case_id
+
+
+async def _citing_cases(
+    db: LawCitePGDB,
+    *,
+    chapter: str,
+    limit: int = 20,
+) -> dict[str, Any]:
+    try:
+        chapter = normalize_chapter(chapter)
+    except ValueError as error:
+        return {"text": f"Invalid chapter reference: {error}", "sources": []}
+    rows = await db.cases_citing_chapter(chapter, limit=limit)
+    lines = []
+    sources = []
+    for r in rows:
+        source_id = r["case_id"]
+        label = _case_label(r)
+        lines.append(
+            f"- {label} cites Chap. {r['chapter_number']} "
+            f"[confidence: {r['confidence']}, method: {r['method']}] "
+            f"[Source id: {source_id}]"
+        )
+        sources.append(
+            _source(
+                source_id=source_id,
+                title=(r.get("title") or r["case_id"]),
+                chapter=r["chapter_number"],
+                kind="case",
+            )
+        )
+    text = "\n".join(lines) or (
+        f"No cases in the corpus cite Chap. {chapter}."
+    )
+    return {"text": text, "sources": sources}
+
+
+async def _search_cases(
+    db: LawCitePGDB,
+    *,
+    query: str,
+    limit: int = 20,
+) -> dict[str, Any]:
+    rows = await db.search_cases(query, limit=limit)
+    lines = []
+    sources = []
+    for r in rows:
+        source_id = r["id"]
+        label = _case_label(r)
+        extra = ""
+        if r.get("year"):
+            extra = f" ({r['year']})"
+        lines.append(f"- {label}{extra} [Source id: {source_id}]")
+        sources.append(
+            _source(
+                source_id=source_id,
+                title=(r.get("title") or r["id"]),
+                kind="case",
+            )
+        )
+    text = "\n".join(lines) or f"No cases matched '{query}'. Try a case name."
+    return {"text": text, "sources": sources}
+
+
+async def _expand_case(
+    db: LawCitePGDB,
+    *,
+    case_id: str,
+    limit: int = 20,
+) -> dict[str, Any]:
+    if not case_id.startswith("case:"):
+        case_id = f"case:{case_id}"
+    case = await db.get_case(case_id)
+    if case is None:
+        return {
+            "text": f"No such case: {case_id}. Use search_cases to find its id.",
+            "sources": [],
+        }
+    citations = await db.case_citations_for(case_id)
+    chapters = sorted({c["chapter_number"] for c in citations})
+    related = await db.cases_citing_chapters(
+        chapters,
+        exclude_case_id=case_id,
+        limit=limit,
+    )
+
+    source_id = f"case:{case['id']}"
+    lines = [
+        f"Case: {_case_label(case)}",
+        "Cited statutes:",
+        *(f"- Chap. {c['chapter_number']} ({c['method']}, {c['confidence']})" for c in citations),
+    ]
+    lines.append("Other cases citing the same statutes (precedent chain):")
+    related_sources = []
+    for r in related:
+        rel_id = r["case_id"]
+        lines.append(f"- {_case_label(r)} cites Chap. {r['chapter_number']} [Source id: {rel_id}]")
+        related_sources.append(
+            _source(
+                source_id=rel_id,
+                title=(r.get("title") or r["case_id"]),
+                chapter=r["chapter_number"],
+                kind="case",
+            )
+        )
+    if not related:
+        lines.append("- (none)")
+
+    return {
+        "text": "\n".join(lines),
+        "sources": [
+            _source(
+                source_id=case["id"],
+                title=(case.get("title") or case["id"]),
+                kind="case",
+            ),
+            *related_sources,
+        ],
+    }
+
+
 HANDLERS: dict[str, Any] = {
     "search_provisions": _search_provisions,
     "lookup_section": _lookup_section,
     "resolve_citation": _resolve_citation,
     "list_chapters": _list_chapters,
+    "citing_cases": _citing_cases,
+    "search_cases": _search_cases,
+    "expand_case": _expand_case,
 }
 
 TOOL_DEFINITIONS: list[dict[str, Any]] = [
@@ -343,6 +472,72 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
                     "limit": {"type": "integer", "description": "Max chapters (1-50)."},
                 },
                 "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "citing_cases",
+            "description": (
+                "Find judicial cases in the Trinidad and Tobago case-law corpus "
+                "that cite a given chapter of the Laws. Returns case ids and "
+                "titles. Use for precedent research: 'which cases cite Chap. 8:08?'"
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "chapter": {
+                        "type": "string",
+                        "description": "Chapter number, e.g. '8:08'.",
+                    },
+                    "limit": {"type": "integer", "description": "Max cases (1-50)."},
+                },
+                "required": ["chapter"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_cases",
+            "description": (
+                "Search the Trinidad and Tobago case-law corpus by case name. "
+                "Returns case ids and titles. Use when the user names a case "
+                "and you need its id to look up what it cites."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Case name or part of it, e.g. 'Smith'.",
+                    },
+                    "limit": {"type": "integer", "description": "Max cases (1-50)."},
+                },
+                "required": ["query"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "expand_case",
+            "description": (
+                "Expand a case into a precedent chain: its cited statutes plus "
+                "the other cases that cite the same statutes. Pass a case id "
+                "from citing_cases or search_cases, e.g. 'case:8eec828c74db14ee'."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "case_id": {
+                        "type": "string",
+                        "description": "Case id, optionally prefixed with 'case:'.",
+                    },
+                    "limit": {"type": "integer", "description": "Max related cases (1-50)."},
+                },
+                "required": ["case_id"],
             },
         },
     },
