@@ -1,72 +1,192 @@
-# law-cite-tt
+<div align="center">
 
-A legal citation engine for the **Laws of Trinidad and Tobago**. Sources statute data from the official Digital Law Library at <https://laws.gov.tt/ttdll-web/revision/list> and answers "what did provision X say on date Y?" by searching 407,000+ section-aware statutory chunks with full-text + vector search.
+# ⚖️ LawCite TT
 
-## Live product
+### *Temporal Legal Engine & Citation Graph for the Laws of Trinidad and Tobago*
 
-Production research release is live:
+[![Live Demo](https://img.shields.io/badge/Live%20App-law--cite--tt.gjo--ai.workers.dev-06b6d4?style=for-the-badge&logo=cloudflare)](https://law-cite-tt.gjo-ai.workers.dev)
+[![Backend Status](https://img.shields.io/badge/API%20Status-Online%20(FastAPI)-10b981?style=for-the-badge&logo=fastapi)](https://law-cite-tt.gjo-ai.workers.dev/api/health)
+[![Corpus](https://img.shields.io/badge/Corpus-533%20Chapters%20%7C%20407k%20Chunks-8b5cf6?style=for-the-badge&logo=postgresql)](https://law-cite-tt.gjo-ai.workers.dev)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-- **Frontend:** https://law-cite-tt.gjo-ai.workers.dev
-- **API:** https://srv1629323.hstgr.cloud (`/api/health`)
-- **Corpus:** 533 chapters, 4,989 versions, 407,008 embedded statutory chunks
+---
 
-### Features
+[**Explore Live App**](https://law-cite-tt.gjo-ai.workers.dev) • [**API Health**](https://law-cite-tt.gjo-ai.workers.dev/api/health) • [**Features**](#-key-features) • [**Architecture**](#-architecture) • [**Local Setup**](#-getting-started)
 
-- **Research** — grouped provision search, exact chapter/section lookup, chapter browsing, historical cutoffs, version selection, and official PDF links
-- **Cite** — structured citation resolution with explicit found / not-found / ambiguous states, exact source text, historical selection, official PDFs, and copyable citations
-- **Chat** — coming soon (placeholder)
+</div>
 
-Next release gate: production authentication, API authorization, and rate limiting.
+<br/>
 
-## Architecture
+## 🌟 Overview
 
-Two surfaces live in this repo:
+**LawCite TT** is an advanced legal research engine and temporal citation platform indexing the complete statutory laws and judicial precedent of **Trinidad and Tobago**. 
 
-1. **Customer app** (`citation-tool/`) — Svelte 5 (runes) + Vite, deployed as static assets to Cloudflare Workers (`wrangler deploy`)
-2. **API** (`backend/`) — FastAPI backed by PostgreSQL 16 + pgvector on a Hostinger VPS behind Traefik
+By digitizing and section-chunking all **533 statutory chapters** across **4,989 historical revisions** (spanning back to the 1800s), LawCite TT enables point-in-time statutory research (*"What did Section 5 of the Arbitration Act state as of December 31, 2016?"*), hybrid full-text + vector semantic search, and citation graph exploration across **7,914 case-law precedent edges**.
 
-The ingestion pipeline (`backend/scraper/`) crawls laws.gov.tt, extracts PDFs to markdown, chunks section-aware, embeds (384-dim), and indexes into PostgreSQL with FTS5-style full-text + vector search. A case-law layer crawls webOPAC judgments and derives statute citation edges (7,914 edges / 2,236 case nodes).
+---
 
-### Repo layout
+## ⚡ Key Features
 
-- `backend/api/` — production FastAPI application
-- `backend/scraper/` — ingestion, database, embeddings, and search modules
-- `backend/graphrag/` — case-law citation graph tooling
-- `citation-tool/` — production Svelte customer app
-- `tests/` — scraper, database, migration, and API coverage
-- `docs/superpowers/` — specs, plans, decision records
-- `data/` — database init SQL and fixtures
+<table>
+  <tr>
+    <td width="50%">
+      <h3>🔍 Temporal Hybrid Search</h3>
+      <p>Combine BM25 full-text matching with dense vector embeddings (384-dim BAAI/bge-small) to search statutory provisions as of any historical cutoff date.</p>
+    </td>
+    <td width="50%">
+      <h3>🤖 Agentic Legal AI Chat</h3>
+      <p>An autonomous legal research assistant equipped with tool-use capabilities to search statutory provisions, locate precedent cases, and synthesize citations.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>📜 Precise Citation Resolver</h3>
+      <p>Format, verify, and resolve statutory citations with exact section excerpts, historical revision tags, and copyable legal authority blocks.</p>
+    </td>
+    <td width="50%">
+      <h3>🕸️ Precedent & Case Citation Graph</h3>
+      <p>Explore statutory cross-references over 2,236 Judgments and High Court / Court of Appeal decisions mapped directly to cited legislative chapters.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🛡️ Zero-Trust PDF Proxy</h3>
+      <p>Streams official statutory PDFs directly through a secure server-side proxy, bypassing government SSL certificate issues and DNS timeouts.</p>
+    </td>
+    <td width="50%">
+      <h3>☁️ Edge-Native Architecture</h3>
+      <p>Deployed as a high-performance Svelte 5 SPA on Cloudflare Workers edge, backed by a FastAPI + PostgreSQL/pgvector backend on a dedicated VPS.</p>
+    </td>
+  </tr>
+</table>
 
-## Development
+---
 
-### Backend
+## 📊 Corpus Statistics
+
+| Metric | Count | Description |
+| :--- | :---: | :--- |
+| **Statutory Chapters** | `533` | Complete Laws of Trinidad and Tobago (Chap. 1:01 to 90:03) |
+| **Historical Revisions** | `4,989` | Point-in-time revised editions from the 1800s to 2024 |
+| **Embedded Chunks** | `407,008` | Section-aware statutory text chunks (384-dimensional vector index) |
+| **Case Law Judgments** | `2,236` | Modern Supreme Court / High Court decisions |
+| **Citation Edges** | `7,914` | Explicit statute-to-case citation links |
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+flowchart TD
+    subgraph Client ["Client Layer"]
+        User["🌐 User Browser (Firefox / Chrome / Safari)"]
+    end
+
+    subgraph Cloudflare ["Cloudflare Edge Network"]
+        CFWorker["⚡ Cloudflare Worker (law-cite-tt.gjo-ai.workers.dev)"]
+        CFAssets["📦 Static Assets (Svelte 5 SPA Build)"]
+    end
+
+    subgraph VPS ["Origin Infrastructure (Hostinger VPS)"]
+        Traefik["🛡️ Traefik Reverse Proxy & SSL"]
+        FastAPI["🚀 FastAPI App (Uvicorn)"]
+        Agent["🤖 Agentic Tool Engine (Gemini API)"]
+        PGDB[("🐘 PostgreSQL 16 + pgvector")]
+    end
+
+    subgraph External ["External Government Sources"]
+        GovTT["🏛️ laws.gov.tt (Statute PDFs & Revision Lists)"]
+    end
+
+    User <-->|HTTPS| CFWorker
+    CFWorker <-->|Static Files| CFAssets
+    CFWorker <-->|Reverse Proxy /api/*| Traefik
+    Traefik <--> FastAPI
+    FastAPI <--> Agent
+    FastAPI <--> PGDB
+    FastAPI <-->|SSL-Bypass Proxy /api/pdf/*| GovTT
+```
+
+---
+
+## 🛠️ Technology Stack
+
+* **Frontend**: [Svelte 5](https://svelte.dev) (Runes API), Vite, Lucide Icons, Vanilla CSS Design Tokens
+* **Edge Deployment**: [Cloudflare Workers](https://workers.cloudflare.com) (Static Assets + Worker Reverse Proxy)
+* **Backend API**: [FastAPI](https://fastapi.tiangolo.com) (Python 3.13), Uvicorn, AsyncPG, HTTPX
+* **Database & Vector Search**: [PostgreSQL 16](https://www.postgresql.org) + [pgvector](https://github.com/pgvector/pgvector), Hybrid FTS + HNSW Vector Indexing
+* **Embeddings & AI**: `FastEmbed` (`BAAI/bge-small-en-v1.5`), Google Gemini API (`gemini-3.5-flash-lite`) via OpenAI-compatible endpoints
+* **Infrastructure**: Traefik, Docker Compose, Hostinger VPS
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- **Python 3.12+** & [`uv`](https://github.com/astral-sh/uv) package manager
+- **Node.js 20+** & `npm`
+- **Docker & Docker Compose** (for running local PostgreSQL + pgvector)
+
+### 1. Backend Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/gregory1506/law-cite-tt.git
+cd law-cite-tt
+
+# Set up Python virtual environment
 uv venv .venv
 source .venv/bin/activate
 uv pip install -r backend/requirements.txt
+
+# Run pytest suite
 pytest -v
 ```
 
-### Frontend
+### 2. Frontend Setup
 
 ```bash
 cd citation-tool
+
+# Install dependencies
 npm install
-VITE_API_BASE=https://srv1629323.hstgr.cloud npm run dev
+
+# Run local development server (connects to local API)
+npm run dev
+
+# Run test suite
+npm test
 ```
 
-Build for production with `VITE_API_BASE=... npm run build`, then `wrangler deploy`.
+### 3. Production Deployment
 
-## Background: corpus acquisition
+```bash
+# Build frontend with production API routing
+cd citation-tool
+npm run build
 
-The corpus was built from a deliberate rate-limited crawl of all 533 chapters on <https://laws.gov.tt>, downloading **every historical version** of each (one chapter can have 10+ versions spanning back to the 1800s) and extracting each to markdown. The crawl rate-limits itself to ~1.5s between requests out of courtesy to a government website with no published crawl policy. Do not remove or shorten that delay.
+# Deploy frontend to Cloudflare Workers
+npx wrangler deploy
+```
 
-- Data lives on an external drive mounted at `/Volumes/Extreme SSD/law-cite-tt-data/` (see `backend/scraper/config.py` — `OUTPUT_ROOT`)
-- Run the reconnaissance crawl with `python backend/scripts/run_recon.py`
-- The SQLite working DB (`law_cite.db`) and markdown corpus live alongside the PDFs on that drive; production uses the PostgreSQL/pgvector migration
+---
 
-### Known crawl gotchas — do not "fix"
+## 📜 Ingestion & Crawl Policy
 
-- The site returns an **HTTP 500** (not an empty page) once you page past the last real listing entry. `backend/scraper/catalog.py`'s `crawl_full_catalog` already treats this as the normal end-of-pagination signal — this is correct, verified behavior, not a bug.
-- If the recon run is interrupted partway through, **re-running restarts from scratch** — there is no resume/skip-already-done logic in Phase 0. Already-downloaded files just get overwritten with identical content; harmless but wasteful.
+The statute corpus was constructed via a rate-limited ingestion pipeline (`backend/scraper/`). 
+
+* **Rate Limiting**: Crawling executes with a mandatory $\ge 1.5\text{s}$ delay between requests out of respect for public government infrastructure (`laws.gov.tt`).
+* **Pagination**: The government portal returns an HTTP 500 status when paging past the last catalog entry. The ingestion engine in `backend/scraper/catalog.py` treats this as a graceful end-of-catalog signal.
+* **Corpus Storage**: Raw extracted PDFs and markdown revisions reside on local SSD storage (`/Volumes/Extreme SSD/law-cite-tt-data/`), with indexed data migrated to PostgreSQL + pgvector for production search.
+
+---
+
+## 📄 License
+
+This repository is licensed under the **MIT License**. Statutory laws of Trinidad and Tobago are public legal authorities.
+
+<br/>
+
+<div align="center">
+  <sub>Built with ❤️ for the Legal Tech Community of Trinidad and Tobago.</sub>
+</div>
