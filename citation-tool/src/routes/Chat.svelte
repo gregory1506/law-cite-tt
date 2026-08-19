@@ -6,7 +6,8 @@
     MessageSquareText,
     Send,
   } from "@lucide/svelte";
-  import { chat } from "../lib/api.js";
+  import { chat, resolveUrl } from "../lib/api.js";
+
 
   let messages = $state([]);
   let input = $state("");
@@ -98,11 +99,12 @@
                 <span class="source-title">{source.title}</span>
                 {#if source.date}<span class="source-date">{source.date}</span>{/if}
                 {#if source.url}
-                  <a href={source.url} target="_blank" rel="noopener">
+                  <a href={resolveUrl(source.url)} target="_blank" rel="noopener">
                     Official PDF
                     <ExternalLink size={12} aria-hidden="true" />
                   </a>
                 {/if}
+
               </div>
             {/each}
           </div>

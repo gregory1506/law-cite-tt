@@ -12,7 +12,8 @@ MAX_TOOL_CHARS = 400
 
 
 def pdf_url(download_id: int | str) -> str:
-    return f"{PDF_BASE}/{download_id}?type=act"
+    return f"/api/pdf/{download_id}"
+
 
 
 def _snippet(text: str, limit: int = MAX_TOOL_CHARS) -> str:

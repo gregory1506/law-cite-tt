@@ -9,7 +9,8 @@
     Search,
   } from "@lucide/svelte";
   import { onMount } from "svelte";
-  import { getChapters, resolveCitation } from "../lib/api.js";
+  import { getChapters, resolveCitation, resolveUrl } from "../lib/api.js";
+
 
   let chapters = $state([]);
   let chapter = $state("");
@@ -253,7 +254,8 @@
           </p>
           {#if result.authority.heading}<p class="heading">{result.authority.heading}</p>{/if}
         </div>
-        <a href={result.authority.pdf_url} target="_blank" rel="noopener">
+        <a href={resolveUrl(result.authority.pdf_url)} target="_blank" rel="noopener">
+
           <FileText size={16} aria-hidden="true" />
           Official PDF
           <ExternalLink size={14} aria-hidden="true" />
