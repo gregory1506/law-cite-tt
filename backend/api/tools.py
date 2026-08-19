@@ -62,15 +62,17 @@ async def _search_provisions(
         label = matched["version_label"] or "version"
         as_at = matched["as_at_date"] or "undated"
         url = pdf_url(matched["download_id"])
+        source_id = f"chunk:{matched['chunk_id']}"
         lines.append(
             f"- {item['title']} (Chap. {item['chapter_number']}, "
             f"s. {item['section_ref'] or 'whole chapter'}) — {label}, "
-            f"available as at {as_at}\n  {_snippet(matched['chunk_text'])}\n"
+            f"available as at {as_at} [Source id: {source_id}]\n"
+            f"  {_snippet(matched['chunk_text'])}\n"
             f"  Official PDF: {url}"
         )
         sources.append(
             _source(
-                source_id=f"chunk:{matched['chunk_id']}",
+                source_id=source_id,
                 title=item["title"],
                 chapter=item["chapter_number"],
                 section=item["section_ref"],
@@ -98,15 +100,16 @@ async def _lookup_section(
         label = row["version_label"] or "version"
         as_at = str(row["as_at_date"] or "undated")
         url = pdf_url(row["download_id"])
+        source_id = f"lookup:{row['download_id']}:{i}"
         lines.append(
             f"- Chap. {row['chapter_number']}, s. {row['section_ref']} — {label}, "
-            f"available as at {as_at}"
+            f"available as at {as_at} [Source id: {source_id}]"
             f"({row['heading'] or 'no heading'})\n  {_snippet(row['chunk_text'])}\n"
             f"  Official PDF: {url}"
         )
         sources.append(
             _source(
-                source_id=f"lookup:{row['download_id']}:{i}",
+                source_id=source_id,
                 title=row.get("chapter_number", ""),
                 chapter=row["chapter_number"],
                 section=row["section_ref"],
@@ -169,8 +172,9 @@ async def _resolve_citation(
     )
     as_at = authority.get("as_at_date") or ""
     url = pdf_url(authority["download_id"])
+    source_id = f"chunk:{authority['chunk_id']}"
     source = _source(
-        source_id=f"chunk:{authority['chunk_id']}",
+        source_id=source_id,
         title=authority["title"],
         chapter=normalized_chapter,
         section=normalized_section,
@@ -181,7 +185,7 @@ async def _resolve_citation(
         f"Status: FOUND — {authority['title']} (Chap. {normalized_chapter}, "
         f"s. {normalized_section})"
         f"{' — ' + str(authority['version_label']) if authority.get('version_label') else ''}"
-        f" available as at {as_at or 'undated'}.\n"
+        f" available as at {as_at or 'undated'}. [Source id: {source_id}]\n"
         f"Full citation: {full}\nShort citation: {short}\n"
         f"Exact statutory text:\n{authority['chunk_text']}\n"
         f"Official PDF: {url}"
@@ -205,18 +209,21 @@ async def _list_chapters(
     sql += f" ORDER BY chapter_number LIMIT ${len(params)}"
     async with pool.acquire() as conn:
         rows = await conn.fetch(sql, *params)
-    lines = [f"- Chap. {r['chapter_number']} — {r['title']}" for r in rows]
-    sources = [
-        _source(
-            source_id=f"chapter:{r['chapter_number']}",
-            title=r["title"],
-            chapter=r["chapter_number"],
-            url=(
-                "https://laws.gov.tt/ttdll-web/revision/list"
-            ),
+    lines = []
+    sources = []
+    for r in rows:
+        source_id = f"chapter:{r['chapter_number']}"
+        lines.append(
+            f"- Chap. {r['chapter_number']} — {r['title']} [Source id: {source_id}]"
         )
-        for r in rows
-    ]
+        sources.append(
+            _source(
+                source_id=source_id,
+                title=r["title"],
+                chapter=r["chapter_number"],
+                url=("https://laws.gov.tt/ttdll-web/revision/list"),
+            )
+        )
     text = "\n".join(lines) or "No chapters matched that query."
     return {"text": text, "sources": sources}
 
