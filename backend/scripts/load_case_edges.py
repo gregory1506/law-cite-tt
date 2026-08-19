@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -51,8 +52,157 @@ def chapter_from_target(target: str) -> str:
     return target.removeprefix("chapter:")
 
 
+_ROLE_RE = re.compile(
+    r"^(?:the\s+)?(?:co-)?(?:claimant|defendant|appellant|respondent|applicant|"
+    r"intervener|co-respondent|petitioner|trustee|executor|administratrix|"
+    r"administrator|estate of|representative of|guardian ad litem|next friend|"
+    r"party)",
+    re.I,
+)
+_BOILER_RE = re.compile(
+    r"^(?:the\s+)?(?:republic of trinidad and tobaga|republic of trinidad and "
+    r"tobago|trinidad and tobaga|trinidad and tobago|in the high court of "
+    r"justice|in the court of appeal|in the supreme court|in the privy "
+    r"council|in the industrial court|in the magistrates|in the family court|"
+    r"port of spain|san fernando|tobago|between|and)$",
+    re.I,
+)
+_CLAIM_RE = re.compile(
+    r"^(?:claim no\.?|claim number|no\.|cv |cva |ca |hc |cv\b|cva\b)\s",
+    re.I,
+)
+_HEADER_END_RE = re.compile(
+    r"^(?:before the honourable|date of delivery|appearances|dated|for the court)",
+    re.I,
+)
+
+
+def _title_case(name: str) -> str:
+    words = []
+    for word in name.split():
+        if not word:
+            continue
+        if word.isupper() and len(word) > 2 and not word.startswith("("):
+            word = word.capitalize()
+        words.append(word)
+    return " ".join(words)
+
+
+_SUFFIX_RE = re.compile(
+    r"\s(?:1st|2nd|3rd|\d+th|first|second|third|fourth|fifth)\s+"
+    r"(?:defendant|claimant|respondent|appellant|applicant)|"
+    r"\s(?:defendant|claimant|respondent|appellant|applicant)s?\b|"
+    r"\s(?:a/c|a\.c\.|aka|a\.k\.a\.|also\s+called|also\s+known\s+as)\b",
+    re.I,
+)
+
+
+def _clean_party(line: str) -> str:
+    line = line.strip()
+    match = _SUFFIX_RE.search(line)
+    if match:
+        line = line[: match.start()]
+    line = line.strip().rstrip(".,;:-")
+    return _title_case(line)
+
+
+def _party_name(lines: list[str]) -> str:
+    """Primary party name after BETWEEN/AND: the first name line, cleaned of
+    trailing role qualifiers."""
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            break
+        if stripped.upper() in ("AND", "BETWEEN"):
+            break
+        numbered = re.match(r"^\(\d+\)\s*(.*)$", stripped)
+        if numbered:
+            return _clean_party(numbered.group(1))
+        if stripped.startswith("(") or _ROLE_RE.match(stripped):
+            break
+        if _BOILER_RE.match(stripped) or _CLAIM_RE.match(stripped):
+            continue
+        if _HEADER_END_RE.match(stripped):
+            break
+        return _clean_party(stripped)
+    return ""
+
+
+def _webopac_title(text: str) -> str:
+    lines = [l.strip() for l in text.splitlines() if l.strip() and not l.startswith("#")]
+    upper = [l.upper() for l in lines]
+    header = lines[:12]
+    header_upper = upper[:12]
+
+    # BETWEEN ... AND ... party header (High Court / most judgments).
+    between_idx = next(
+        (i for i, l in enumerate(header_upper) if l == "BETWEEN" or l.startswith("BETWEEN ")),
+        None,
+    )
+    if between_idx is not None:
+        party1 = _party_name(header[between_idx + 1 :])
+        if party1:
+            and_idx = next(
+                (i for i, l in enumerate(header_upper[between_idx + 1 :]) if l == "AND"),
+                None,
+            )
+            if and_idx is not None:
+                party2 = _party_name(header[between_idx + 2 + and_idx :])
+                return f"{party1} v {party2}" if party2 else party1
+            return party1
+
+    # Court of Appeal header: "...COURT OF APPEAL / OF / <party1> / AND / <party2>".
+    of_idx = next(
+        (i for i, l in enumerate(header_upper) if l == "OF" or l.startswith("OF ")),
+        None,
+    )
+    if of_idx is not None:
+        party1 = _party_name(header[of_idx + 1 :])
+        if party1:
+            and_idx = next(
+                (i for i, l in enumerate(header_upper[of_idx + 1 :]) if l == "AND"),
+                None,
+            )
+            if and_idx is not None:
+                party2 = _party_name(header[of_idx + 2 + and_idx :])
+                return f"{party1} v {party2}" if party2 else party1
+            return party1
+
+    # No party header: fall back to the first short line that reads like a
+    # name (uppercase start, not a sentence).
+    for line in header:
+        if _BOILER_RE.match(line) or _CLAIM_RE.match(line) or _HEADER_END_RE.match(line):
+            continue
+        if _ROLE_RE.match(line) or line.startswith("("):
+            continue
+        if line[0].islower() or len(line) > 80:
+            continue
+        if re.search(r"\s{2,}", line) or line.endswith((".", ":")):
+            continue
+        return _clean_party(line)
+    return ""
+
+    party1 = _party_name(lines[between_idx + 1 :])
+    if not party1:
+        return ""
+
+    # Look for a standalone AND separator after the BETWEEN block to get party 2.
+    and_idx = None
+    for i, l in enumerate(upper[between_idx + 1 :]):
+        if l == "AND":
+            and_idx = between_idx + 1 + i
+            break
+    if and_idx is None:
+        return party1
+    party2 = _party_name(lines[and_idx + 1 :])
+    return f"{party1} v {party2}" if party2 else party1
+
+
 def _case_title(rec: dict) -> str:
-    return rec.get("title") or rec.get("case_name") or ""
+    title = rec.get("title") or rec.get("case_name") or ""
+    if not title:
+        title = _webopac_title(rec.get("text") or "")
+    return title[:100]
 
 
 def _case_year(rec: dict) -> int | None:
@@ -63,6 +213,20 @@ def _case_year(rec: dict) -> int | None:
                 return int(str(value)[:4])
             except (TypeError, ValueError):
                 continue
+    # Delivery-date filename, e.g. "...cv_18_01783DD10apr2019.pdf".
+    url = rec.get("pdf_url") or rec.get("source_url") or ""
+    match = re.search(r"DD\d{2}(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(\d{4})\.pdf", url, re.I)
+    if match:
+        return int(match.group(1))
+    # "Date of Delivery 28 September 2023" inside the text.
+    text = rec.get("text") or ""
+    match = re.search(r"date of delivery\s+[\d]{1,2}\s+\w+\s+(\d{4})", text, re.I)
+    if match:
+        return int(match.group(1))
+    # Plain year in the URL, e.g. ".../LawTermOpen/2023.pdf".
+    match = re.search(r"/(\d{4})\.pdf", url)
+    if match:
+        return int(match.group(1))
     return None
 
 
@@ -167,12 +331,15 @@ def _load_records(records_dir: Path) -> list[dict]:
     for path in sorted(records_dir.glob("*.json*")):
         if path.name.startswith("._"):
             continue
+        source_tag = path.stem
         for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
             if line.strip():
                 try:
-                    records.append(json.loads(line))
+                    rec = json.loads(line)
                 except json.JSONDecodeError:
                     continue
+                rec["source"] = rec.get("source") or source_tag
+                records.append(rec)
     return records
 
 
