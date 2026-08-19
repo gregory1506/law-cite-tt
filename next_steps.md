@@ -6,6 +6,7 @@ Concrete, actionable items for continuing work here. Review this before starting
 
 ### Now
 - Launch the YC-style MVP in `docs/superpowers/plans/2026-07-30-yc-mvp.md`, beginning with `docs/superpowers/plans/2026-07-30-private-beta-authentication.md`, then run the defined 14-day beta experiment with 5–10 legal professionals
+- Build the agentic research assistant in `docs/superpowers/plans/2026-08-18-agentic-research-assistant.md`: Phase A grounds the Chat tab as a tool-calling agent over the existing statute API; Phase B adds the precedent-chain agent over the 7,914-edge citation graph
 
 ### Soon
 - Audit and repair chapter/version associations in the migrated corpus; for example, bankruptcy text and sections are currently attached to the `30:50 Burial Grounds` catalog title in some historical rows
@@ -53,6 +54,7 @@ Concrete, actionable items for continuing work here. Review this before starting
 - Lawyer/paralegal UX production rollout: backend image `lawcite-api:ux-grouped-20260729` deployed on Hostinger and frontend Worker version `8b112881-4092-4202-bc49-41c54f2baa91` deployed and verified
 - Frontend follow-up: persistent Clear search action and visible Chat coming-soon route deployed as Worker version `98837494-e732-4872-ac61-76751aadc8da`
 - Cite validation MVP: source-backed chapter/section/date resolution, explicit found/not-found/ambiguous states, exact statutory text, official PDFs, full/short citation copy, and responsive desktop/mobile workflows deployed with API image `lawcite-api:a87fc7b` and Worker version `f74a010e-2548-4749-96c4-21f388a141c0`
+- Agentic research assistant Phase A (code + tests complete, pending deploy): grounded tool-calling Chat agent (`POST /api/chat`) over the statute API, Gemini-compatible via OPENAI_BASE_URL, with a grounding guardrail that refuses unverifiable answers and server-rendered Sources
 
 ### Case-law layer (webOPAC) - current status
 

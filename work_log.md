@@ -414,3 +414,23 @@ Each entry:
 - lessons_learned.md, next_steps.md
 
 **Status:** complete
+
+## [2026-08-18 21:50] Agentic Chat Phase A — grounded tool-calling agent over the statute API
+
+**What was done:**
+- Added the openai SDK + httpx; agent config via OPENAI_API_KEY / OPENAI_BASE_URL / LAWCITE_AGENT_MODEL (Gemini-compatible endpoint works unchanged)
+- Built backend/api/tools.py: four in-process tools wrapping LawCitePGDB (search_provisions, lookup_section, resolve_citation, list_chapters), each returning LLM-facing text + pinned source records (chunk/lookup/chapter ids, official PDF URLs)
+- Built backend/api/agent.py: up to 8 tool iterations, OpenAI function-calling, structured JSON reply {answer, source_ids}, and a grounding guardrail that refuses answers whose source_ids are unknown or empty; conversational replies pass through only when no tools were used
+- Added POST /api/chat (ChatRequest/ChatResponse models) — returns unconfigured until OPENAI_API_KEY is set
+- Replaced the Chat placeholder with a real message UI: history, thinking state, refusal banner, server-rendered Sources with official PDF links, Enter-to-send composer
+- Tests: 21 new backend (agent loop with scripted LLM, tool formatting with fake DB, endpoint wiring) + 3 new frontend (grounded render, refusal banner, request failure); updated App.test.js for the new Chat empty state
+- Verified: backend unit suite green, full frontend suite 15/15, production build clean
+
+**Files touched:**
+- backend/api/agent.py, backend/api/tools.py, backend/api/main.py, backend/api/models.py (new)
+- backend/requirements.txt, .env.example
+- citation-tool/src/routes/Chat.svelte, citation-tool/src/lib/api.js, citation-tool/src/routes/Chat.test.js, citation-tool/src/App.test.js
+- tests/test_agent.py, tests/test_tools.py (new)
+- docs/superpowers/plans/2026-08-18-agentic-research-assistant.md
+
+**Status:** partial — code + tests complete; production deploy (image rebuild + OPENAI_API_KEY env on VPS + wrangler deploy) and live model verification remain

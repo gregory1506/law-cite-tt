@@ -277,3 +277,38 @@ re-reading the count before concluding the source is empty. A probing
 false-negative cost us a re-scoping question and a delay.
 
 **Tags:** #scraping #regex #false-negative #probe
+
+## [2026-08-18] Gemini works as a drop-in via the OpenAI-compatible endpoint
+
+**Context:** Wiring the agentic Chat loop without a dedicated LLM API.
+
+**What happened:** The plan abstracted the LLM behind `OPENAI_BASE_URL` +
+`openai` SDK. The user's Gemini key works with zero code changes by pointing
+`OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/` and
+`LAWCITE_AGENT_MODEL=gemini-2.5-flash`. Function-calling and JSON replies work
+through that shim the same as OpenAI.
+
+**Lesson:** When the user already holds a key for a different provider, check for
+its OpenAI-compatible endpoint before assuming SDK/provider lock-in. Keep the
+LLM client behind env-configured base URL + model so switching is a config change.
+
+**Tags:** #agents #gemini #openai-compatible #llm #config
+
+## [2026-08-18] Grounding guardrails: plain-text passthrough vs refusal
+
+**Context:** Building the agent loop for a legal citation engine where fabrication
+is unacceptable.
+
+**What happened:** The model's final message can arrive as structured JSON (when
+it respects the instruction) or plain prose. Naively refusing all plain text
+breaks conversational replies ("hi"), but passing it through after tools were
+used lets the model sneak in unverified claims. Resolved by keying the decision
+off whether any tools ran: no tools used → conversational passthrough; tools
+used → require a grounded structured reply or refuse. Also: a plain-text
+fallthrough was safer than a hard `response_format` dependency across providers.
+
+**Lesson:** A grounding guardrail needs to distinguish "no tools were needed"
+from "tools were used but not cited". Judge ungroundedness by the presence of
+tool activity, not by the shape of the reply alone.
+
+**Tags:** #agents #grounding #llm #legal-tech #guardrails

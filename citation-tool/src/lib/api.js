@@ -43,3 +43,19 @@ export function resolveCitation(chapter, section, date = "") {
   if (date) params.set("date", date);
   return getJSON(`/api/citations/resolve?${params}`);
 }
+
+async function postJSON(path, body) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`${res.status} ${res.statusText}`);
+  }
+  return res.json();
+}
+
+export function chat(messages, mode = "research") {
+  return postJSON("/api/chat", { messages, mode });
+}
