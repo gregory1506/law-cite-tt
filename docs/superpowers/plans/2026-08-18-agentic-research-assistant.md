@@ -3,7 +3,10 @@
 **Date:** 2026-08-18
 
 **Status:** Phase A LIVE (2026-08-18, image `lawcite-api:2cb6629`, Worker
-`fbfa1426`). Phase B not started.
+`fbfa1426`). Phase B live too (2026-08-18, image `lawcite-api:18bee46`): precedent
+tools `citing_cases`/`search_cases`/`expand_case` registered in every mode (the
+`mode="precedent"` gating from the original plan was dropped in favour of a
+single toolset); case titles pending SSD backfill.
 
 **Production frontend:** `https://law-cite-tt.gjo-ai.workers.dev`
 

@@ -334,3 +334,24 @@ round-trip, and expose the grounding ids in the tool text the model reads. Test
 live against the actual model provider, not just a mock.
 
 **Tags:** #agents #gemini #thought-signature #openai-compatible #grounding #deployment
+
+## [2026-08-18] Case-law graph: `case:<hash>` joins to crawler record ids; row shapes differ by query
+
+**Context:** Loading `graphify-out/case_edges.json` (7,914 CITES_STATUTE edges,
+2,236 case nodes) into Postgres and exposing a precedent-chain agent.
+
+**What happened:** Edge source ids are `case:<sha256(url)[:16]>`, which matches
+the webOPAC `record_id` and CCJ `node_id` conventions exactly, so titles can be
+backfilled by a direct join when the SSD corpus is present — but there is no
+case metadata in the repo, so without the SSD every title is blank. Second
+gotcha: `cases_citing_*` queries alias the id as `case_id` while `search_cases`
+returns it as `id`; one shared mapper that read `row["case_id"]` 500'd the
+search endpoint in production. Third: the Dockerfile didn't ship `backend/scripts`,
+so the loader had to be baked into the image (now `COPY backend/scripts`).
+
+**Lesson:** When a graph/DB layer uses two query shapes for the same entity,
+use one tolerant mapper (`row.get("case_id") or row.get("id")`) from day one.
+Keep pipeline scripts inside the container image so production loads run
+in-place with the container's own env (e.g. `$PG_DSN`).
+
+**Tags:** #cases #graphrag #postgres #deployment #data-model #lessons

@@ -454,3 +454,24 @@ Each entry:
 - Cloudflare Worker law-cite-tt (fbfa1426)
 
 **Status:** complete (Phase A live); Phase B precedent-chain agent pending
+
+## [2026-08-18 ~23:50] Agentic Chat Phase B — precedent-chain agent over the case-law graph (live)
+
+**What was done:**
+- `cases` + `case_citations` tables in data/init.sql (and applied directly on the production PG)
+- backend/scripts/load_case_edges.py: loads graphify-out/case_edges.json (7,914 CITES_STATUTE edges, 2,236 unique case nodes) into Postgres; `--records` backfills title/court/year from crawled webOPAC/CCJ JSONL (edge id `case:<sha256-prefix>` joins to crawler `record_id` directly)
+- LawCitePGDB: cases_citing_chapter, case_citations_for, cases_citing_chapters (two-hop statute-mediated expansion), get_case, search_cases
+- API: GET /api/cases?q=, GET /api/cases/citing?chapter=, GET /api/cases/{id} (detail + related_cases)
+- Agent tools: citing_cases, search_cases, expand_case — registered for every mode (no frontend change); system prompt extended for precedent questions
+- Dockerfile now ships backend/scripts + case_edges.json; loader runs in-container via `docker compose exec api python -m scripts.load_case_edges --edges /app/case_edges.json --pg "$PG_DSN" --force`
+- Deployed image `lawcite-api:18bee46`; live verification: citing, expand (2-hop chain of 50 related cases), search, and agent precedent questions all `status: ok` with case sources
+- Fixed live 500: /api/cases search used `row["case_id"]` but search rows carry `id`; `_case_summary` now reads either; regression test added (push `d5f5012`)
+- Caveat: case titles are blank until the external SSD (webopac.jsonld) is mounted and the loader re-run with `--records` — answers currently cite `case:<hash>` handles only
+
+**Files touched:**
+- backend/api/{agent,main,models,tools}.py, backend/scraper/db_pg.py, backend/scripts/load_case_edges.py, backend/Dockerfile, data/init.sql
+- tests/{test_tools,test_agent,test_db_pg,test_load_case_edges}.py
+- VPS: /root/lawcite-build, image lawcite-api:18bee46, tables created + data loaded
+- pushes `18bee46` (feat) + `d5f5012` (fix)
+
+**Status:** complete (Phase B live); titles backfill pending SSD mount
