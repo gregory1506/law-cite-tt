@@ -9,6 +9,7 @@ COPY backend/scraper ./scraper
 COPY backend/api ./api
 COPY backend/scripts ./scripts
 COPY templates ./templates
+COPY graphify-out/case_edges.json ./case_edges.json
 
 EXPOSE 8000
 

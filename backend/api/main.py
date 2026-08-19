@@ -234,7 +234,7 @@ async def chat(payload: ChatRequest):
 
 def _case_summary(row: dict) -> dict:
     return {
-        "id": row["case_id"],
+        "id": row.get("case_id") or row.get("id") or "",
         "title": row.get("title") or "",
         "source": row.get("source") or "",
         "record_id": row.get("record_id") or "",
