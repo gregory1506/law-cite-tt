@@ -30,35 +30,36 @@ By digitizing and section-chunking all **533 statutory chapters** across **4,989
 <table>
   <tr>
     <td width="50%">
-      <h3>🔍 Temporal Hybrid Search</h3>
-      <p>Combine BM25 full-text matching with dense vector embeddings (384-dim BAAI/bge-small) to search statutory provisions as of any historical cutoff date.</p>
+      <h3>🔍 Point-in-Time Legal Search</h3>
+      <p>Search statutory provisions as they existed on any historical date. Combines natural language semantic search with precise keyword matching for instant, accurate legislative research.</p>
     </td>
     <td width="50%">
-      <h3>🤖 Agentic Legal AI Chat</h3>
-      <p>An autonomous legal research assistant equipped with tool-use capabilities to search statutory provisions, locate precedent cases, and synthesize citations.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <h3>📜 Precise Citation Resolver</h3>
-      <p>Format, verify, and resolve statutory citations with exact section excerpts, historical revision tags, and copyable legal authority blocks.</p>
-    </td>
-    <td width="50%">
-      <h3>🕸️ Precedent & Case Citation Graph</h3>
-      <p>Explore statutory cross-references over 2,236 Judgments and High Court / Court of Appeal decisions mapped directly to cited legislative chapters.</p>
+      <h3>🤖 Intelligent Legal AI Assistant</h3>
+      <p>An interactive legal assistant that analyzes statutory provisions, identifies relevant judicial precedents, and synthesizes structured legal answers in real time.</p>
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <h3>🛡️ Zero-Trust PDF Proxy</h3>
-      <p>Streams official statutory PDFs directly through a secure server-side proxy, bypassing government SSL certificate issues and DNS timeouts.</p>
+      <h3>📜 Citation Verification & Resolution</h3>
+      <p>Instantly resolve and verify legal citations across all statutory chapters. Generates authoritative excerpts, edition histories, and copy-ready legal references.</p>
     </td>
     <td width="50%">
-      <h3>☁️ Edge-Native Architecture</h3>
-      <p>Deployed as a high-performance Svelte 5 SPA on Cloudflare Workers edge, backed by a FastAPI + PostgreSQL/pgvector backend on a dedicated VPS.</p>
+      <h3>🕸️ Judicial Precedent Graph</h3>
+      <p>Explore relationships between statutory acts and High Court or Court of Appeal judgments, illuminating how courts have interpreted specific legislative provisions.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>📄 Seamless Official Document Viewer</h3>
+      <p>View and inspect official statutory PDF revisions inline with high-reliability document streaming and instant browser preview capabilities.</p>
+    </td>
+    <td width="50%">
+      <h3>⚡ Global Edge Performance & Security</h3>
+      <p>Built on an enterprise-grade edge architecture with distributed caching, end-to-end HTTPS encryption, and sub-second query response times worldwide.</p>
     </td>
   </tr>
 </table>
+
 
 ---
 
