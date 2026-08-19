@@ -172,14 +172,14 @@ npx wrangler deploy
 
 ---
 
-## 📜 Ingestion & Crawl Policy
+## 📜 Data Acquisition & Pipeline Governance
 
-The statute corpus was constructed via a rate-limited ingestion pipeline (`backend/scraper/`). 
+The statutory and judicial corpus supporting **LawCite TT** is gathered and processed through an automated, responsible data ingestion pipeline (`backend/scraper/`).
 
-* **Rate Limiting**: Crawling executes with a mandatory $\ge 1.5\text{s}$ delay between requests out of respect for public digital law repository infrastructure.
+* **Ethical Crawling & Rate Limits**: Requests are strictly serialized with mandatory delay buffers ($\ge 1.5\text{s}$ per request) to minimize load on public digital law infrastructure and respect server capacity.
+* **Granular Extraction & Normalization**: Official statutory PDF documents are extracted, converted into structured Markdown, and parsed into section-aware statutory chunks while preserving historical metadata and edition headers.
+* **Corpus Integrity & Vector Storage**: Extracted revisions are systematically validated, embedded with 384-dimensional dense vectors, and indexed into PostgreSQL 16 (`pgvector`) for hybrid search and real-time retrieval.
 
-* **Pagination**: The government portal returns an HTTP 500 status when paging past the last catalog entry. The ingestion engine in `backend/scraper/catalog.py` treats this as a graceful end-of-catalog signal.
-* **Corpus Storage**: Raw extracted PDFs and markdown revisions reside on local SSD storage (`/Volumes/Extreme SSD/law-cite-tt-data/`), with indexed data migrated to PostgreSQL + pgvector for production search.
 
 ---
 
