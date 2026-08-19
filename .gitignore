@@ -1,13 +1,42 @@
+# Virtual environment & Python
 .venv/
+venv/
+ENV/
 __pycache__/
 *.pyc
+*.pyo
 .pytest_cache/
-.env
+*.egg-info/
 
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs & temp files
+*.log
+*.tmp
+output/
+
+# Superpowers & IDE tooling
 .superpowers/
 .playwright-cli/
 .wrangler/
-output/
+.claude/
 
-# regenerable graph artifacts (rebuild via backend/graphrag/build.py)
+# Node & Frontend Build
+node_modules/
+dist/
+build/
+
+# Regenerable graph artifacts (rebuild via backend/graphrag/build.py)
 graphify-out/
+

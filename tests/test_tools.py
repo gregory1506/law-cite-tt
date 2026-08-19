@@ -269,9 +269,8 @@ async def test_list_chapters():
 
 
 def test_pdf_url_format():
-    assert pdf_url(105522) == (
-        "https://laws.gov.tt/ttdll-web/revision/download/105522?type=act"
-    )
+    assert pdf_url(105522) == "/api/pdf/105522"
+
 
 
 def test_all_handlers_are_async_and_registered():
