@@ -385,3 +385,24 @@ small parsing problem, not a regex one-liner. Validate against the whole
 corpus (blank-title count) plus eyeball samples before shipping.
 
 **Tags:** #cases #parsing #webopac #titles #deployment #lessons
+
+## [2026-08-19] Pre-sizing crawls avoids operational blind spots
+
+**Context:** Initiating a historical-band scan (1873-2017) to size the crawl volume.
+
+**What happened:** Running `scan_webopac_years.py` revealed that the historical band contains **16,852 records**. At our polite delay settings (2.5s delay, translating to ~5s per full record fetch with page + PDF requests), downloading and indexing the complete historical band would require **~23 hours** of continuous execution. This is in contrast to the modern 2018-2024 band, which had only 3,344 records and completed in a few hours.
+
+**Lesson:** Always run a metadata-only scan to pre-size a crawl before committing to full downloads. Designing crawler loops to be year-bounded and resumable by default (`sweep_webopac.py`) ensures that long-running operations can be interrupted and resumed safely without data duplication or progress loss.
+
+**Tags:** #crawlers #scraping #webopac #pre-sizing #lessons
+
+## [2026-08-19] UTC-to-Local timezone correlation in distributed operations
+
+**Context:** Diagnosing if a local background crawl process had run or completed today.
+
+**What happened:** Crawler records in `webopac.jsonld` write `fetched_utc` in UTC time (e.g. `2026-08-19T13:13:34Z`), while git logs, work logs, and local filesystem birth/modification times are recorded in local time (UTC-4). Correlating the file creation time (09:14:51 AM) and modification time (10:34:21 AM) with the JSONL entries (fetched between 13:13:24Z and 13:13:34Z) was required to determine that the scan script ran for 1 hour and 19 minutes and completed successfully, whereas the crawler had only run a brief 3-record pilot.
+
+**Lesson:** Standardize logs on UTC but document timezone offsets clearly in team work logs to make cross-system audit trails and timelines easy to reconstruct.
+
+**Tags:** #timezones #logging #diagnostics #lessons
+

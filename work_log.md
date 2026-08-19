@@ -491,3 +491,30 @@ Each entry:
 - push `299e2b3`
 
 **Status:** complete
+
+## [2026-08-19 ~13:20] Historical-band crawl sweep drivers
+
+**What was done:**
+- Created `backend/scripts/scan_webopac_years.py` to scan record counts per delivery year from 1873 to 2017 without downloading PDFs.
+- Created `backend/scripts/sweep_webopac.py` to drive the historical-band crawl (1873-2017) year-by-year with a configurable cap, polite rate-limiting, and resumable file-appending logic.
+- Pushed scripts in commit `c2cbcef`.
+
+**Files touched:**
+- backend/scripts/scan_webopac_years.py, backend/scripts/sweep_webopac.py
+- push `c2cbcef`
+
+**Status:** complete
+
+## [2026-08-19 ~14:35] Historical-band sizing scan & pilot
+
+**What was done:**
+- Ran a pilot crawl of the year 2017 using `sweep_webopac.py` (cap=3) on the local machine with SSD attached. Successfully downloaded, parsed, and appended 3 records to the SSD JSONL (`webopac.jsonld`).
+- Ran a complete historical-band scan (1873-2017) using `scan_webopac_years.py` locally. The process ran in the background for 1 hour and 19 minutes, hitting every year's OPAC search and pagination endpoint.
+- Identified **16,852 total records** across the 1873-2017 band (saved to untracked `backend/webopac_scan.jsonl`).
+
+**Files touched:**
+- /Volumes/Extreme SSD/law-cite-tt-data/case_law/ (webopac.jsonld, webopac_pdfs/2017/)
+- backend/webopac_scan.jsonl (new, untracked)
+
+**Status:** complete (scan complete, full download pending)
+
