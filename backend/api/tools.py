@@ -261,6 +261,7 @@ async def _citing_cases(
                 source_id=source_id,
                 title=(r.get("title") or r["case_id"]),
                 chapter=r["chapter_number"],
+                url=r.get("source") or f"/api/cases/{source_id}",
                 kind="case",
             )
         )
@@ -290,6 +291,7 @@ async def _search_cases(
             _source(
                 source_id=source_id,
                 title=(r.get("title") or r["id"]),
+                url=r.get("source") or f"/api/cases/{source_id}",
                 kind="case",
             )
         )
@@ -335,6 +337,7 @@ async def _expand_case(
                 source_id=rel_id,
                 title=(r.get("title") or r["case_id"]),
                 chapter=r["chapter_number"],
+                url=r.get("source") or f"/api/cases/{rel_id}",
                 kind="case",
             )
         )
@@ -347,11 +350,13 @@ async def _expand_case(
             _source(
                 source_id=case["id"],
                 title=(case.get("title") or case["id"]),
+                url=case.get("source") or f"/api/cases/{case['id']}",
                 kind="case",
             ),
             *related_sources,
         ],
     }
+
 
 
 HANDLERS: dict[str, Any] = {

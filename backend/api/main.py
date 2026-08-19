@@ -5,9 +5,11 @@ from contextlib import asynccontextmanager
 from datetime import date
 from pathlib import Path
 
+import httpx
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
+
 
 from api.agent import ChatAgent
 from api.citations import format_citation, normalize_chapter, normalize_section
@@ -87,6 +89,34 @@ async def health():
     async with pool.acquire() as conn:
         await conn.fetchval("SELECT 1")
     return {"status": "ok"}
+
+
+@app.get("/api/pdf/{download_id}")
+async def proxy_pdf(download_id: int):
+    """Proxy PDF from laws.gov.tt to bypass SSL certificate issues in browser."""
+    target_urls = [
+        f"http://laws.gov.tt/ttdll-web/revision/download/{download_id}?type=act",
+        f"https://laws.gov.tt/ttdll-web/revision/download/{download_id}?type=act",
+    ]
+    for url in target_urls:
+        try:
+            async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
+                resp = await client.get(url)
+                if resp.status_code == 200 and resp.content and resp.content.startswith(b"%PDF"):
+                    return Response(
+                        content=resp.content,
+                        media_type="application/pdf",
+                        headers={
+                            "Content-Disposition": f"inline; filename=statute_{download_id}.pdf"
+                        },
+                    )
+        except Exception:
+            continue
+    raise HTTPException(
+        status_code=502,
+        detail=f"Could not retrieve PDF for download_id {download_id} from laws.gov.tt",
+    )
+
 
 
 @app.get("/api/chapters")
@@ -233,14 +263,17 @@ async def chat(payload: ChatRequest):
 
 
 def _case_summary(row: dict) -> dict:
+    case_id = row.get("case_id") or row.get("id") or ""
     return {
-        "id": row.get("case_id") or row.get("id") or "",
+        "id": case_id,
         "title": row.get("title") or "",
         "source": row.get("source") or "",
         "record_id": row.get("record_id") or "",
         "court": row.get("court") or "",
         "year": row.get("year"),
+        "url": row.get("source") or f"/api/cases/{case_id}",
     }
+
 
 
 @app.get("/api/cases", response_model=list[CaseSummary])

@@ -116,6 +116,8 @@ class CaseSummary(BaseModel):
     record_id: str = ""
     court: str = ""
     year: int | None = None
+    url: str = ""
+
 
 
 class CaseCitation(BaseModel):
