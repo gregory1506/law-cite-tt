@@ -10,7 +10,6 @@ Concrete, actionable items for continuing work here. Review this before starting
 
 ### Now
 - Launch the YC-style MVP in `docs/superpowers/plans/2026-07-30-yc-mvp.md`, beginning with `docs/superpowers/plans/2026-07-30-private-beta-authentication.md`, then run the defined 14-day beta experiment with 5–10 legal professionals
-- 🔌 needs SSD — Backfill case titles: mount the SSD and re-run the loader with `--records /Volumes/Extreme SSD/law-cite-tt-data/case_law` so precedent answers name cases instead of `case:<hash>` handles
 - Decide how case edges surface in the product UI: 'cited by N judgments' on statute/chapter views, precedent chain in the Chat tab
 
 ### Soon
@@ -60,7 +59,7 @@ Concrete, actionable items for continuing work here. Review this before starting
 - Frontend follow-up: persistent Clear search action and visible Chat coming-soon route deployed as Worker version `98837494-e732-4872-ac61-76751aadc8da`
 - Cite validation MVP: source-backed chapter/section/date resolution, explicit found/not-found/ambiguous states, exact statutory text, official PDFs, full/short citation copy, and responsive desktop/mobile workflows deployed with API image `lawcite-api:a87fc7b` and Worker version `f74a010e-2548-4749-96c4-21f388a141c0`
 - Agentic research assistant Phase A LIVE: grounded tool-calling Chat agent (`POST /api/chat`) over the statute API, Gemini via OPENAI_BASE_URL, grounding guardrail refuses unverifiable answers, server-rendered Sources. API image `lawcite-api:2cb6629`, Worker `fbfa1426-47df-4e08-ab4a-edb1d6fb512f`
-- Agentic research assistant Phase B LIVE (precedent-chain agent): `cases`/`case_citations` in Postgres, loader `backend/scripts/load_case_edges.py`, `/api/cases`, `/api/cases/citing`, `/api/cases/{id}`, agent tools `citing_cases`/`search_cases`/`expand_case`. API image `lawcite-api:18bee46`. Titles pending SSD backfill
+- Agentic research assistant Phase B LIVE (precedent-chain agent): `cases`/`case_citations` in Postgres, loader `backend/scripts/load_case_edges.py`, `/api/cases`, `/api/cases/citing`, `/api/cases/{id}`, agent tools `citing_cases`/`search_cases`/`expand_case`. API image `lawcite-api:18bee46`. Case names/years backfilled from the webOPAC corpus (2,235/2,236 titled)
 
 ### Case-law layer (webOPAC) - current status
 

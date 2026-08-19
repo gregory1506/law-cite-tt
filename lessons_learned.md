@@ -355,3 +355,33 @@ Keep pipeline scripts inside the container image so production loads run
 in-place with the container's own env (e.g. `$PG_DSN`).
 
 **Tags:** #cases #graphrag #postgres #deployment #data-model #lessons
+
+## [2026-08-19] webOPAC judgments have no case-name field — parse it from the header
+
+**Context:** Backfilling titles for 2,236 case nodes from webopac.jsonld
+(3,344 records). The crawler stored `text` + `pdf_url` only, no MARC title.
+
+**What happened:** Case names must be extracted from the judgment header.
+Working rules that emerged:
+- webOPAC `record_id` is `sha256(url)[:16]`, identical to the edge node id
+  suffix (`case:<id>`) — the join is exact, no normalization needed.
+- Titles live in the party block: `BETWEEN <P1> <role> AND <P2> <role>`.
+  Lines like `TRINIDAD AND TOBAGO` and `IN THE HIGH COURT OF JUSTICE` are
+  boilerplate and must be *skipped*, not treated as names. Numbered parties
+  `(1) NAME` appear in many actions. Court of Appeal uses `OF <P1> AND <P2>`
+  instead of BETWEEN. Role words are a trap: "GUARDIAN ASSETS MANAGEMENT
+  LTD" starts with GUARDIAN but is a company name, so the role list must be
+  `guardian ad litem`, not `guardian`.
+- Restrict header-marker searches (BETWEEN/OF/AND) to the first ~12 lines;
+  a `BETWEEN` deep in the body text silently produced a blank/odd title.
+- Years: delivery-date filenames (`cv_18_01783DD10apr2019.pdf`) are the
+  most reliable; `Date of Delivery` lines and plain url years as fallbacks.
+- Gotcha in the deploy loop: `docker compose up` recreates the container and
+  wipes anything `docker cp`'d into it — copy data into the container AFTER
+  the recreate, not before.
+
+**Lesson:** Judgment headers are semi-structured; extracting the parties is a
+small parsing problem, not a regex one-liner. Validate against the whole
+corpus (blank-title count) plus eyeball samples before shipping.
+
+**Tags:** #cases #parsing #webopac #titles #deployment #lessons

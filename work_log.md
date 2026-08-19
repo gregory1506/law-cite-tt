@@ -475,3 +475,19 @@ Each entry:
 - pushes `18bee46` (feat) + `d5f5012` (fix)
 
 **Status:** complete (Phase B live); titles backfill pending SSD mount
+
+## [2026-08-19 ~12:30] Phase B title backfill — case names + years extracted from webOPAC corpus
+
+**What was done:**
+- SSD attached; shipped webopac.jsonld (3,344 records, 138MB) + judgments.jsonl to the VPS and re-ran the loader with `--records` (via `docker cp` into the api container; note: container recreate wipes `docker cp`'d files — copy AFTER `compose up`)
+- webOPAC records have no title field — the case name is parsed from the judgment header: `BETWEEN ... AND ...` party pattern, numbered parties `(1) ...`, Court of Appeal `OF ... AND ...` pattern, fallback to first name-like header line; header markers restricted to the first 12 lines so a `BETWEEN` deep in the body isn't misread
+- Years from delivery-date filenames (`cv_18_01783DD10apr2019.pdf`), "Date of Delivery" lines, or plain url year
+- Result: **2,235 / 2,236 case nodes titled (99.96%), 2,049 with year**; live-verified on `/api/cases`, `/api/cases/citing`, and agent precedent answers now name real cases
+- Regression tests for the header heuristics (13 loader tests)
+
+**Files touched:**
+- backend/scripts/load_case_edges.py (title/year extraction), tests/test_load_case_edges.py
+- VPS: image lawcite-api:18bee46 rebuilt, records copied into container, loader re-run against production PG
+- push `299e2b3`
+
+**Status:** complete
