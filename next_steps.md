@@ -2,11 +2,15 @@
 
 Concrete, actionable items for continuing work here. Review this before starting any session.
 
+> **Legend:** `🔌 needs SSD` — item requires `/Volumes/Extreme SSD/law-cite-tt-data/`
+> (markdown corpus, sqlite DB, case-law JSONL/PDFs). Mount the SSD before starting;
+> leave it mounted until the item is done.
+
 ## Priority
 
 ### Now
 - Launch the YC-style MVP in `docs/superpowers/plans/2026-07-30-yc-mvp.md`, beginning with `docs/superpowers/plans/2026-07-30-private-beta-authentication.md`, then run the defined 14-day beta experiment with 5–10 legal professionals
-- Backfill case titles: mount the external SSD and re-run the loader with `--records /Volumes/Extreme SSD/law-cite-tt-data/case_law` so precedent answers name cases instead of `case:<hash>` handles
+- 🔌 needs SSD — Backfill case titles: mount the SSD and re-run the loader with `--records /Volumes/Extreme SSD/law-cite-tt-data/case_law` so precedent answers name cases instead of `case:<hash>` handles
 - Decide how case edges surface in the product UI: 'cited by N judgments' on statute/chapter views, precedent chain in the Chat tab
 
 ### Soon
@@ -15,13 +19,13 @@ Concrete, actionable items for continuing work here. Review this before starting
 - Add a separate citation-tool workflow that builds and deploys the frontend to Cloudflare Workers, then verifies the production URL
 - Introduce Alembic migrations and run backward-compatible database migrations before switching the API container during backend deployments
 - Make PostgreSQL ingestion idempotent before automating it: replace a version's chunks transactionally and enforce a unique constraint such as `(version_id, chunk_index)`
-- Package reconciliation and ingestion as a dedicated Compose job, schedule it on the VPS, preserve original PDFs in R2/S3-compatible storage, and record source IDs/checksums so only new or changed documents are processed
+- 🔌 needs SSD — Package reconciliation and ingestion as a dedicated Compose job, schedule it on the VPS, preserve original PDFs in R2/S3-compatible storage, and record source IDs/checksums so only new or changed documents are processed
 - Add nightly off-host PostgreSQL backups with retention, checksum verification, monitoring, and periodic restore tests
 - Build marketing site landing page (separate project, Cloudflare Pages)
 - AI Chat tab for the customer app (stubbed in citation-tool/src/routes/Chat.svelte)
 
 ### Later
-- Rate-limited background re-crawl for new revisions
+- 🔌 needs SSD — Rate-limited background re-crawl for new revisions
 - Subsidiary legislation and schedule support
 - WebSocket streaming for long-running ingest operations
 
@@ -63,8 +67,8 @@ Concrete, actionable items for continuing work here. Review this before starting
 - [done] webOPAC crawler + CCJ crawler both live; sweep 2018-2024 COMPLETE: 3,344 judgments on SSD
 - [done] CITES_STATUTE edges regenerated over full corpus: 7,914 edges / 2,236 case nodes / 3,354 cases
 - [done] GraphRAG PoC complete (recall@20 = 70%); retriever integrates case edges both directions
-- NEXT: optional historical band (1873-2017) for fuller citation coverage
+- NEXT: 🔌 needs SSD — optional historical band (1873-2017) for fuller citation coverage
 - NEXT: decide how case edges surface in product - statute page 'cited by N judgments', reverse edges in Explore/API
-- NEXT: refresh GRAPH_REPORT.md case-law numbers (now 7,914 edges, not 90)
+- NEXT: 🔌 needs SSD — refresh GRAPH_REPORT.md case-law numbers against the full webOPAC corpus (now 7,914 edges, not 90)
 - NEXT: reconcile chapter/version metadata mismatches (pre-existing queue item)
 - NEXT: production authentication, authorization, rate limiting (release gate)
