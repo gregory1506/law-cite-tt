@@ -1,87 +1,72 @@
 # law-cite-tt
 
-Citation validation service for the Laws of Trinidad and Tobago. See `CLAUDE.md` for project context and `docs/superpowers/specs/2026-07-26-law-cite-tt-architecture-design.md` for the full architecture.
+A legal citation engine for the **Laws of Trinidad and Tobago**. Sources statute data from the official Digital Law Library at <https://laws.gov.tt/ttdll-web/revision/list> and answers "what did provision X say on date Y?" by searching 407,000+ section-aware statutory chunks with full-text + vector search.
 
-## Current status
+## Live product
 
-LawCite is live with a Svelte customer app on Cloudflare Workers and a FastAPI,
-PostgreSQL 16, and pgvector backend on Hostinger:
+Production research release is live:
 
-- Frontend: https://law-cite-tt.gjo-ai.workers.dev
-- API: https://srv1629323.hstgr.cloud
-- Corpus: 533 chapters, 4,989 versions, and 407,008 embedded statutory chunks
-- Research workflow: grouped provision search, exact lookup, chapter browsing,
-  historical cutoffs, version selection, and official PDF links
-- Citation workflow: structured resolution, explicit validation states,
-  historical selection, exact source text, official PDFs, and copyable citations
-- Next release gate: real authentication, API authorization, and rate limiting
+- **Frontend:** https://law-cite-tt.gjo-ai.workers.dev
+- **API:** https://srv1629323.hstgr.cloud (`/api/health`)
+- **Corpus:** 533 chapters, 4,989 versions, 407,008 embedded statutory chunks
 
-The original reconnaissance pipeline remains available for rebuilding the source
-corpus. The production application lives under `backend/` and `citation-tool/`.
+### Features
 
-## Running the Phase 0 reconnaissance crawl
+- **Research** — grouped provision search, exact chapter/section lookup, chapter browsing, historical cutoffs, version selection, and official PDF links
+- **Cite** — structured citation resolution with explicit found / not-found / ambiguous states, exact source text, historical selection, official PDFs, and copyable citations
+- **Chat** — coming soon (placeholder)
 
-This crawls all 533 chapters on https://laws.gov.tt and downloads **every historical version** of each (one chapter can have 10+ versions spanning back to the 1800s), extracting each to markdown. Expect **60–90+ minutes** — it deliberately rate-limits itself to ~1.5s between requests out of courtesy to a government website with no published crawl policy (see the spec's "Scraping etiquette" section). Do not remove or shorten that delay.
+Next release gate: production authentication, API authorization, and rate limiting.
 
-### Prerequisites
+## Architecture
 
-- Python 3.11+
-- [`uv`](https://github.com/astral-sh/uv) for the virtualenv (or plain `venv`/`pip` if `uv` isn't available — swap the commands below accordingly)
-- The external drive must be attached and mounted at exactly `/Volumes/Extreme SSD` (see `scraper/config.py` — `OUTPUT_ROOT`). If it's mounted somewhere else or under a different name, edit `OUTPUT_ROOT` in that file before running.
+Two surfaces live in this repo:
 
-### Setup (first time only)
+1. **Customer app** (`citation-tool/`) — Svelte 5 (runes) + Vite, deployed as static assets to Cloudflare Workers (`wrangler deploy`)
+2. **API** (`backend/`) — FastAPI backed by PostgreSQL 16 + pgvector on a Hostinger VPS behind Traefik
+
+The ingestion pipeline (`backend/scraper/`) crawls laws.gov.tt, extracts PDFs to markdown, chunks section-aware, embeds (384-dim), and indexes into PostgreSQL with FTS5-style full-text + vector search. A case-law layer crawls webOPAC judgments and derives statute citation edges (7,914 edges / 2,236 case nodes).
+
+### Repo layout
+
+- `backend/api/` — production FastAPI application
+- `backend/scraper/` — ingestion, database, embeddings, and search modules
+- `backend/graphrag/` — case-law citation graph tooling
+- `citation-tool/` — production Svelte customer app
+- `tests/` — scraper, database, migration, and API coverage
+- `docs/superpowers/` — specs, plans, decision records
+- `data/` — database init SQL and fixtures
+
+## Development
+
+### Backend
 
 ```bash
-cd /Users/gregoryollivierre/GREG_V2/law-cite-tt
 uv venv .venv
 source .venv/bin/activate
-uv pip install -r requirements.txt
-pytest -v   # confirm all 16 tests pass before touching the live site
+uv pip install -r backend/requirements.txt
+pytest -v
 ```
 
-### Run the crawl
+### Frontend
 
 ```bash
-source .venv/bin/activate
-python scripts/run_recon.py
+cd citation-tool
+npm install
+VITE_API_BASE=https://srv1629323.hstgr.cloud npm run dev
 ```
 
-It prints nothing until it finishes (roughly 60–90+ minutes later), then a final summary line like:
+Build for production with `VITE_API_BASE=... npm run build`, then `wrangler deploy`.
 
-```
-Processed <N> chapters: <N> ok, <N> likely scanned.
-Report written to /Volumes/Extreme SSD/law-cite-tt-data/recon_report.csv
-```
+## Background: corpus acquisition
 
-To run it in the background and check on it later instead of blocking a terminal:
+The corpus was built from a deliberate rate-limited crawl of all 533 chapters on <https://laws.gov.tt>, downloading **every historical version** of each (one chapter can have 10+ versions spanning back to the 1800s) and extracting each to markdown. The crawl rate-limits itself to ~1.5s between requests out of courtesy to a government website with no published crawl policy. Do not remove or shorten that delay.
 
-```bash
-source .venv/bin/activate
-nohup python scripts/run_recon.py > /tmp/recon_run.log 2>&1 &
-echo "PID: $!"
-```
+- Data lives on an external drive mounted at `/Volumes/Extreme SSD/law-cite-tt-data/` (see `backend/scraper/config.py` — `OUTPUT_ROOT`)
+- Run the reconnaissance crawl with `python backend/scripts/run_recon.py`
+- The SQLite working DB (`law_cite.db`) and markdown corpus live alongside the PDFs on that drive; production uses the PostgreSQL/pgvector migration
 
-Check progress at any time with:
+### Known crawl gotchas — do not "fix"
 
-```bash
-tail -20 /tmp/recon_run.log                                            # final summary once done
-ls "/Volumes/Extreme SSD/law-cite-tt-data/pdfs" | wc -l                 # chapter folders created so far
-```
-
-### What "done" looks like
-
-- `/Volumes/Extreme SSD/law-cite-tt-data/pdfs/<chapter>/<download_id>.pdf` — one folder per chapter, one PDF per historical version.
-- `/Volumes/Extreme SSD/law-cite-tt-data/markdown/<chapter>/<download_id>.md` — matching extracted markdown per version.
-- `/Volumes/Extreme SSD/law-cite-tt-data/recon_report.csv` — one row per (chapter, version) with `status`, `character_count`, `likely_scanned`.
-
-A previous partial run (533 chapters, latest version only — before the "fetch every version" change) already confirmed: extraction quality is excellent, 0 chapters need OCR, and total size for that latest-only run was ~2.2 GB. The full-history run will be several times larger — don't worry if it takes up tens of GB; the external drive has 240+ GB free as of 2026-07-26.
-
-### Known gotchas already handled by the code — do not "fix" these if you see them
-
-- The site returns an **HTTP 500** (not an empty page) once you page past the last real listing entry. `scraper/catalog.py`'s `crawl_full_catalog` already treats this as the normal end-of-pagination signal — this is correct, verified behavior, not a bug.
-- Running `python scripts/run_recon.py` directly (not via pytest) needs the project root on `sys.path` — already handled by a `sys.path.insert` at the top of `scripts/run_recon.py`.
-- If the process is interrupted partway through, **re-running it restarts from scratch** — there is no resume/skip-already-done logic in Phase 0 (that idempotency belongs in the Phase 1 cloud pipeline, not this one-time reconnaissance script). Already-downloaded files just get overwritten with identical content, which is harmless but wastes time — better to let a started run finish if at all possible rather than interrupting and restarting.
-
-### After the crawl finishes
-
-Report back (or inspect yourself) the `recon_report.csv` summary — total rows, `status` breakdown, `likely_scanned` count, and `character_count` min/max/avg. That data is what the next planning phase (Phase 1: cloud pipeline — chunking, embeddings, Postgres/pgvector, API) needs before it can be written without guessing.
+- The site returns an **HTTP 500** (not an empty page) once you page past the last real listing entry. `backend/scraper/catalog.py`'s `crawl_full_catalog` already treats this as the normal end-of-pagination signal — this is correct, verified behavior, not a bug.
+- If the recon run is interrupted partway through, **re-running restarts from scratch** — there is no resume/skip-already-done logic in Phase 0. Already-downloaded files just get overwritten with identical content; harmless but wasteful.
