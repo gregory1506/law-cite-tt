@@ -254,12 +254,14 @@
           </p>
           {#if result.authority.heading}<p class="heading">{result.authority.heading}</p>{/if}
         </div>
-        <a href={resolveUrl(result.authority.pdf_url)} target="_blank" rel="noopener">
+        {#if resolveUrl(result.authority.pdf_url)}
+          <a href={resolveUrl(result.authority.pdf_url)} target="_blank" rel="noopener">
+            <FileText size={16} aria-hidden="true" />
+            Official PDF
+            <ExternalLink size={14} aria-hidden="true" />
+          </a>
+        {/if}
 
-          <FileText size={16} aria-hidden="true" />
-          Official PDF
-          <ExternalLink size={14} aria-hidden="true" />
-        </a>
       </header>
 
       <section class="citation-output" aria-labelledby="citation-output-heading">

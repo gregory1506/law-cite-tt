@@ -131,13 +131,14 @@
           {/if}
         </button>
       {/if}
-      {#if activeVersion.pdf_url}
+      {#if resolveUrl(activeVersion.pdf_url)}
         <a
           class="source-link"
           href={resolveUrl(activeVersion.pdf_url)}
           target="_blank"
           rel="noopener"
         >
+
 
           <FileText size={16} aria-hidden="true" />
           Official PDF

@@ -72,10 +72,11 @@ export function chat(messages, mode = "research") {
 }
 
 export function resolveUrl(url) {
-  if (!url) return "#";
+  if (!url || url === "#" || url.includes("/undefined") || url.includes("/null")) return null;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   return `${API_BASE}${url}`;
 }
+
 
 export { API_BASE };
 

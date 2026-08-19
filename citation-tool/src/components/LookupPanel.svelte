@@ -128,14 +128,14 @@
         </summary>
         <div class="version-body">
           <div class="result-text">{result.chunk_text}</div>
-          {#if result.pdf_url}
+          {#if resolveUrl(result.pdf_url)}
             <a href={resolveUrl(result.pdf_url)} target="_blank" rel="noopener">
-
               <FileText size={16} aria-hidden="true" />
               Official PDF
               <ExternalLink size={14} aria-hidden="true" />
             </a>
           {/if}
+
         </div>
       </details>
     {/each}
