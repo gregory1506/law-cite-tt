@@ -62,7 +62,8 @@ async def lifespan(app: FastAPI):
 
 
 def pdf_url(download_id: int | str) -> str:
-    return f"{PDF_BASE}/{download_id}?type=act"
+    return f"/api/pdf/{download_id}"
+
 
 
 def enrich_row(r: dict) -> dict:

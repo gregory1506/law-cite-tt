@@ -176,7 +176,8 @@ async def test_search_provisions_returns_text_and_sources():
     assert "Absconding Debtors" in result["text"]
     assert "Official PDF" in result["text"]
     assert result["sources"][0]["id"] == "chunk:7"
-    assert result["sources"][0]["url"].startswith("https://laws.gov.tt")
+    assert result["sources"][0]["url"].startswith("/api/pdf")
+
 
 
 @pytest.mark.asyncio

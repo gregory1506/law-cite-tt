@@ -5,7 +5,8 @@
     ExternalLink,
     FileText,
   } from "@lucide/svelte";
-  import { lookupSection } from "../lib/api.js";
+  import { lookupSection, resolveUrl } from "../lib/api.js";
+
   import { excerptAroundQuery, highlightSegments } from "../lib/text.js";
   import VersionSelector from "./VersionSelector.svelte";
 
@@ -133,10 +134,11 @@
       {#if activeVersion.pdf_url}
         <a
           class="source-link"
-          href={activeVersion.pdf_url}
+          href={resolveUrl(activeVersion.pdf_url)}
           target="_blank"
           rel="noopener"
         >
+
           <FileText size={16} aria-hidden="true" />
           Official PDF
           <ExternalLink size={14} aria-hidden="true" />
