@@ -59,3 +59,12 @@ async function postJSON(path, body) {
 export function chat(messages, mode = "research") {
   return postJSON("/api/chat", { messages, mode });
 }
+
+export function resolveUrl(url) {
+  if (!url) return "#";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `${API_BASE}${url}`;
+}
+
+export { API_BASE };
+
