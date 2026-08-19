@@ -24,7 +24,7 @@ describe("App shell", () => {
     ).toBeInTheDocument();
     await fireEvent.click(screen.getByRole("button", { name: "Chat" }));
     expect(screen.getByRole("heading", { name: "Chat", level: 1 })).toBeInTheDocument();
-    expect(screen.getByText("Chat is coming soon")).toBeInTheDocument();
+    expect(screen.getByText("Ask about the Laws of Trinidad and Tobago")).toBeInTheDocument();
     expect(screen.queryByText("Chunks")).not.toBeInTheDocument();
     expect(screen.queryByText("Embedded")).not.toBeInTheDocument();
   });

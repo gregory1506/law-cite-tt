@@ -81,3 +81,29 @@ class CitationResolveResponse(BaseModel):
     authority: CitationAuthority | None = None
     text: str = ""
     alternatives: list[CitationAlternative] = Field(default_factory=list)
+
+
+class ChatMessage(BaseModel):
+    role: str = Field(pattern="^(user|assistant)$")
+    content: str
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage] = Field(min_length=1)
+    mode: str = Field(default="research", pattern="^(research|precedent)$")
+
+
+class ChatSource(BaseModel):
+    id: str
+    title: str = ""
+    chapter: str = ""
+    section: str = ""
+    date: str = ""
+    url: str = ""
+    kind: str = "statute"
+
+
+class ChatResponse(BaseModel):
+    status: str = Field(pattern="^(ok|refused|error|unconfigured)$")
+    answer: str
+    sources: list[ChatSource] = Field(default_factory=list)

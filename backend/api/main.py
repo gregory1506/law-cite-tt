@@ -9,8 +9,14 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
+from api.agent import ChatAgent
 from api.citations import format_citation, normalize_chapter, normalize_section
-from api.models import CitationResolveResponse, GroupedSearchResponse
+from api.models import (
+    ChatRequest,
+    ChatResponse,
+    CitationResolveResponse,
+    GroupedSearchResponse,
+)
 from scraper.db_pg import LawCitePGDB
 from scraper.embed import _get_model
 
@@ -214,6 +220,14 @@ async def resolve_citation(
         "text": authority["chunk_text"],
         "alternatives": [],
     }
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat(payload: ChatRequest):
+    messages = [{"role": m.role, "content": m.content} for m in payload.messages]
+    agent = ChatAgent(get_db())
+    result = await agent.run(messages, mode=payload.mode)
+    return ChatResponse(**result)
 
 
 @app.get("/api/stats")
