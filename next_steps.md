@@ -45,21 +45,22 @@ Concrete, actionable items for continuing work here. Review this before starting
 - FastAPI demo app with search/lookup/chapters/stats/landing page
 - PDF source links on all results
 - Documentation + Obsidian vault sync
-- Private GitHub repo created
+- Private GitHub repo created (published as open source)
 - Phase 2A: Directory reorg into backend/, citation-tool/, data/
 - Phase 2B: Postgres + pgvector schema (data/init.sql), docker-compose db service
 - Phase 2C: Async db_pg.py (asyncpg pool, FTS/vector/hybrid search)
 - Phase 2D: FastAPI moved to backend/api/main.py, backed by db_pg
 - Phase 2E: SQLite -> Postgres migration script, run against full 407,008-chunk dataset (exact count match)
-- Phase 2F: Svelte customer app (citation-tool/) with working Explore tab (search/lookup/browse), stubbed Cite/Chat
+- Phase 2F: Svelte customer app (citation-tool/) with working Explore tab (search/lookup/browse), Cite, and Chat
 - Phase 2G: Full docker-compose stack (db + api + citation-tool) verified end-to-end in browser
-- Citation-tool dark legal-tech redesign: sidebar shell, stat tiles, responsive mobile navigation, polished Explore states, and styled Cite/Chat placeholders deployed to Cloudflare Workers
+- Citation-tool dark legal-tech redesign: sidebar shell, stat tiles, responsive mobile navigation, polished Explore states, and styled Cite/Chat routes deployed to Cloudflare Workers
 - Lawyer/paralegal UX implementation phases 1-5: grouped provision search, legal metadata and version controls, safe contextual excerpts, legal-first search/lookup/browse workflows, frontend tests, and desktop/mobile browser QA
 - Lawyer/paralegal UX production rollout: backend image `lawcite-api:ux-grouped-20260729` deployed on Hostinger and frontend Worker version `8b112881-4092-4202-bc49-41c54f2baa91` deployed and verified
-- Frontend follow-up: persistent Clear search action and visible Chat coming-soon route deployed as Worker version `98837494-e732-4872-ac61-76751aadc8da`
+- Frontend follow-up: persistent Clear search action and Chat route deployed as Worker version `98837494-e732-4872-ac61-76751aadc8da`
 - Cite validation MVP: source-backed chapter/section/date resolution, explicit found/not-found/ambiguous states, exact statutory text, official PDFs, full/short citation copy, and responsive desktop/mobile workflows deployed with API image `lawcite-api:a87fc7b` and Worker version `f74a010e-2548-4749-96c4-21f388a141c0`
 - Agentic research assistant Phase A LIVE: grounded tool-calling Chat agent (`POST /api/chat`) over the statute API, Gemini via OPENAI_BASE_URL, grounding guardrail refuses unverifiable answers, server-rendered Sources. API image `lawcite-api:2cb6629`, Worker `fbfa1426-47df-4e08-ab4a-edb1d6fb512f`
 - Agentic research assistant Phase B LIVE (precedent-chain agent): `cases`/`case_citations` in Postgres, loader `backend/scripts/load_case_edges.py`, `/api/cases`, `/api/cases/citing`, `/api/cases/{id}`, agent tools `citing_cases`/`search_cases`/`expand_case`. API image `lawcite-api:18bee46`. Case names/years backfilled from the webOPAC corpus (2,235/2,236 titled)
+
 
 ### Case-law layer (webOPAC) - current status
 
