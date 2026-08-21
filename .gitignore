@@ -40,3 +40,17 @@ build/
 # Regenerable graph artifacts (rebuild via backend/graphrag/build.py)
 graphify-out/
 
+# Work-tracker skill files (local only)
+work_log.md
+lessons_learned.md
+next_steps.md
+
+# Agent config & scratch files
+CLAUDE.md
+cont.txt
+
+# Internal planning & design docs
+docs/superpowers/
+docs/graphrag/
+docs/study-log.md
+
