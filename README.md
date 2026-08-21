@@ -25,6 +25,23 @@ By digitizing and section-chunking all **533 statutory chapters** across **4,989
 
 ---
 
+## 📸 Screenshots
+
+<table>
+  <tr>
+    <td align="center"><strong>Research</strong></td>
+    <td align="center"><strong>Cite</strong></td>
+    <td align="center"><strong>Chat</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/research.png" alt="Research tab showing search results" /></td>
+    <td><img src="docs/images/cite.png" alt="Cite tab showing citation validation" /></td>
+    <td><img src="docs/images/chat.png" alt="Chat tab showing AI assistant" /></td>
+  </tr>
+</table>
+
+---
+
 ## ⚡ Key Features
 
 <table>
