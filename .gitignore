@@ -54,3 +54,20 @@ docs/superpowers/
 docs/graphrag/
 docs/study-log.md
 
+# Proprietary data pipeline (ingestion, scraping, migration)
+backend/scraper/
+backend/scripts/
+backend/webopac_scan.jsonl
+tests/test_catalog.py
+tests/test_detail.py
+tests/test_http_client.py
+tests/test_recon.py
+tests/test_pdf_to_markdown.py
+tests/test_case_law.py
+tests/test_chunker.py
+tests/test_db.py
+tests/test_db_pg.py
+tests/test_search.py
+tests/test_migrate_sqlite_to_pg.py
+tests/test_load_case_edges.py
+

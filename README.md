@@ -209,13 +209,15 @@ npx wrangler deploy
 
 ---
 
-## 📜 Data Acquisition & Pipeline Governance
+## 📜 Data Corpus
 
-The statutory and judicial corpus supporting **LawCite TT** is gathered and processed through an automated, responsible data ingestion pipeline (`backend/scraper/`).
+The statutory and judicial corpus powering **LawCite TT** is stored in a pre-built PostgreSQL 16 database with pgvector extensions.
 
-* **Ethical Crawling & Rate Limits**: Requests are strictly serialized with mandatory delay buffers ($\ge 1.5\text{s}$ per request) to minimize load on public digital law infrastructure and respect server capacity.
-* **Granular Extraction & Normalization**: Official statutory PDF documents are extracted, converted into structured Markdown, and parsed into section-aware statutory chunks while preserving historical metadata and edition headers.
-* **Corpus Integrity & Vector Storage**: Extracted revisions are systematically validated, embedded with 384-dimensional dense vectors, and indexed into PostgreSQL 16 (`pgvector`) for hybrid search and real-time retrieval.
+* **533 statutory chapters** across **4,989 historical revisions** (1800s–2024), section-chunked and embedded with 384-dimensional dense vectors (`BAAI/bge-small-en-v1.5`).
+* **2,236 court judgments** with **7,914 explicit statute-to-case citation edges** forming a searchable precedent graph.
+* **Hybrid search index**: PostgreSQL `tsvector`/`tsquery` full-text search combined with HNSW cosine-distance vector indexing for sub-100ms semantic queries.
+
+> **Note:** The data ingestion pipeline is proprietary. The corpus is available as a pre-built database for deployment.
 
 
 ---
