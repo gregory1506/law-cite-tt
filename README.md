@@ -161,50 +161,36 @@ This project serves as a production-grade demonstration of modern **AI Engineeri
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Python 3.12+** & [`uv`](https://github.com/astral-sh/uv) package manager
 - **Node.js 20+** & `npm`
-- **Docker & Docker Compose** (for running local PostgreSQL + pgvector)
+- **Python 3.12+** & [`uv`](https://github.com/astral-sh/uv) (for backend exploration)
 
-### 1. Backend Setup
+### Explore the Live App
+
+The fastest way to understand LawCite TT is to use it:
+
+**[Open LawCite TT →](https://law-cite-tt.gjo-ai.workers.dev)**
+
+### Frontend Development
 
 ```bash
-# Clone the repository
 git clone https://github.com/gregory1506/law-cite-tt.git
-cd law-cite-tt
+cd law-cite-tt/citation-tool
 
-# Set up Python virtual environment
-uv venv .venv
-source .venv/bin/activate
-uv pip install -r backend/requirements.txt
-
-# Run pytest suite
-pytest -v
-```
-
-### 2. Frontend Setup
-
-```bash
-cd citation-tool
-
-# Install dependencies
 npm install
-
-# Run local development server (connects to local API)
-npm run dev
-
-# Run test suite
-npm test
+npm run dev    # Svelte dev server (connects to production API)
+npm test       # Run frontend tests
 ```
 
-### 3. Production Deployment
+### Backend Architecture
+
+The API layer (`backend/api/`) is a FastAPI application backed by PostgreSQL 16 + pgvector. The data ingestion pipeline is proprietary — the corpus is available as a pre-built database.
 
 ```bash
-# Build frontend with production API routing
-cd citation-tool
-npm run build
-
-# Deploy frontend to Cloudflare Workers
-npx wrangler deploy
+# Explore the API code
+cd law-cite-tt/backend
+cat api/main.py    # FastAPI app, routes, lifespan
+cat api/agent.py   # Agentic tool-calling loop
+cat api/tools.py   # Search, citation, and case law handlers
 ```
 
 ---
