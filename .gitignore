@@ -71,3 +71,4 @@ tests/test_search.py
 tests/test_migrate_sqlite_to_pg.py
 tests/test_load_case_edges.py
 
+templates/
