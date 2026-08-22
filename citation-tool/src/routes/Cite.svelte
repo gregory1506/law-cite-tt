@@ -10,6 +10,8 @@
   } from "@lucide/svelte";
   import { onMount } from "svelte";
   import { getChapters, resolveCitation, resolveUrl } from "../lib/api.js";
+  import { formatDate } from "../lib/date.js";
+  import Card from "../components/ui/Card.svelte";
 
 
   let chapters = $state([]);
@@ -78,15 +80,6 @@
     }
   }
 
-  function displayDate(value) {
-    if (!value) return "Date unavailable";
-    return new Intl.DateTimeFormat("en-TT", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      timeZone: "UTC",
-    }).format(new Date(`${value}T00:00:00Z`));
-  }
 
   function chooseAlternative(alternative) {
     chapter = alternative.chapter_number;
@@ -155,34 +148,38 @@
 
 <div class="state-region" aria-live="polite">
   {#if loading}
-    <div class="state-card waiting" role="status">
-      <span class="state-icon"><Search size={20} /></span>
-      <div>
-        <strong>Validating citation…</strong>
-        <p>Checking the chapter, provision, and eligible source version.</p>
-      </div>
+    <div role="status">
+      <Card padded class="state-card waiting">
+        <span class="state-icon"><Search size={20} /></span>
+        <div>
+          <strong>Validating citation…</strong>
+          <p>Checking the chapter, provision, and eligible source version.</p>
+        </div>
+      </Card>
     </div>
   {:else if error}
-    <div class="state-card error-state" role="alert">
-      <span class="state-icon"><AlertTriangle size={20} /></span>
-      <div>
-        <strong>Citation check unavailable</strong>
-        <p>{error}</p>
-      </div>
+    <div role="alert">
+      <Card padded class="state-card error-state">
+        <span class="state-icon"><AlertTriangle size={20} /></span>
+        <div>
+          <strong>Citation check unavailable</strong>
+          <p>{error}</p>
+        </div>
+      </Card>
     </div>
   {:else if result?.status === "not_found"}
-    <div class="state-card not-found">
+    <Card padded class="state-card not-found">
       <span class="state-icon"><Search size={20} /></span>
       <div>
         <strong>Citation not found</strong>
         <p>
           No exact source text was found for Chap. {result.normalized_input.chapter},
           s. {result.normalized_input.section}{result.normalized_input.date
-            ? ` by ${displayDate(result.normalized_input.date)}`
+            ? ` by ${formatDate(result.normalized_input.date, { month: "long" })}`
             : ""}.
         </p>
       </div>
-    </div>
+    </Card>
     {#if result.alternatives?.length}
       <section class="alternatives" aria-labelledby="alternatives-heading">
         <h2 id="alternatives-heading">Nearby references</h2>
@@ -201,16 +198,16 @@
       </section>
     {/if}
   {:else if result?.status === "ambiguous"}
-    <div class="state-card ambiguous">
+    <Card padded class="state-card ambiguous">
       <span class="state-icon"><AlertTriangle size={20} /></span>
       <div>
         <strong>Citation ambiguous</strong>
         <p>
-          More than one materially different source row matches this reference.
-          Review the alternatives before relying on it.
+          More than one version of this provision could match. Review the
+          options below before relying on it.
         </p>
       </div>
-    </div>
+    </Card>
     {#if result.alternatives?.length}
       <section class="alternatives" aria-labelledby="ambiguous-heading">
         <h2 id="ambiguous-heading">Matching source records</h2>
@@ -221,7 +218,7 @@
               <strong>Chap. {alternative.chapter_number}, s. {alternative.section_ref}</strong>
               <small>
                 {alternative.as_at_date
-                  ? `Available as at ${displayDate(alternative.as_at_date)}`
+                  ? `Available as at ${formatDate(alternative.as_at_date, { month: "long" })}`
                   : "Date unavailable"}
               </small>
             </button>
@@ -230,7 +227,7 @@
       </section>
     {/if}
   {:else if result?.status === "found"}
-    <div class="state-card found">
+    <Card padded class="state-card found">
       <span class="state-icon"><Check size={20} /></span>
       <div>
         <strong>Citation found</strong>
@@ -238,14 +235,14 @@
           Resolved to an exact provision in the available statutory source corpus.
         </p>
       </div>
-    </div>
+    </Card>
 
-    <article class="result-card">
+    <Card padded={false} class="result-card">
       <header class="authority-header">
         <div>
           <p class="authority-label">
             {result.normalized_input.date
-              ? `Available as at ${displayDate(result.normalized_input.date)}`
+              ? `Available as at ${formatDate(result.normalized_input.date, { month: "long" })}`
               : "Latest available"}
           </p>
           <h2>{result.authority.title}</h2>
@@ -304,7 +301,7 @@
           <h3 id="source-text-heading">Exact statutory text</h3>
           <span>
             {result.authority.as_at_date
-              ? displayDate(result.authority.as_at_date)
+              ? formatDate(result.authority.as_at_date, { month: "long" })
               : "Source date unavailable"}
           </span>
         </div>
@@ -313,13 +310,13 @@
           <p class="version-label">{result.authority.version_label}</p>
         {/if}
       </section>
-    </article>
+    </Card>
   {/if}
 </div>
 
 <p class="scope-note">
-  LawCite confirms whether a reference resolves in its source corpus. It does
-  not claim that a provision is currently in force.
+  LawCite checks whether a reference matches text in its collection of laws.
+  It does not confirm the law is currently in force.
 </p>
 
 <style>
@@ -409,33 +406,27 @@
   }
   .validate-button:disabled { cursor: not-allowed; opacity: 0.45; }
   .state-region { margin-top: 16px; }
-  .state-card {
+  :global(.card.state-card.padded) {
     display: flex;
     align-items: flex-start;
     gap: 12px;
     padding: 14px 16px;
-    border: 1px solid var(--border);
     border-left-width: 3px;
-    border-radius: var(--radius);
-    background: var(--surface);
   }
-  .state-card .state-icon { display: grid; place-items: center; margin-top: 1px; }
-  .state-card strong { display: block; font-size: 0.9rem; }
-  .state-card p { margin: 3px 0 0; color: var(--muted-strong); font-size: 0.8rem; }
-  .state-card.found { border-left-color: var(--positive); }
-  .state-card.found .state-icon { color: var(--positive); }
-  .state-card.ambiguous { border-left-color: #fbbf24; }
-  .state-card.ambiguous .state-icon { color: #fbbf24; }
-  .state-card.error-state { border-left-color: var(--danger); }
-  .state-card.error-state .state-icon { color: var(--danger); }
-  .state-card.not-found, .state-card.waiting { border-left-color: var(--accent); }
-  .state-card.not-found .state-icon, .state-card.waiting .state-icon { color: var(--accent); }
-  .result-card {
+  :global(.state-card) .state-icon { display: grid; place-items: center; margin-top: 1px; }
+  :global(.state-card) strong { display: block; font-size: 0.9rem; }
+  :global(.state-card) p { margin: 3px 0 0; color: var(--muted-strong); font-size: 0.8rem; }
+  :global(.state-card.found) { border-left-color: var(--positive); }
+  :global(.state-card.found) .state-icon { color: var(--positive); }
+  :global(.state-card.ambiguous) { border-left-color: #fbbf24; }
+  :global(.state-card.ambiguous) .state-icon { color: #fbbf24; }
+  :global(.state-card.error-state) { border-left-color: var(--danger); }
+  :global(.state-card.error-state) .state-icon { color: var(--danger); }
+  :global(.state-card.not-found), :global(.state-card.waiting) { border-left-color: var(--accent); }
+  :global(.state-card.not-found) .state-icon, :global(.state-card.waiting) .state-icon { color: var(--accent); }
+  :global(.card.result-card) {
     margin-top: 10px;
     overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
   }
   .authority-header {
     display: flex;

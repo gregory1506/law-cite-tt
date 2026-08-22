@@ -1,4 +1,6 @@
 <script>
+  import Card from "./ui/Card.svelte";
+
   let { chapters = [], onSelect } = $props();
 
   let filter = $state("");
@@ -21,10 +23,22 @@
     <div class="no-results">No chapters match that filter.</div>
   {:else}
     {#each filtered as c (c.chapter)}
-      <div class="chapter-card" onclick={() => onSelect(c.chapter)} role="button" tabindex="0"
-           onkeydown={(e) => e.key === "Enter" && onSelect(c.chapter)}>
-        <span class="chapter">{c.chapter}</span>
-        <span class="title">{c.title}</span>
+      <div
+        class="chapter-card-wrap"
+        onclick={() => onSelect(c.chapter)}
+        role="button"
+        tabindex="0"
+        onkeydown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onSelect(c.chapter);
+          }
+        }}
+      >
+        <Card padded class="chapter-card">
+          <span class="chapter">{c.chapter}</span>
+          <span class="title">{c.title}</span>
+        </Card>
       </div>
     {/each}
   {/if}
@@ -37,18 +51,20 @@
     padding: 12px 16px; font-size: 1rem;
     border: 2px solid var(--border); border-radius: var(--radius);
   }
-  .chapter-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
+  .chapter-card-wrap {
     margin-bottom: 12px;
     cursor: pointer;
+  }
+  :global(.card.chapter-card.padded) {
+    padding: 16px;
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
   }
-  .chapter-card:hover { border-color: var(--accent-light); box-shadow: 0 2px 8px rgba(34, 211, 238, 0.15); }
-  .chapter { font-weight: 600; color: var(--accent); }
+  .chapter-card-wrap:hover :global(.chapter-card) {
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(34, 211, 238, 0.15);
+  }
+  :global(.chapter-card) .chapter { font-weight: 600; color: var(--accent); }
   .no-results { text-align: center; padding: 48px 16px; color: var(--muted); }
 </style>

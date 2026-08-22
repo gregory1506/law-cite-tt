@@ -30,6 +30,7 @@
     </div>
   </div>
 {:else}
+  <a href="#main-content" class="skip-link">Skip to content</a>
   <div class="mobile-header">
     <button
       class="nav-toggle"
@@ -78,7 +79,7 @@
         onclick={() => (navOpen = false)}
       ></button>
     {/if}
-    <main>
+    <main id="main-content">
       <div class="main-inner">
         {#if route === "research"}
           <Explore />
@@ -112,6 +113,24 @@
     --highlight: rgba(250, 204, 21, 0.2);
     --highlight-text: #fef08a;
     --radius: 7px;
+
+    /* Spacing scale — 8px base, replaces 18 ad-hoc values found in audit */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-7: 32px;
+    --space-8: 48px;
+
+    /* Type scale — 1.25 modular ratio off a 16px base, replaces 10 ad-hoc font-sizes */
+    --text-xs: 0.72rem;   /* 11.52px */
+    --text-sm: 0.82rem;   /* 13.1px  */
+    --text-base: 1rem;    /* 16px    */
+    --text-md: 1.15rem;   /* 18.4px  */
+    --text-lg: 1.56rem;   /* 25px    */
+    --text-xl: 2rem;      /* 32px    */
   }
   :global(body) {
     margin: 0;
@@ -126,6 +145,21 @@
   :global(button) { font: inherit; }
   :global(input::placeholder) { color: var(--muted); }
   .accent-text { color: var(--accent); }
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 40;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .skip-link:focus {
+    left: var(--space-3);
+    top: var(--space-3);
+  }
   .app-shell { display: flex; min-height: 100vh; }
   .sidebar {
     width: 216px;
