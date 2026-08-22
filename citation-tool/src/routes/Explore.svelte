@@ -23,11 +23,13 @@
   let date = $state("");
   let lastSearch = $state({ query: "", mode: "fts", chapter: "", date: "" });
 
+  let chapterLoadError = $state("");
+
   onMount(async () => {
     try {
       chapters = await getChapters();
     } catch (loadError) {
-      console.error("Failed to load chapters", loadError);
+      chapterLoadError = loadError.message;
     }
   });
 
@@ -109,7 +111,7 @@
     <p class="eyebrow">Laws of Trinidad and Tobago</p>
     <h1>Research</h1>
   </div>
-  <p class="coverage">533 chapters · historical versions included</p>
+  <p class="coverage">{chapters.length || "—"} chapters · historical versions included</p>
 </div>
 
 <div class="tab-bar" role="tablist" aria-label="Research tools">
@@ -132,6 +134,10 @@
     onclick={() => (subTab = "browse")}
   >Browse chapters</button>
 </div>
+
+{#if chapterLoadError}
+  <p class="chapter-load-error" role="alert">Chapter list unavailable: {chapterLoadError}</p>
+{/if}
 
 {#if subTab === "search"}
   <SearchBar
@@ -264,7 +270,12 @@
     cursor: pointer;
   }
   .load-more:hover:not(:disabled) { border-color: var(--accent); }
-  .load-more:disabled { cursor: wait; opacity: 0.65; }
+  .load-more:disabled { cursor: wait; opacity: 0.45; }
+  .chapter-load-error {
+    margin: 0 0 12px;
+    color: var(--danger);
+    font-size: var(--text-xs);
+  }
   @media (max-width: 600px) {
     .page-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
     .tab-bar button { flex: 1; padding-inline: 8px; }

@@ -7,7 +7,10 @@
   } from "@lucide/svelte";
   import { lookupSection, resolveUrl } from "../lib/api.js";
 
+  import { formatDate } from "../lib/date.js";
   import { excerptAroundQuery, highlightSegments } from "../lib/text.js";
+  import Card from "./ui/Card.svelte";
+  import StatusBadge from "./ui/StatusBadge.svelte";
   import VersionSelector from "./VersionSelector.svelte";
 
   let { item, query = "", historicalDate = "" } = $props();
@@ -28,7 +31,7 @@
         ? "Latest available"
         : activeVersion.as_at_date
           ? "Historical version"
-          : "Date unavailable",
+          : "No effective date on file",
   );
   const visibleText = $derived(
     expanded
@@ -68,18 +71,9 @@
     }
   }
 
-  function displayDate(value) {
-    if (!value) return "";
-    return new Intl.DateTimeFormat("en-TT", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    }).format(new Date(`${value}T00:00:00Z`));
-  }
 </script>
 
-<article class="result-card">
+<Card padded class="result-card">
   <header>
     <div class="authority">
       <p class="title">{item.title || "Title unavailable"}</p>
@@ -88,12 +82,12 @@
         {#if item.section_ref}<span>Section {item.section_ref}</span>{/if}
       </div>
     </div>
-    <span class:latest={isLatest} class="status">{authorityLabel}</span>
+    <StatusBadge tone={isLatest ? "positive" : "neutral"}>{authorityLabel}</StatusBadge>
   </header>
 
   <div class="version-meta">
     {#if activeVersion.as_at_date}
-      <span>As at {displayDate(activeVersion.as_at_date)}</span>
+      <span>As at {formatDate(activeVersion.as_at_date)}</span>
     {/if}
     {#if activeVersion.version_label}
       <span>{activeVersion.version_label}</span>
@@ -153,13 +147,10 @@
       onSelect={selectVersion}
     />
   </footer>
-</article>
+</Card>
 
 <style>
-  .result-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+  :global(.card.result-card.padded) {
     padding: 18px 20px;
     margin-bottom: 12px;
   }
@@ -185,20 +176,6 @@
     color: var(--accent);
     font-size: 0.82rem;
     font-weight: 700;
-  }
-  .status {
-    flex: 0 0 auto;
-    padding: 4px 8px;
-    border: 1px solid var(--border-strong);
-    border-radius: 999px;
-    color: var(--muted-strong);
-    font-size: 0.72rem;
-    font-weight: 700;
-  }
-  .status.latest {
-    border-color: rgba(45, 212, 191, 0.45);
-    background: rgba(45, 212, 191, 0.1);
-    color: var(--positive);
   }
   .version-meta {
     display: flex;
@@ -268,9 +245,9 @@
     outline-offset: 3px;
   }
   @media (max-width: 600px) {
-    .result-card { padding: 16px; }
+    :global(.card.result-card.padded) { padding: 16px; }
     header { flex-direction: column; gap: 10px; }
-    .status { align-self: flex-start; }
+    :global(.badge) { align-self: flex-start; }
     footer { align-items: flex-start; }
     .excerpt { font-size: 0.94rem; }
   }

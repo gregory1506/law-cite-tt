@@ -1,0 +1,17 @@
+# Verdict — LawCite TT Frontend
+
+**Total: 19/30. No principle scored 0. By rule (total < 20), verdict is REDESIGN.**
+
+LawCite TT's dark-legal-tech shell is honest, unobtrusive, accessible (all contrast pairs pass AA, 3 ARIA landmarks, logical focus order), and lightweight (86.6KB JS, zero idle animation) — but it fails the "REFINE" bar on total score because the same handful of UI patterns (card containers, status badges, date formatting) were independently reimplemented 2-5 times each with small inconsistencies, the type/spacing scales were never locked to a modular system, and at least one real state (chapter-dropdown fetch failure) has no visible error UI at all. This isn't a broken product — nothing here fails a load-bearing principle (usefulness, understandability, and honesty all scored ≥1) — but the accumulation of unconsolidated duplication and inconsistency across nearly every surface pushes the total below the REFINE threshold.
+
+This is a **design-system consolidation redesign**, not an information-architecture or navigation overhaul: the sidebar nav, route structure, and dark token palette (13 named tokens) are sound and should be preserved. What needs to be rebuilt is the *component layer* underneath them — one card primitive, one badge/status primitive, one date-formatting utility, a locked modular type/spacing scale — plus the specific gaps found (silent Explore error, StatsBar's off-palette hardcode, jargon strings, ChapterBrowser's missing Space-key handler).
+
+## Top 5 highest-leverage moves
+
+1. **[#10 as little design as possible / #3 aesthetic]** Consolidate the 5 independent card-container implementations (StatsBar `.stat-tile`, ChapterBrowser `.chapter-card`, ResultCard `.result-card`, LookupPanel `details`, Cite `.result-card`) into one shared `Card` component/class. Evidence: Structural evidence, 01-evidence.md §Structural.3.
+2. **[#3 aesthetic]** Lock a modular type scale and spacing scale as CSS custom properties instead of the current 10 ad-hoc font-sizes and 18 ad-hoc spacing values; fix the one off-palette hardcode (`StatsBar.svelte:71` `#f87171` → `var(--danger)`). Evidence: Visual evidence §1-3.
+3. **[#8 thorough]** Add a visible error state to Explore's chapter-dropdown fetch failure (currently `console.error`-only, Explore.svelte:29-30) and standardize disabled-button treatment across all controls (load-more currently diverges with `cursor:wait;opacity:.65`). Evidence: Visual evidence §5, Weight & Friction.
+4. **[#4 understandable]** Rewrite the three flagged jargon strings: "materially different source row" (Cite.svelte:207-213) → "More than one version of this provision could match — review the options below"; "resolves in its source corpus" (Cite.svelte:322) → plain-language equivalent; "Date unavailable" pill → "No effective date on file." Evidence: Copy & Honesty §4.
+5. **[#10 as little design as possible]** Extract the 3x-duplicated `displayDate()` function (ResultCard, LookupPanel, Cite — with a silent `month:"long"` vs `"short"` inconsistency between them) into one shared utility, and unify the two separate status-badge implementations (ResultCard `.status` pill vs Cite `.state-card`) into one. Evidence: Structural evidence §3.
+
+Secondary items worth folding into the same pass: fix the hardcoded "533 chapters" claim in Explore.svelte:112 to read from the live stats API (#6 honest); add Space-key activation to ChapterBrowser's `div role="button"` card (#4/#2, Accessibility evidence §3); add a skip link (Accessibility evidence §5).
