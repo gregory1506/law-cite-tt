@@ -181,7 +181,7 @@
   }
   input:focus-visible {
     border-color: var(--accent);
-    outline: 2px solid rgba(34, 211, 238, 0.16);
+    outline: 2px solid rgba(212, 160, 23, 0.16);
   }
   .lookup-grid button {
     display: inline-flex;

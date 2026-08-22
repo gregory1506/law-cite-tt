@@ -4,7 +4,6 @@
     Check,
     Clipboard,
     ExternalLink,
-    FileCheck2,
     FileText,
     Search,
   } from "@lucide/svelte";
@@ -97,7 +96,6 @@
       text, then copy a consistent citation.
     </p>
   </div>
-  <div class="heading-mark" aria-hidden="true"><FileCheck2 size={25} /></div>
 </header>
 
 <section class="resolver-panel" aria-labelledby="citation-form-heading">
@@ -321,10 +319,6 @@
 
 <style>
   .page-heading {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
     margin-bottom: 22px;
   }
   .eyebrow {
@@ -335,19 +329,13 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
-  .page-heading h1 { margin: 0; font-size: clamp(1.6rem, 3vw, 2.15rem); line-height: 1.1; }
-  .page-heading p:not(.eyebrow) { max-width: 650px; margin: 9px 0 0; color: var(--muted-strong); }
-  .heading-mark {
-    display: grid;
-    width: 50px;
-    height: 50px;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 1px solid rgba(34, 211, 238, 0.35);
-    border-radius: var(--radius);
-    background: linear-gradient(145deg, rgba(34, 211, 238, 0.12), rgba(34, 211, 238, 0.02));
-    color: var(--accent);
+  .page-heading h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.15rem);
+    line-height: 1.1;
   }
+  .page-heading p:not(.eyebrow) { max-width: 650px; margin: 9px 0 0; color: var(--muted-strong); }
   .resolver-panel {
     position: relative;
     overflow: hidden;
@@ -355,7 +343,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background:
-      linear-gradient(90deg, rgba(34, 211, 238, 0.045) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, rgba(212, 160, 23, 0.045) 1px, transparent 1px) 0 0 / 32px 32px,
       var(--surface);
   }
   .resolver-panel::before {
@@ -435,7 +423,7 @@
     gap: 18px;
     padding: 20px;
     border-bottom: 1px solid var(--border);
-    background: linear-gradient(145deg, rgba(34, 211, 238, 0.06), transparent 50%);
+    background: linear-gradient(145deg, rgba(212, 160, 23, 0.06), transparent 50%);
   }
   .authority-header h2 { margin: 3px 0 0; font-size: 1.23rem; }
   .authority-label {
@@ -535,7 +523,6 @@
     .validate-button { min-height: 44px; }
   }
   @media (max-width: 560px) {
-    .heading-mark { display: none; }
     .resolver-panel { padding: 16px 14px; }
     .form-grid { grid-template-columns: 1fr; }
     .authority-header { display: grid; padding: 17px 15px; }

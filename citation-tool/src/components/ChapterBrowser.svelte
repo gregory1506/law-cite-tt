@@ -63,7 +63,7 @@
   }
   .chapter-card-wrap:hover :global(.chapter-card) {
     border-color: var(--accent);
-    box-shadow: 0 2px 8px rgba(34, 211, 238, 0.15);
+    box-shadow: 0 2px 8px rgba(212, 160, 23, 0.15);
   }
   :global(.chapter-card) .chapter { font-weight: 600; color: var(--accent); }
   .no-results { text-align: center; padding: 48px 16px; color: var(--muted); }
