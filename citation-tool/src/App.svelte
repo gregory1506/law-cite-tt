@@ -89,6 +89,12 @@
           <Chat />
         {/if}
       </div>
+      <p class="legal-disclaimer">
+        LawCite TT is provided for informational and research purposes only and does not
+        constitute legal advice. It is not a substitute for consultation with a qualified
+        attorney. Always verify citations against the official Laws of Trinidad and Tobago
+        before relying on them.
+      </p>
     </main>
   </div>
 {/if}
@@ -210,6 +216,15 @@
     padding: 26px 30px 48px;
   }
   .main-inner { max-width: 980px; margin: 0 auto; }
+  .legal-disclaimer {
+    max-width: 980px;
+    margin: var(--space-8) auto 0;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: 1.6;
+  }
   .mobile-header,
   .backdrop { display: none; }
   .login-gate {
