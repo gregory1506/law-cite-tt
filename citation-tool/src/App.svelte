@@ -110,10 +110,10 @@
     --text-soft: #d7dde5;
     --muted: #8190a5;
     --muted-strong: #a8b3c3;
-    --accent: #22d3ee;
-    --accent-hover: #67e8f9;
-    --accent-strong: #67e8f9;
-    --accent-text: #061016;
+    --accent: #d4a017;
+    --accent-hover: #e8b93a;
+    --accent-strong: #e8b93a;
+    --accent-text: #1a1200;
     --positive: #5eead4;
     --danger: #fca5a5;
     --highlight: rgba(250, 204, 21, 0.2);
@@ -137,6 +137,8 @@
     --text-md: 1.15rem;   /* 18.4px  */
     --text-lg: 1.56rem;   /* 25px    */
     --text-xl: 2rem;      /* 32px    */
+
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
   }
   :global(body) {
     margin: 0;
@@ -180,8 +182,9 @@
   .brand {
     padding: 0 9px 18px;
     color: var(--text);
-    font-size: 1.08rem;
-    font-weight: 800;
+    font-family: var(--font-display);
+    font-size: 1.12rem;
+    font-weight: 700;
   }
   .sidebar nav { display: grid; gap: 5px; }
   .sidebar nav button {
@@ -242,7 +245,7 @@
     background: var(--surface);
     text-align: center;
   }
-  .login-card h1 { margin: 0 0 8px; font-size: 1.5rem; }
+  .login-card h1 { margin: 0 0 8px; font-family: var(--font-display); font-size: 1.5rem; }
   .login-card p { margin: 4px 0; color: var(--muted); }
   .login-card .prompt { margin-top: 20px; color: var(--text); }
   .login-card button {
@@ -268,7 +271,7 @@
       border-bottom: 1px solid var(--border);
       background: rgba(9, 13, 20, 0.96);
     }
-    .mobile-brand { font-size: 0.98rem; font-weight: 800; }
+    .mobile-brand { font-family: var(--font-display); font-size: 1.02rem; font-weight: 700; }
     .nav-toggle {
       display: inline-grid;
       width: 36px;

@@ -67,7 +67,6 @@
       checked against the source corpus before it is shown.
     </p>
   </div>
-  <div class="heading-mark" aria-hidden="true"><MessageSquareText size={25} /></div>
 </header>
 
 <div class="chat-scroll" aria-live="polite">
@@ -174,10 +173,6 @@
 
 <style>
   .page-heading {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
     margin-bottom: 22px;
   }
   .eyebrow {
@@ -188,19 +183,13 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
-  .page-heading h1 { margin: 0; font-size: clamp(1.6rem, 3vw, 2.15rem); line-height: 1.1; }
-  .page-heading p:not(.eyebrow) { max-width: 650px; margin: 9px 0 0; color: var(--muted-strong); }
-  .heading-mark {
-    display: grid;
-    width: 50px;
-    height: 50px;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 1px solid rgba(34, 211, 238, 0.35);
-    border-radius: var(--radius);
-    background: linear-gradient(145deg, rgba(34, 211, 238, 0.12), rgba(34, 211, 238, 0.02));
-    color: var(--accent);
+  .page-heading h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.15rem);
+    line-height: 1.1;
   }
+  .page-heading p:not(.eyebrow) { max-width: 650px; margin: 9px 0 0; color: var(--muted-strong); }
   .chat-scroll {
     display: flex;
     flex-direction: column;
@@ -234,7 +223,7 @@
   }
   .message.user .bubble {
     border-color: var(--border-strong);
-    background: linear-gradient(145deg, rgba(34, 211, 238, 0.1), rgba(34, 211, 238, 0.03));
+    background: linear-gradient(145deg, rgba(212, 160, 23, 0.1), rgba(212, 160, 23, 0.03));
   }
   .refusal {
     display: flex;
@@ -366,7 +355,6 @@
   }
   .composer button:disabled { cursor: not-allowed; opacity: 0.45; }
   @media (max-width: 560px) {
-    .heading-mark { display: none; }
     .source { align-items: flex-start; flex-wrap: wrap; }
     .source a { margin-left: auto; }
   }

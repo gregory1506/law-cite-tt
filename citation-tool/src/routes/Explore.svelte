@@ -218,6 +218,7 @@
   h1 {
     margin: 0;
     color: var(--text);
+    font-family: var(--font-display);
     font-size: 1.55rem;
     line-height: 1.2;
   }
