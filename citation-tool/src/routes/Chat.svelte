@@ -9,10 +9,20 @@
   import { chat, resolveUrl } from "../lib/api.js";
 
 
+  const SOURCE_PREVIEW_COUNT = 3;
+
   let messages = $state([]);
   let input = $state("");
   let sending = $state(false);
   let error = $state("");
+
+  function uniqueChapterCount(sources) {
+    return new Set(sources.map((s) => s.chapter).filter(Boolean)).size;
+  }
+
+  function toggleSources(message) {
+    message.sourcesExpanded = !message.sourcesExpanded;
+  }
 
   async function sendMessage() {
     const text = input.trim();
@@ -88,8 +98,13 @@
         {/if}
         {#if message.sources?.length}
           <div class="sources">
-            <p class="sources-label">Sources</p>
-            {#each message.sources as source}
+            <p class="sources-label">
+              {message.sources.length} source{message.sources.length === 1 ? "" : "s"}
+              {#if uniqueChapterCount(message.sources) > 1}
+                · {uniqueChapterCount(message.sources)} chapters
+              {/if}
+            </p>
+            {#each (message.sourcesExpanded ? message.sources : message.sources.slice(0, SOURCE_PREVIEW_COUNT)) as source}
               <div class="source" key={source.id}>
                 <span class="source-ref">
                   {source.chapter}{source.section
@@ -108,6 +123,17 @@
 
               </div>
             {/each}
+            {#if message.sources.length > SOURCE_PREVIEW_COUNT}
+              <button
+                class="text-button"
+                type="button"
+                onclick={() => toggleSources(message)}
+              >
+                {message.sourcesExpanded
+                  ? "Show fewer sources"
+                  : `Show all ${message.sources.length} sources`}
+              </button>
+            {/if}
           </div>
         {/if}
       </div>
@@ -254,6 +280,21 @@
     font-weight: 700;
     text-decoration: none;
     white-space: nowrap;
+  }
+  .sources .text-button {
+    margin-top: 6px;
+    padding: 4px 0;
+    border: 0;
+    background: transparent;
+    color: var(--accent-strong);
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .sources .text-button:hover { color: var(--accent); }
+  .sources .text-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
   .thinking {
     display: inline-flex;

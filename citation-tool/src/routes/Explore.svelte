@@ -25,6 +25,10 @@
 
   let chapterLoadError = $state("");
 
+  const uniqueResultChapters = $derived(
+    new Set(results.map((item) => item.chapter_number)).size,
+  );
+
   onMount(async () => {
     try {
       chapters = await getChapters();
@@ -158,7 +162,16 @@
     <div class="message">No matching provisions found.</div>
   {:else if results.length}
     <div class="result-summary">
-      <p>Showing {results.length} provision{results.length === 1 ? "" : "s"}</p>
+      <p>
+        Found <strong>{results.length}</strong> provision{results.length === 1 ? "" : "s"}
+        {#if uniqueResultChapters > 1}
+          across <strong>{uniqueResultChapters}</strong> chapters
+        {:else if uniqueResultChapters === 1}
+          in <strong>Chapter {results[0].chapter_number}</strong>
+        {/if}
+        {#if lastSearch.query}for &ldquo;{lastSearch.query}&rdquo;{/if}
+        {#if hasMore}&mdash; more available{/if}
+      </p>
       {#if lastSearch.date}<span>Available as at {lastSearch.date}</span>{/if}
     </div>
 
