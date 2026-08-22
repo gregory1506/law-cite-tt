@@ -170,6 +170,20 @@ The fastest way to understand LawCite TT is to use it:
 
 **[Open LawCite TT →](https://law-cite-tt.gjo-ai.workers.dev)**
 
+### Statute Atlas
+
+The frontend also ships a self-contained, Obsidian-style graph at
+`/laws-graph.html`. It includes all 533 statutory chapters and rolls 23,143
+provisions into a sparse set of chapter-level semantic relationships. Users can
+search, pan, zoom, select a law, and traverse to its strongest related laws.
+
+These graph links represent inferred semantic similarity, not authoritative
+citations. Rebuild the page from the local GraphRAG export with:
+
+```bash
+python3 backend/graphrag/export_laws_html.py
+```
+
 ### Frontend Development
 
 ```bash
