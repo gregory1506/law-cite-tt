@@ -187,7 +187,7 @@
   }
   input:focus-visible {
     border-color: var(--accent);
-    outline: 2px solid rgba(34, 211, 238, 0.16);
+    outline: 2px solid var(--accent-ring);
   }
   .lookup-grid button {
     display: inline-flex;
@@ -261,7 +261,7 @@
   .result-text {
     padding-top: 13px;
     color: var(--text-soft);
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: var(--font-serif);
     font-size: 0.95rem;
     line-height: 1.7;
     white-space: pre-wrap;

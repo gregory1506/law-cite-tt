@@ -93,42 +93,10 @@
 {/if}
 
 <style>
-  :global(:root) {
-    --bg: #090d14;
-    --surface: #111823;
-    --surface-raised: #151e2a;
-    --border: #243040;
-    --border-strong: #354256;
-    --text: #f3f5f7;
-    --text-soft: #d7dde5;
-    --muted: #8190a5;
-    --muted-strong: #a8b3c3;
-    --accent: #22d3ee;
-    --accent-hover: #67e8f9;
-    --accent-strong: #67e8f9;
-    --accent-text: #061016;
-    --positive: #5eead4;
-    --danger: #fca5a5;
-    --highlight: rgba(250, 204, 21, 0.2);
-    --highlight-text: #fef08a;
-    --radius: 7px;
-  }
-  :global(body) {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.55;
-  }
-  :global(*) { box-sizing: border-box; }
-  :global(input),
-  :global(select),
-  :global(button) { font: inherit; }
-  :global(input::placeholder) { color: var(--muted); }
   .accent-text { color: var(--accent); }
   .app-shell { display: flex; min-height: 100vh; }
   .sidebar {
-    width: 216px;
+    width: var(--sidebar-w);
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -161,7 +129,7 @@
   }
   .sidebar nav button.active {
     border-left-color: var(--accent);
-    background: #1b2636;
+    background: var(--nav-active);
     color: var(--accent);
   }
   .auth-status {
@@ -175,7 +143,7 @@
     flex: 1;
     padding: 26px 30px 48px;
   }
-  .main-inner { max-width: 980px; margin: 0 auto; }
+  .main-inner { max-width: var(--content-max); margin: 0 auto; }
   .mobile-header,
   .backdrop { display: none; }
   .login-gate {
@@ -217,7 +185,7 @@
       gap: 12px;
       padding: 0 12px;
       border-bottom: 1px solid var(--border);
-      background: rgba(9, 13, 20, 0.96);
+      background: var(--header-bg);
     }
     .mobile-brand { font-size: 0.98rem; font-weight: 800; }
     .nav-toggle {
@@ -248,7 +216,7 @@
       z-index: 20;
       display: block;
       border: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: var(--backdrop);
     }
     main {
       padding: 76px 14px 40px;

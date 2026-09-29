@@ -170,9 +170,9 @@
     height: 50px;
     flex: 0 0 auto;
     place-items: center;
-    border: 1px solid rgba(34, 211, 238, 0.35);
+    border: 1px solid var(--accent-border);
     border-radius: var(--radius);
-    background: linear-gradient(145deg, rgba(34, 211, 238, 0.12), rgba(34, 211, 238, 0.02));
+    background: linear-gradient(145deg, var(--accent-soft), transparent);
     color: var(--accent);
   }
   .chat-scroll {
@@ -208,7 +208,7 @@
   }
   .message.user .bubble {
     border-color: var(--border-strong);
-    background: linear-gradient(145deg, rgba(34, 211, 238, 0.1), rgba(34, 211, 238, 0.03));
+    background: linear-gradient(145deg, var(--accent-soft), transparent);
   }
   .refusal {
     display: flex;
@@ -216,12 +216,12 @@
     gap: 12px;
     padding: 13px 15px;
     border: 1px solid var(--border);
-    border-left: 3px solid #fbbf24;
+    border-left: 3px solid var(--warning);
     border-radius: var(--radius);
     background: var(--surface);
     color: var(--muted-strong);
   }
-  .refusal strong { display: block; color: #fbbf24; font-size: 0.84rem; }
+  .refusal strong { display: block; color: var(--warning); font-size: 0.84rem; }
   .refusal p { margin: 3px 0 0; font-size: 0.84rem; }
   .sources { margin-top: 9px; }
   .sources-label {

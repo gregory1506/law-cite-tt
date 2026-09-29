@@ -190,14 +190,14 @@
     flex: 0 0 auto;
     padding: 4px 8px;
     border: 1px solid var(--border-strong);
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     color: var(--muted-strong);
     font-size: 0.72rem;
     font-weight: 700;
   }
   .status.latest {
-    border-color: rgba(45, 212, 191, 0.45);
-    background: rgba(45, 212, 191, 0.1);
+    border-color: var(--positive-border);
+    background: var(--positive-soft);
     color: var(--positive);
   }
   .version-meta {
@@ -211,7 +211,7 @@
   .excerpt {
     margin-top: 14px;
     color: var(--text-soft);
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: var(--font-serif);
     font-size: 0.98rem;
     line-height: 1.7;
     white-space: pre-wrap;

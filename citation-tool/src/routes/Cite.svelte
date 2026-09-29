@@ -346,9 +346,9 @@
     height: 50px;
     flex: 0 0 auto;
     place-items: center;
-    border: 1px solid rgba(34, 211, 238, 0.35);
+    border: 1px solid var(--accent-border);
     border-radius: var(--radius);
-    background: linear-gradient(145deg, rgba(34, 211, 238, 0.12), rgba(34, 211, 238, 0.02));
+    background: linear-gradient(145deg, var(--accent-soft), transparent);
     color: var(--accent);
   }
   .resolver-panel {
@@ -358,7 +358,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background:
-      linear-gradient(90deg, rgba(34, 211, 238, 0.045) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--accent-faint) 1px, transparent 1px) 0 0 / 32px 32px,
       var(--surface);
   }
   .resolver-panel::before {
@@ -424,8 +424,8 @@
   .state-card p { margin: 3px 0 0; color: var(--muted-strong); font-size: 0.8rem; }
   .state-card.found { border-left-color: var(--positive); }
   .state-card.found .state-icon { color: var(--positive); }
-  .state-card.ambiguous { border-left-color: #fbbf24; }
-  .state-card.ambiguous .state-icon { color: #fbbf24; }
+  .state-card.ambiguous { border-left-color: var(--warning); }
+  .state-card.ambiguous .state-icon { color: var(--warning); }
   .state-card.error-state { border-left-color: var(--danger); }
   .state-card.error-state .state-icon { color: var(--danger); }
   .state-card.not-found, .state-card.waiting { border-left-color: var(--accent); }
@@ -444,7 +444,7 @@
     gap: 18px;
     padding: 20px;
     border-bottom: 1px solid var(--border);
-    background: linear-gradient(145deg, rgba(34, 211, 238, 0.06), transparent 50%);
+    background: linear-gradient(145deg, var(--accent-faint), transparent 50%);
   }
   .authority-header h2 { margin: 3px 0 0; font-size: 1.23rem; }
   .authority-label {
@@ -492,7 +492,7 @@
   }
   .citation-row + .citation-row { border-top: 0; }
   .citation-row span { color: var(--muted); font-size: 0.66rem; font-weight: 700; text-transform: uppercase; }
-  .citation-row p { margin: 2px 0 0; color: var(--text); font-family: Georgia, "Times New Roman", serif; font-size: 0.92rem; }
+  .citation-row p { margin: 2px 0 0; color: var(--text); font-family: var(--font-serif); font-size: 0.92rem; }
   .citation-row button {
     display: inline-flex;
     flex: 0 0 auto;
@@ -514,7 +514,7 @@
     border: 1px solid var(--border);
     background: var(--bg);
     color: var(--text-soft);
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: var(--font-serif);
     font-size: 0.9rem;
     line-height: 1.68;
     white-space: pre-wrap;
