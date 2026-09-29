@@ -40,6 +40,7 @@
     </div>
   </div>
 {:else}
+  <a href="#main-content" class="skip-link">Skip to content</a>
   <MobileHeader open={navOpen} onToggle={() => (navOpen = !navOpen)} />
 
   <div class="app-shell">
@@ -51,7 +52,13 @@
         onclick={() => (navOpen = false)}
       ></button>
     {/if}
-    <main>
+    <main id="main-content">
+      <p class="legal-disclaimer">
+        LawCite TT is provided for informational and research purposes only and does not
+        constitute legal advice. It is not a substitute for consultation with a qualified
+        attorney. Always verify citations against the official Laws of Trinidad and Tobago
+        before relying on them.
+      </p>
       <div class="main-inner">
         {#if router.route === "research"}
           <Explore />
@@ -69,12 +76,38 @@
   .app-shell { display: flex; min-height: 100vh; }
   .backdrop { display: none; }
   .accent-text { color: var(--accent); }
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 40;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .skip-link:focus {
+    left: var(--space-3);
+    top: var(--space-3);
+  }
   main {
     min-width: 0;
     flex: 1;
     padding: var(--space-8) var(--space-8) 104px;
   }
   .main-inner { max-width: var(--content-max); margin: 0 auto; }
+  .legal-disclaimer {
+    max-width: var(--content-max);
+    margin: 0 auto var(--space-6);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--danger) 8%, transparent);
+    color: var(--danger);
+    font-size: var(--text-xs);
+    line-height: 1.6;
+  }
   .login-gate {
     display: flex;
     min-height: 100vh;

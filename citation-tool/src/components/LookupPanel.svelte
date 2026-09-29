@@ -9,6 +9,7 @@
   } from "@lucide/svelte";
   import { lookupSection, resolveUrl } from "../lib/api.js";
   import { setLookup } from "../lib/context.svelte.js";
+  import { formatDate } from "../lib/date.js";
 
 
   let { chapters = [] } = $props();
@@ -58,15 +59,6 @@
     if (event.key === "Enter") submit();
   }
 
-  function displayDate(value) {
-    if (!value) return "Date unavailable";
-    return new Intl.DateTimeFormat("en-TT", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    }).format(new Date(`${value}T00:00:00Z`));
-  }
 </script>
 
 <div class="lookup-section">
@@ -136,10 +128,12 @@
         <summary>
           <div>
             <strong>
-              {index === 0 && !date ? "Latest available" : displayDate(result.as_at_date)}
+              {index === 0 && !date
+                ? "Latest available"
+                : formatDate(result.as_at_date, { fallback: "No effective date on file" })}
             </strong>
             {#if index === 0 && !date && result.as_at_date}
-              <span>As at {displayDate(result.as_at_date)}</span>
+              <span>As at {formatDate(result.as_at_date)}</span>
             {/if}
             {#if result.version_label}<span>{result.version_label}</span>{/if}
           </div>

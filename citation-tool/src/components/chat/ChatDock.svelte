@@ -25,6 +25,25 @@
 
   let scrollEl = $state(null);
   let inputEl = $state(null);
+  let expandedSources = $state(new Set());
+
+  const SOURCE_PREVIEW_COUNT = 3;
+
+  function toggleSources(messageIndex) {
+    const next = new Set(expandedSources);
+    if (next.has(messageIndex)) next.delete(messageIndex);
+    else next.add(messageIndex);
+    expandedSources = next;
+  }
+
+  function uniqueChapterCount(sources) {
+    return new Set(sources.map((s) => s.chapter).filter(Boolean)).size;
+  }
+
+  function clearConversation() {
+    clearChat();
+    expandedSources = new Set();
+  }
 
   const chips = $derived.by(() => {
     const { search, lookup, cite } = visibleContext();
@@ -144,7 +163,7 @@
         <button
           type="button"
           class="icon-button"
-          onclick={clearChat}
+          onclick={clearConversation}
           aria-label="Clear conversation"
           title="Clear conversation"
         >
@@ -204,8 +223,15 @@
           {/if}
           {#if message.sources?.length}
             <div class="sources">
-              <p class="sources-label">Sources</p>
-              {#each message.sources as source (source.id)}
+              <p class="sources-label">
+                {message.sources.length} source{message.sources.length === 1 ? "" : "s"}
+                {#if uniqueChapterCount(message.sources) > 1}
+                  · {uniqueChapterCount(message.sources)} chapters
+                {/if}
+              </p>
+              {#each (expandedSources.has(index)
+                ? message.sources
+                : message.sources.slice(0, SOURCE_PREVIEW_COUNT)) as source (source.id)}
                 <div class="source">
                   <span class="source-ref">
                     {source.chapter}{source.section ? ` · s. ${source.section}` : ""}
@@ -220,6 +246,17 @@
                   {/if}
                 </div>
               {/each}
+              {#if message.sources.length > SOURCE_PREVIEW_COUNT}
+                <button
+                  class="sources-toggle"
+                  type="button"
+                  onclick={() => toggleSources(index)}
+                >
+                  {expandedSources.has(index)
+                    ? "Show fewer sources"
+                    : `Show all ${message.sources.length} sources`}
+                </button>
+              {/if}
             </div>
           {/if}
         </div>
@@ -499,6 +536,19 @@
     font-size: var(--text-sm);
   }
   .source + .source { border-top: 0; }
+  .sources-toggle {
+    display: block;
+    width: 100%;
+    padding: var(--space-2);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--accent);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-bold);
+    text-align: center;
+    cursor: pointer;
+  }
+  .sources-toggle:hover { background: var(--surface); }
   .source-ref { color: var(--accent); font-weight: var(--weight-bold); white-space: nowrap; }
   .source-title {
     flex: 1 1 auto;

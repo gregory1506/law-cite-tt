@@ -26,12 +26,17 @@
   let lastSearch = $state({ query: "", mode: "fts", chapter: "", date: "" });
 
   const subTab = $derived(router.tab);
+  let chapterLoadError = $state("");
+
+  const uniqueResultChapters = $derived(
+    new Set(results.map((item) => item.chapter_number)).size,
+  );
 
   onMount(async () => {
     try {
       chapters = await getChapters();
     } catch (loadError) {
-      console.error("Failed to load chapters", loadError);
+      chapterLoadError = loadError.message;
     }
   });
 
@@ -125,7 +130,7 @@
 <PageHeader
   eyebrow="Laws of Trinidad and Tobago"
   title="Research"
-  meta="533 chapters · historical versions included"
+  meta={`${chapters.length || "—"} chapters · historical versions included`}
 />
 
 <div class="tab-bar" role="tablist" aria-label="Research tools">
@@ -149,6 +154,10 @@
   >Browse chapters</button>
 </div>
 
+{#if chapterLoadError}
+  <p class="chapter-load-error" role="alert">Chapter list unavailable: {chapterLoadError}</p>
+{/if}
+
 {#if subTab === "search"}
   <SearchBar
     {chapters}
@@ -168,7 +177,16 @@
     <div class="message">No matching provisions found.</div>
   {:else if results.length}
     <div class="result-summary">
-      <p>Showing {results.length} provision{results.length === 1 ? "" : "s"}</p>
+      <p>
+        Found <strong>{results.length}</strong> provision{results.length === 1 ? "" : "s"}
+        {#if uniqueResultChapters > 1}
+          across <strong>{uniqueResultChapters}</strong> chapters
+        {:else if uniqueResultChapters === 1}
+          in <strong>Chapter {results[0].chapter_number}</strong>
+        {/if}
+        {#if lastSearch.query}for &ldquo;{lastSearch.query}&rdquo;{/if}
+        {#if hasMore}&mdash; more available{/if}
+      </p>
       {#if lastSearch.date}<span>Available as at {lastSearch.date}</span>{/if}
     </div>
 
@@ -242,7 +260,12 @@
     min-height: 42px;
     margin-top: var(--space-2);
   }
-  .load-more:disabled { cursor: wait; opacity: 0.65; }
+  .load-more:disabled { cursor: wait; opacity: 0.45; }
+  .chapter-load-error {
+    margin: 0 0 var(--space-3);
+    color: var(--danger);
+    font-size: var(--text-xs);
+  }
   @media (max-width: 600px) {
     .tab-bar button { flex: 1; padding-inline: var(--space-2); }
     .result-summary { align-items: flex-start; flex-direction: column; gap: 3px; }

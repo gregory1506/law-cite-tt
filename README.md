@@ -4,14 +4,14 @@
 
 ### *Temporal Legal Engine & Citation Graph for the Laws of Trinidad and Tobago*
 
-[![Live Demo](https://img.shields.io/badge/Live%20App-law--cite--tt.gjo--ai.workers.dev-06b6d4?style=for-the-badge&logo=cloudflare)](https://law-cite-tt.gjo-ai.workers.dev)
-[![Backend Status](https://img.shields.io/badge/API%20Status-Online%20(FastAPI)-10b981?style=for-the-badge&logo=fastapi)](https://law-cite-tt.gjo-ai.workers.dev/api/health)
-[![Corpus](https://img.shields.io/badge/Corpus-533%20Chapters%20%7C%20407k%20Chunks-8b5cf6?style=for-the-badge&logo=postgresql)](https://law-cite-tt.gjo-ai.workers.dev)
+[![Live Demo](https://img.shields.io/badge/Live%20App-law.ai.tt-06b6d4?style=for-the-badge&logo=cloudflare)](https://law.ai.tt)
+[![Backend Status](https://img.shields.io/badge/API%20Status-Online%20(FastAPI)-10b981?style=for-the-badge&logo=fastapi)](https://law.ai.tt/api/health)
+[![Corpus](https://img.shields.io/badge/Corpus-533%20Chapters%20%7C%20407k%20Chunks-8b5cf6?style=for-the-badge&logo=postgresql)](https://law.ai.tt)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 ---
 
-[**Explore Live App**](https://law-cite-tt.gjo-ai.workers.dev) • [**API Health**](https://law-cite-tt.gjo-ai.workers.dev/api/health) • [**Features**](#-key-features) • [**Architecture**](#-architecture) • [**Local Setup**](#-getting-started)
+[**Explore Live App**](https://law.ai.tt) • [**API Health**](https://law.ai.tt/api/health) • [**Features**](#-key-features) • [**Architecture**](#-architecture) • [**Local Setup**](#-getting-started)
 
 </div>
 
@@ -101,7 +101,7 @@ flowchart TD
     end
 
     subgraph Cloudflare ["Cloudflare Edge Network"]
-        CFWorker["⚡ Cloudflare Worker (law-cite-tt.gjo-ai.workers.dev)"]
+        CFWorker["⚡ Cloudflare Worker (law.ai.tt)"]
         CFAssets["📦 Static Assets (Svelte 5 SPA Build)"]
     end
 
@@ -168,7 +168,21 @@ This project serves as a production-grade demonstration of modern **AI Engineeri
 
 The fastest way to understand LawCite TT is to use it:
 
-**[Open LawCite TT →](https://law-cite-tt.gjo-ai.workers.dev)**
+**[Open LawCite TT →](https://law.ai.tt)**
+
+### Statute Atlas
+
+The frontend also ships a self-contained, Obsidian-style graph at
+`/laws-graph.html`. It includes all 533 statutory chapters and rolls 23,143
+provisions into a sparse set of chapter-level semantic relationships. Users can
+search, pan, zoom, select a law, and traverse to its strongest related laws.
+
+These graph links represent inferred semantic similarity, not authoritative
+citations. Rebuild the page from the local GraphRAG export with:
+
+```bash
+python3 backend/graphrag/export_laws_html.py
+```
 
 ### Frontend Development
 

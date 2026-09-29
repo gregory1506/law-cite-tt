@@ -76,7 +76,7 @@ describe("Cite route", () => {
     expect(screen.queryByText(/^Current$/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/^In force$/i)).not.toBeInTheDocument();
     expect(
-      screen.getByText(/does not claim that a provision is currently in force/i),
+      screen.getByText(/does not confirm the law is currently in force/i),
     ).toBeInTheDocument();
 
     await fireEvent.click(screen.getByRole("button", { name: "Copy full citation" }));
