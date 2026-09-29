@@ -39,12 +39,17 @@
 
 <style>
   .sidebar {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
     width: var(--sidebar-w);
+    height: 100vh;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
     padding: var(--space-6) var(--space-4);
+    overflow-y: auto;
     border-right: 1px solid var(--border);
     background: var(--surface);
   }

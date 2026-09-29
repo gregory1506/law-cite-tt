@@ -21,11 +21,10 @@
     <div class="no-results">No chapters match that filter.</div>
   {:else}
     {#each filtered as c (c.chapter)}
-      <div class="chapter-card" onclick={() => onSelect(c.chapter)} role="button" tabindex="0"
-           onkeydown={(e) => e.key === "Enter" && onSelect(c.chapter)}>
+      <button type="button" class="chapter-card" onclick={() => onSelect(c.chapter)}>
         <span class="chapter">{c.chapter}</span>
         <span class="title">{c.title}</span>
-      </div>
+      </button>
     {/each}
   {/if}
 </div>
@@ -38,6 +37,7 @@
     border: 2px solid var(--border); border-radius: var(--radius);
   }
   .chapter-card {
+    width: 100%;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -47,6 +47,9 @@
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
   }
   .chapter-card:hover { border-color: var(--accent-border); box-shadow: var(--shadow-1); }
   .chapter { font-weight: 600; color: var(--accent); }

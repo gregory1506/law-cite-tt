@@ -586,6 +586,7 @@
       width: 100%;
       border-left: 0;
     }
+    textarea { min-height: 64px; }
   }
   @media (max-width: 400px) {
     .dock-header { padding: var(--space-3); }
