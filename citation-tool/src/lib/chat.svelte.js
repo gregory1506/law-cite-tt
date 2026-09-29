@@ -1,4 +1,5 @@
 import { chat as chatAPI } from "./api.js";
+import { buildContextNote } from "./context.svelte.js";
 
 const STORAGE_KEY = "lawcite-chat-v1";
 const MAX_PERSISTED = 40;
@@ -89,10 +90,19 @@ export async function sendMessage(text) {
   chatState.sending = true;
   controller = new AbortController();
   try {
-    const history = chatState.messages.map((message) => ({
-      role: message.role,
-      content: message.content,
-    }));
+    const note = buildContextNote();
+    const lastIndex = chatState.messages.length - 1;
+    const history = chatState.messages.map((message, index) => {
+      if (message.role === "assistant") {
+        return { role: "assistant", content: message.content };
+      }
+      if (index === lastIndex) {
+        const wire = note ? `${note}\n\n${message.content}` : message.content;
+        message.wire = wire;
+        return { role: "user", content: wire };
+      }
+      return { role: "user", content: message.wire || message.content };
+    });
     const response = await chatAPI(history, chatState.mode, {
       signal: controller.signal,
     });

@@ -8,6 +8,7 @@
     Search,
   } from "@lucide/svelte";
   import { lookupSection, resolveUrl } from "../lib/api.js";
+  import { setLookup } from "../lib/context.svelte.js";
 
 
   let { chapters = [] } = $props();
@@ -35,6 +36,17 @@
     showHistory = false;
     try {
       results = await lookupSection(chapter.trim(), section.trim(), date.trim());
+      setLookup(
+        results.length
+          ? {
+              chapter: chapter.trim(),
+              section: section.trim(),
+              date: date.trim(),
+              title: chapterTitle || null,
+              versions: results.length,
+            }
+          : null,
+      );
     } catch (lookupError) {
       error = lookupError.message;
     } finally {

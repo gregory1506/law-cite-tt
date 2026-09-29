@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { ChevronDown } from "@lucide/svelte";
   import { getChapters, searchGrouped } from "../lib/api.js";
+  import { setSearch } from "../lib/context.svelte.js";
   import { router, setTab } from "../lib/router.svelte.js";
   import PageHeader from "../components/layout/PageHeader.svelte";
   import SearchBar from "../components/SearchBar.svelte";
@@ -52,6 +53,19 @@
       results = response.items;
       nextOffset = response.next_offset;
       hasMore = response.has_more;
+      setSearch({
+        query: searchInput.query,
+        mode: searchInput.mode,
+        chapter: searchInput.chapter,
+        date: searchInput.date,
+        top: results[0]
+          ? {
+              title: results[0].title,
+              chapter: results[0].chapter_number,
+              section: results[0].section_ref,
+            }
+          : null,
+      });
     } catch (searchError) {
       error = searchError.message;
     } finally {
@@ -90,6 +104,7 @@
     nextOffset = null;
     hasMore = false;
     lastSearch = { query: "", mode, chapter: "", date: "" };
+    setSearch(null);
   }
 
   function browseToSearch(selectedChapter) {

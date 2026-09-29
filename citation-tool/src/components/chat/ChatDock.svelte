@@ -9,6 +9,12 @@
   } from "@lucide/svelte";
   import { resolveUrl } from "../../lib/api.js";
   import {
+    MODE_LABELS,
+    dismissContext,
+    visibleContext,
+  } from "../../lib/context.svelte.js";
+  import { router } from "../../lib/router.svelte.js";
+  import {
     chatState,
     clearChat,
     closeChat,
@@ -18,6 +24,65 @@
   } from "../../lib/chat.svelte.js";
 
   let scrollEl = $state(null);
+  let inputEl = $state(null);
+
+  const chips = $derived.by(() => {
+    const { search, lookup, cite } = visibleContext();
+    const list = [];
+    if (search) {
+      list.push({
+        key: "search",
+        label: `Research · "${search.query}" · ${MODE_LABELS[search.mode] || search.mode}`,
+      });
+    }
+    if (lookup) {
+      list.push({
+        key: "lookup",
+        label: `Lookup · ${lookup.chapter} s.${lookup.section}`,
+      });
+    }
+    if (cite) {
+      list.push({
+        key: "cite",
+        label: `Cite · ${cite.chapter} s.${cite.section}${cite.date ? ` · ${cite.date}` : ""}`,
+      });
+    }
+    return list;
+  });
+
+  const suggestions = $derived.by(() => {
+    const { search, lookup, cite } = visibleContext();
+    const list = [];
+    if (cite) {
+      list.push(`What does ${cite.chapter} s.${cite.section} say today?`);
+      if (cite.date) list.push(`Explain the version in force on ${cite.date}`);
+      list.push("Which judgments cite this provision?");
+    }
+    if (search) {
+      list.push(`Summarise the current law on "${search.query}"`);
+      list.push("Which cases cite these provisions?");
+    }
+    if (lookup) {
+      list.push(`Explain ${lookup.chapter} s.${lookup.section} in plain language`);
+    }
+    if (!list.length) {
+      return router.route === "cite"
+        ? [
+            "Validate Chap. 8:08, s. 4 as at today",
+            "Which cases cite the Absconding Debtors Act?",
+          ]
+        : [
+            "What does section 4 of the Absconding Debtors Act say?",
+            "Which chapters mention fraud?",
+          ];
+    }
+    return list.slice(0, 3);
+  });
+
+  function useSuggestion(text) {
+    chatState.input = text;
+    inputEl?.focus();
+  }
 
   $effect(() => {
     chatState.messages.length;
@@ -103,9 +168,15 @@
       <div class="empty-state">
         <h3>Ask about the Laws of Trinidad and Tobago</h3>
         <p>
-          Try "what does section 4 of the Absconding Debtors Act say?" or "which
-          chapters mention fraud?"
+          Every answer is checked against the source corpus before it is shown.
         </p>
+        <div class="suggestions">
+          {#each suggestions as suggestion}
+            <button type="button" onclick={() => useSuggestion(suggestion)}>
+              {suggestion}
+            </button>
+          {/each}
+        </div>
       </div>
     {/if}
 
@@ -170,6 +241,23 @@
     {/if}
   </div>
 
+  {#if chips.length}
+    <div class="context-row" aria-label="Conversation context">
+      {#each chips as chip (chip.key)}
+        <button
+          type="button"
+          class="chip"
+          onclick={() => dismissContext(chip.key)}
+          aria-label={`Remove context: ${chip.label}`}
+          title="Remove this context from the conversation"
+        >
+          {chip.label}
+          <X size={12} aria-hidden="true" />
+        </button>
+      {/each}
+    </div>
+  {/if}
+
   <form
     class="composer"
     onsubmit={(event) => {
@@ -180,6 +268,7 @@
     <textarea
       rows="1"
       aria-label="Message"
+      bind:this={inputEl}
       bind:value={chatState.input}
       onkeydown={onKeydown}
       placeholder="Ask a question about a Trinidad and Tobago statute…"
@@ -311,6 +400,47 @@
     color: var(--muted);
     font-size: var(--text-md);
   }
+  .suggestions {
+    display: grid;
+    width: min(340px, 100%);
+    gap: var(--space-2);
+    margin-top: var(--space-5);
+  }
+  .suggestions button {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-raised);
+    color: var(--text-soft);
+    font-size: var(--text-sm);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+  .suggestions button:hover { border-color: var(--accent-border); color: var(--text); }
+
+  .context-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 var(--space-4) var(--space-3);
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 4px 9px;
+    border: 1px solid var(--accent-border);
+    border-radius: var(--radius-full);
+    background: var(--accent-soft);
+    color: var(--text-soft);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+    transition: border-color var(--dur-fast) var(--ease);
+  }
+  .chip:hover { border-color: var(--accent); color: var(--text); }
 
   .message-list { display: flex; flex-direction: column; gap: var(--space-3); }
   .message { max-width: 100%; }

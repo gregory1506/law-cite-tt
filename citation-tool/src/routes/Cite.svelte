@@ -10,6 +10,7 @@
   } from "@lucide/svelte";
   import { onMount } from "svelte";
   import { getChapters, resolveCitation, resolveUrl } from "../lib/api.js";
+  import { setCite } from "../lib/context.svelte.js";
   import PageHeader from "../components/layout/PageHeader.svelte";
 
 
@@ -59,8 +60,16 @@
       result = await resolveCitation(requestChapter, requestSection, date);
       chapter = result.normalized_input?.chapter || requestChapter;
       section = result.normalized_input?.section || requestSection;
+      setCite({
+        chapter: chapter,
+        section: section,
+        date: result.normalized_input?.date || date,
+        title: result.authority?.title || null,
+        status: result.status,
+      });
     } catch (resolveError) {
       error = resolveError.message;
+      setCite(null);
     } finally {
       loading = false;
     }
@@ -93,6 +102,7 @@
     chapter = alternative.chapter_number;
     if (alternative.section_ref) section = alternative.section_ref;
     result = null;
+    setCite(null);
   }
 </script>
 

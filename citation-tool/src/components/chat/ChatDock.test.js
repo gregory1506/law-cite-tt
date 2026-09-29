@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ChatDock from "./ChatDock.svelte";
 import { chatState, clearChat } from "../../lib/chat.svelte.js";
+import { clearContext, setSearch } from "../../lib/context.svelte.js";
 
 function response(body, ok = true) {
   return Promise.resolve({
@@ -44,6 +45,7 @@ describe("ChatDock", () => {
     vi.unstubAllGlobals();
     localStorage.clear();
     clearChat();
+    clearContext();
     chatState.open = true;
     chatState.input = "";
     chatState.error = "";
@@ -123,5 +125,73 @@ describe("ChatDock", () => {
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeTruthy();
     });
+  });
+
+  it("shows a removable context chip for the active search", async () => {
+    setSearch({
+      query: "absconding debtor",
+      mode: "hybrid",
+      chapter: "",
+      date: "",
+      top: null,
+    });
+    render(ChatDock);
+
+    const chip = screen.getByRole("button", {
+      name: 'Remove context: Research · "absconding debtor" · Best match',
+    });
+    expect(chip).toBeInTheDocument();
+
+    const fetchMock = vi.fn().mockResolvedValue(response(grounded));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fireEvent.click(chip);
+    expect(
+      screen.queryByRole("button", {
+        name: 'Remove context: Research · "absconding debtor" · Best match',
+      }),
+    ).not.toBeInTheDocument();
+
+    await send("Any answer?");
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.messages[0].content).toBe("Any answer?");
+  });
+
+  it("injects screen context into the outgoing message but not the transcript", async () => {
+    setSearch({
+      query: "absconding debtor",
+      mode: "fts",
+      chapter: "",
+      date: "",
+      top: { title: "Absconding Debtors", chapter: "8:08", section: "4" },
+    });
+    const fetchMock = vi.fn().mockResolvedValue(response(grounded));
+    vi.stubGlobal("fetch", fetchMock);
+    render(ChatDock);
+
+    await send("What does s. 4 say?");
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.messages[0].content).toContain("absconding debtor");
+    expect(body.messages[0].content).toContain("8:08, s. 4");
+    expect(body.messages[0].content).toContain("What does s. 4 say?");
+
+    expect(screen.getByText("What does s. 4 say?")).toBeInTheDocument();
+    expect(screen.queryByText(/Context from the user's current screen/)).not.toBeInTheDocument();
+  });
+
+  it("offers a context-derived follow-up that fills the composer", async () => {
+    setSearch({ query: "fraud", mode: "fts", chapter: "", date: "", top: null });
+    render(ChatDock);
+
+    const suggestion = screen.getByRole("button", {
+      name: 'Summarise the current law on "fraud"',
+    });
+    await fireEvent.click(suggestion);
+    expect(screen.getByLabelText("Message")).toHaveValue(
+      'Summarise the current law on "fraud"',
+    );
   });
 });
