@@ -7,6 +7,7 @@
     Send,
   } from "@lucide/svelte";
   import { chat, resolveUrl } from "../lib/api.js";
+  import PageHeader from "../components/layout/PageHeader.svelte";
 
 
   let messages = $state([]);
@@ -48,17 +49,14 @@
   }
 </script>
 
-<header class="page-heading">
-  <div>
-    <p class="eyebrow">Research assistant</p>
-    <h1>Chat</h1>
-    <p>
-      Ask about a provision of the Laws of Trinidad and Tobago. Every answer is
-      checked against the source corpus before it is shown.
-    </p>
-  </div>
-  <div class="heading-mark" aria-hidden="true"><MessageSquareText size={25} /></div>
-</header>
+<PageHeader
+  eyebrow="Research assistant"
+  title="Chat"
+  description="Ask about a provision of the Laws of Trinidad and Tobago. Every answer is
+    checked against the source corpus before it is shown."
+>
+  {#snippet icon()}<MessageSquareText size={25} />{/snippet}
+</PageHeader>
 
 <div class="chat-scroll" aria-live="polite">
   {#if messages.length === 0 && !sending}
@@ -90,7 +88,7 @@
           <div class="sources">
             <p class="sources-label">Sources</p>
             {#each message.sources as source}
-              <div class="source" key={source.id}>
+              <div class="source">
                 <span class="source-ref">
                   {source.chapter}{source.section
                     ? ` · s. ${source.section}`
@@ -138,6 +136,7 @@
     placeholder="Ask a question about a Trinidad and Tobago statute…"
   ></textarea>
   <button
+    class="btn btn-primary"
     type="submit"
     aria-label="Send message"
     disabled={sending || !input.trim()}
@@ -147,34 +146,6 @@
 </form>
 
 <style>
-  .page-heading {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
-    margin-bottom: 22px;
-  }
-  .eyebrow {
-    margin: 0 0 7px;
-    color: var(--accent);
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-  .page-heading h1 { margin: 0; font-size: clamp(1.6rem, 3vw, 2.15rem); line-height: 1.1; }
-  .page-heading p:not(.eyebrow) { max-width: 650px; margin: 9px 0 0; color: var(--muted-strong); }
-  .heading-mark {
-    display: grid;
-    width: 50px;
-    height: 50px;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 1px solid var(--accent-border);
-    border-radius: var(--radius);
-    background: linear-gradient(145deg, var(--accent-soft), transparent);
-    color: var(--accent);
-  }
   .chat-scroll {
     display: flex;
     flex-direction: column;
@@ -305,27 +276,11 @@
     font-size: 0.9rem;
     line-height: 1.45;
   }
-  textarea:focus-visible, button:focus-visible, a:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
   .composer button {
-    display: inline-flex;
     min-height: 44px;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 10px 16px;
-    border: 0;
-    border-radius: var(--radius);
-    background: var(--accent);
-    color: var(--accent-text);
-    font-weight: 800;
-    cursor: pointer;
+    padding: 10px var(--space-4);
   }
-  .composer button:disabled { cursor: not-allowed; opacity: 0.45; }
   @media (max-width: 560px) {
-    .heading-mark { display: none; }
     .source { align-items: flex-start; flex-wrap: wrap; }
     .source a { margin-left: auto; }
   }

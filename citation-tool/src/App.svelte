@@ -1,76 +1,49 @@
 <script>
-  import { FileCheck2, Menu, MessageSquareText, Search, X } from "@lucide/svelte";
+  import MobileHeader from "./components/layout/MobileHeader.svelte";
+  import Sidebar from "./components/layout/Sidebar.svelte";
   import { isAuthenticated, setToken } from "./lib/auth.js";
-  import Explore from "./routes/Explore.svelte";
+  import { initRouter, router } from "./lib/router.svelte.js";
   import Cite from "./routes/Cite.svelte";
   import Chat from "./routes/Chat.svelte";
+  import Explore from "./routes/Explore.svelte";
+
+  initRouter();
+
+  const titles = {
+    research: "Research",
+    cite: "Validate a citation",
+    chat: "Chat",
+  };
 
   let authed = $state(isAuthenticated());
   let navOpen = $state(false);
-  let route = $state("research");
 
   function login() {
     setToken("stub-session-token");
     authed = true;
   }
 
-  function navigate(nextRoute) {
-    route = nextRoute;
-    navOpen = false;
-  }
+  $effect(() => {
+    document.title = `${titles[router.route] || "Research"} — LawCite TT`;
+  });
 </script>
 
 {#if !authed}
   <div class="login-gate">
-    <div class="login-card">
+    <div class="login-card card">
       <h1>LawCite <span class="accent-text">TT</span></h1>
       <p>Temporal legal engine for the Laws of Trinidad and Tobago</p>
       <p class="prompt">Please sign in to continue.</p>
-      <button onclick={login}>Sign in (stub)</button>
+      <button class="btn btn-primary" type="button" onclick={login}>
+        Sign in (stub)
+      </button>
     </div>
   </div>
 {:else}
-  <div class="mobile-header">
-    <button
-      class="nav-toggle"
-      onclick={() => (navOpen = !navOpen)}
-      aria-label={navOpen ? "Close navigation" : "Open navigation"}
-      aria-expanded={navOpen}
-      aria-controls="primary-navigation"
-    >
-      {#if navOpen}<X size={20} />{:else}<Menu size={20} />{/if}
-    </button>
-    <div class="mobile-brand">LawCite <span class="accent-text">TT</span></div>
-  </div>
+  <MobileHeader open={navOpen} onToggle={() => (navOpen = !navOpen)} />
 
   <div class="app-shell">
-    <aside id="primary-navigation" class="sidebar" class:open={navOpen}>
-      <div class="brand">LawCite <span class="accent-text">TT</span></div>
-      <nav>
-        <button
-          class:active={route === "research"}
-          onclick={() => navigate("research")}
-        >
-          <Search size={17} aria-hidden="true" />
-          Research
-        </button>
-        <button
-          class:active={route === "cite"}
-          onclick={() => navigate("cite")}
-        >
-          <FileCheck2 size={17} aria-hidden="true" />
-          Cite
-        </button>
-        <button
-          class:active={route === "chat"}
-          onclick={() => navigate("chat")}
-        >
-          <MessageSquareText size={17} aria-hidden="true" />
-          Chat
-        </button>
-      </nav>
-      <div class="auth-status">Signed in (stub)</div>
-    </aside>
+    <Sidebar open={navOpen} onNavigate={() => (navOpen = false)} />
     {#if navOpen}
       <button
         class="backdrop"
@@ -80,9 +53,9 @@
     {/if}
     <main>
       <div class="main-inner">
-        {#if route === "research"}
+        {#if router.route === "research"}
           <Explore />
-        {:else if route === "cite"}
+        {:else if router.route === "cite"}
           <Cite />
         {:else}
           <Chat />
@@ -93,123 +66,38 @@
 {/if}
 
 <style>
-  .accent-text { color: var(--accent); }
   .app-shell { display: flex; min-height: 100vh; }
-  .sidebar {
-    width: var(--sidebar-w);
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 22px 14px;
-    border-right: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .brand {
-    padding: 0 9px 18px;
-    color: var(--text);
-    font-size: 1.08rem;
-    font-weight: 800;
-  }
-  .sidebar nav { display: grid; gap: 5px; }
-  .sidebar nav button {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 10px 12px;
-    border: 0;
-    border-left: 3px solid transparent;
-    border-radius: 0 var(--radius) var(--radius) 0;
-    background: transparent;
-    color: var(--muted-strong);
-    font-size: 0.86rem;
-    font-weight: 700;
-    text-align: left;
-    cursor: pointer;
-  }
-  .sidebar nav button.active {
-    border-left-color: var(--accent);
-    background: var(--nav-active);
-    color: var(--accent);
-  }
-  .auth-status {
-    margin-top: auto;
-    padding: 0 9px;
-    color: var(--muted);
-    font-size: 0.72rem;
-  }
+  .backdrop { display: none; }
+  .accent-text { color: var(--accent); }
   main {
     min-width: 0;
     flex: 1;
-    padding: 26px 30px 48px;
+    padding: var(--space-8) var(--space-8) var(--space-12);
   }
   .main-inner { max-width: var(--content-max); margin: 0 auto; }
-  .mobile-header,
-  .backdrop { display: none; }
   .login-gate {
     display: flex;
     min-height: 100vh;
     align-items: center;
     justify-content: center;
-    padding: 16px;
+    padding: var(--space-4);
   }
   .login-card {
     width: min(420px, 100%);
-    padding: 38px 30px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
+    padding: var(--space-10) var(--space-8);
     text-align: center;
   }
-  .login-card h1 { margin: 0 0 8px; font-size: 1.5rem; }
-  .login-card p { margin: 4px 0; color: var(--muted); }
-  .login-card .prompt { margin-top: 20px; color: var(--text); }
+  .login-card h1 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-2xl);
+  }
+  .login-card p { margin: var(--space-1) 0; color: var(--muted); }
+  .login-card .prompt { margin-top: var(--space-5); color: var(--text); }
   .login-card button {
-    margin-top: 16px;
-    padding: 10px 22px;
-    border: 0;
-    border-radius: var(--radius);
-    background: var(--accent);
-    color: var(--accent-text);
-    font-weight: 750;
-    cursor: pointer;
+    margin-top: var(--space-4);
+    padding: 10px var(--space-6);
   }
   @media (max-width: 768px) {
-    .mobile-header {
-      position: fixed;
-      inset: 0 0 auto;
-      z-index: 30;
-      display: flex;
-      height: 54px;
-      align-items: center;
-      gap: 12px;
-      padding: 0 12px;
-      border-bottom: 1px solid var(--border);
-      background: var(--header-bg);
-    }
-    .mobile-brand { font-size: 0.98rem; font-weight: 800; }
-    .nav-toggle {
-      display: inline-grid;
-      width: 36px;
-      height: 36px;
-      place-items: center;
-      padding: 0;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--surface);
-      color: var(--text);
-      cursor: pointer;
-    }
-    .sidebar {
-      position: fixed;
-      inset: 54px auto 0 0;
-      z-index: 25;
-      height: calc(100vh - 54px);
-      transform: translateX(-100%);
-      transition: transform 0.18s ease;
-    }
-    .sidebar.open { transform: translateX(0); }
-    .sidebar .brand { display: none; }
     .backdrop {
       position: fixed;
       inset: 54px 0 0;
@@ -218,8 +106,6 @@
       border: 0;
       background: var(--backdrop);
     }
-    main {
-      padding: 76px 14px 40px;
-    }
+    main { padding: 76px var(--space-4) var(--space-10); }
   }
 </style>

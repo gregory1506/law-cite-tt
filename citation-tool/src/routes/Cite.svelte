@@ -10,6 +10,7 @@
   } from "@lucide/svelte";
   import { onMount } from "svelte";
   import { getChapters, resolveCitation, resolveUrl } from "../lib/api.js";
+  import PageHeader from "../components/layout/PageHeader.svelte";
 
 
   let chapters = $state([]);
@@ -95,17 +96,14 @@
   }
 </script>
 
-<header class="page-heading">
-  <div>
-    <p class="eyebrow">Source-backed citation check</p>
-    <h1>Validate a citation</h1>
-    <p>
-      Resolve a Trinidad and Tobago statutory provision against exact source
-      text, then copy a consistent citation.
-    </p>
-  </div>
-  <div class="heading-mark" aria-hidden="true"><FileCheck2 size={25} /></div>
-</header>
+<PageHeader
+  eyebrow="Source-backed citation check"
+  title="Validate a citation"
+  description="Resolve a Trinidad and Tobago statutory provision against exact source
+    text, then copy a consistent citation."
+>
+  {#snippet icon()}<FileCheck2 size={25} />{/snippet}
+</PageHeader>
 
 <section class="resolver-panel" aria-labelledby="citation-form-heading">
   <div class="panel-intro">
@@ -116,6 +114,7 @@
     <label>
       <span>Chapter</span>
       <input
+        class="field"
         type="text"
         bind:value={chapter}
         placeholder="e.g. 8:08"
@@ -131,6 +130,7 @@
     <label>
       <span>Section</span>
       <input
+        class="field"
         type="text"
         bind:value={section}
         onkeydown={onKeydown}
@@ -139,10 +139,10 @@
     </label>
     <label>
       <span>Available as at <small>Optional</small></span>
-      <input type="date" bind:value={date} onkeydown={onKeydown} />
+      <input class="field" type="date" bind:value={date} onkeydown={onKeydown} />
     </label>
     <button
-      class="validate-button"
+      class="validate-button btn btn-primary"
       type="button"
       onclick={submit}
       disabled={loading || !chapter.trim() || !section.trim()}
@@ -275,6 +275,7 @@
             <p>{result.citation.full}</p>
           </div>
           <button
+            class="btn btn-secondary"
             type="button"
             aria-label="Copy full citation"
             onclick={() => copyCitation(result.citation.full, "Full citation")}
@@ -289,6 +290,7 @@
             <p>{result.citation.short}</p>
           </div>
           <button
+            class="btn btn-secondary"
             type="button"
             aria-label="Copy short citation"
             onclick={() => copyCitation(result.citation.short, "Short citation")}
@@ -323,34 +325,6 @@
 </p>
 
 <style>
-  .page-heading {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
-    margin-bottom: 22px;
-  }
-  .eyebrow {
-    margin: 0 0 7px;
-    color: var(--accent);
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-  .page-heading h1 { margin: 0; font-size: clamp(1.6rem, 3vw, 2.15rem); line-height: 1.1; }
-  .page-heading p:not(.eyebrow) { max-width: 650px; margin: 9px 0 0; color: var(--muted-strong); }
-  .heading-mark {
-    display: grid;
-    width: 50px;
-    height: 50px;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 1px solid var(--accent-border);
-    border-radius: var(--radius);
-    background: linear-gradient(145deg, var(--accent-soft), transparent);
-    color: var(--accent);
-  }
   .resolver-panel {
     position: relative;
     overflow: hidden;
@@ -384,30 +358,12 @@
     min-width: 0;
     min-height: 42px;
     padding: 10px 11px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    background: var(--bg);
-    color: var(--text);
-  }
-  input:focus-visible, button:focus-visible, a:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+    font-size: var(--text-base);
   }
   .validate-button {
-    display: inline-flex;
     min-height: 42px;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 9px 16px;
-    border: 0;
-    border-radius: var(--radius);
-    background: var(--accent);
-    color: var(--accent-text);
-    font-weight: 800;
-    cursor: pointer;
+    padding: 9px var(--space-4);
   }
-  .validate-button:disabled { cursor: not-allowed; opacity: 0.45; }
   .state-region { margin-top: 16px; }
   .state-card {
     display: flex;
@@ -499,13 +455,9 @@
     align-items: center;
     gap: 6px;
     padding: 7px 9px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
     background: var(--surface-raised);
     color: var(--text-soft);
-    font-size: 0.72rem;
-    font-weight: 750;
-    cursor: pointer;
+    font-size: var(--text-xs);
   }
   .text-frame {
     max-height: 470px;
@@ -544,7 +496,6 @@
     .validate-button { min-height: 44px; }
   }
   @media (max-width: 560px) {
-    .heading-mark { display: none; }
     .resolver-panel { padding: 16px 14px; }
     .form-grid { grid-template-columns: 1fr; }
     .authority-header { display: grid; padding: 17px 15px; }

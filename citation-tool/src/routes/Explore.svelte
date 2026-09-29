@@ -2,12 +2,13 @@
   import { onMount } from "svelte";
   import { ChevronDown } from "@lucide/svelte";
   import { getChapters, searchGrouped } from "../lib/api.js";
+  import { router, setTab } from "../lib/router.svelte.js";
+  import PageHeader from "../components/layout/PageHeader.svelte";
   import SearchBar from "../components/SearchBar.svelte";
   import ResultCard from "../components/ResultCard.svelte";
   import LookupPanel from "../components/LookupPanel.svelte";
   import ChapterBrowser from "../components/ChapterBrowser.svelte";
 
-  let subTab = $state("search");
   let chapters = $state([]);
   let results = $state([]);
   let searched = $state(false);
@@ -22,6 +23,8 @@
   let chapter = $state("");
   let date = $state("");
   let lastSearch = $state({ query: "", mode: "fts", chapter: "", date: "" });
+
+  const subTab = $derived(router.tab);
 
   onMount(async () => {
     try {
@@ -91,7 +94,7 @@
 
   function browseToSearch(selectedChapter) {
     chapter = selectedChapter;
-    subTab = "search";
+    setTab("search");
     if (query.trim()) {
       runSearch({ query, mode, chapter: selectedChapter, date });
       return;
@@ -104,32 +107,30 @@
   }
 </script>
 
-<div class="page-heading">
-  <div>
-    <p class="eyebrow">Laws of Trinidad and Tobago</p>
-    <h1>Research</h1>
-  </div>
-  <p class="coverage">533 chapters · historical versions included</p>
-</div>
+<PageHeader
+  eyebrow="Laws of Trinidad and Tobago"
+  title="Research"
+  meta="533 chapters · historical versions included"
+/>
 
 <div class="tab-bar" role="tablist" aria-label="Research tools">
   <button
     role="tab"
     aria-selected={subTab === "search"}
     class:active={subTab === "search"}
-    onclick={() => (subTab = "search")}
+    onclick={() => setTab("search")}
   >Search</button>
   <button
     role="tab"
     aria-selected={subTab === "lookup"}
     class:active={subTab === "lookup"}
-    onclick={() => (subTab = "lookup")}
+    onclick={() => setTab("lookup")}
   >Section lookup</button>
   <button
     role="tab"
     aria-selected={subTab === "browse"}
     class:active={subTab === "browse"}
-    onclick={() => (subTab = "browse")}
+    onclick={() => setTab("browse")}
   >Browse chapters</button>
 </div>
 
@@ -169,7 +170,7 @@
     {/if}
 
     {#if hasMore}
-      <button class="load-more" type="button" onclick={loadMore} disabled={loadingMore}>
+      <button class="load-more btn btn-secondary" type="button" onclick={loadMore} disabled={loadingMore}>
         <ChevronDown size={17} aria-hidden="true" />
         {loadingMore ? "Loading…" : "Load more provisions"}
       </button>
@@ -182,60 +183,33 @@
 {/if}
 
 <style>
-  .page-heading {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 18px;
-  }
-  .eyebrow {
-    margin: 0 0 2px;
-    color: var(--muted);
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-  h1 {
-    margin: 0;
-    color: var(--text);
-    font-size: 1.55rem;
-    line-height: 1.2;
-  }
-  .coverage {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.78rem;
-  }
   .tab-bar {
     display: flex;
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3);
     border-bottom: 1px solid var(--border);
   }
   .tab-bar button {
-    padding: 9px 16px;
+    padding: 9px var(--space-4);
     border: 0;
     border-bottom: 2px solid transparent;
     background: transparent;
     color: var(--muted-strong);
     font-size: 0.84rem;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     cursor: pointer;
+    transition: color var(--dur-fast) var(--ease);
   }
+  .tab-bar button:hover { color: var(--text); }
   .tab-bar button.active {
     border-bottom-color: var(--accent);
     color: var(--text);
-  }
-  .tab-bar button:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
   }
   .result-summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    margin: 0 0 10px;
+    gap: var(--space-3);
+    margin: 0 0 var(--space-3);
     color: var(--muted);
     font-size: 0.8rem;
   }
@@ -243,31 +217,19 @@
   .result-summary span { color: var(--muted-strong); }
   .loading-state,
   .message {
-    padding: 44px 16px;
+    padding: var(--space-12) var(--space-4);
     color: var(--muted);
     text-align: center;
   }
   .message.error { color: var(--danger); }
   .load-more {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
     width: 100%;
     min-height: 42px;
-    margin-top: 8px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    background: var(--surface);
-    color: var(--text);
-    font-weight: 700;
-    cursor: pointer;
+    margin-top: var(--space-2);
   }
-  .load-more:hover:not(:disabled) { border-color: var(--accent); }
   .load-more:disabled { cursor: wait; opacity: 0.65; }
   @media (max-width: 600px) {
-    .page-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
-    .tab-bar button { flex: 1; padding-inline: 8px; }
+    .tab-bar button { flex: 1; padding-inline: var(--space-2); }
     .result-summary { align-items: flex-start; flex-direction: column; gap: 3px; }
   }
 </style>

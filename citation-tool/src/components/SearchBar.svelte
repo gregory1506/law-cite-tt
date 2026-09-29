@@ -50,7 +50,7 @@
 
     <label>
       <span class="visually-hidden">Search method</span>
-      <select bind:value={mode} aria-label="Search method">
+      <select class="field" bind:value={mode} aria-label="Search method">
         <option value="fts" title="Find the words you entered">Exact wording</option>
         <option value="hybrid" title="Balance exact wording and related meaning">Best match</option>
         <option value="vector" title="Find provisions with related meaning">Related concepts</option>
@@ -58,12 +58,12 @@
     </label>
 
     <div class="search-actions">
-      <button class="primary" type="button" onclick={submit} disabled={!query.trim()}>
+      <button class="primary btn btn-primary" type="button" onclick={submit} disabled={!query.trim()}>
         <Search size={18} aria-hidden="true" />
         Search
       </button>
       <button
-        class="clear-button"
+        class="clear-button btn btn-secondary"
         type="button"
         onclick={clearSearch}
         disabled={!hasSearchState}
@@ -79,6 +79,7 @@
     <label>
       <span>Chapter</span>
       <input
+        class="field"
         type="text"
         bind:value={chapter}
         placeholder="All chapters"
@@ -93,7 +94,7 @@
 
     <label>
       <span>Available as at</span>
-      <input type="date" bind:value={date} />
+      <input class="field" type="date" bind:value={date} />
     </label>
 
   </div>
@@ -146,38 +147,17 @@
   select,
   .filters-row input {
     width: 100%;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    background: var(--bg);
-    color: var(--text);
   }
   select {
     height: 100%;
     padding: 10px 32px 10px 11px;
     font-size: 0.88rem;
   }
-  select:focus-visible,
-  .filters-row input:focus-visible {
-    border-color: var(--accent);
-    outline: 2px solid var(--accent-ring);
-  }
   .primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
     min-width: 112px;
     padding: 11px 18px;
-    border: 0;
-    border-radius: var(--radius);
-    background: var(--accent);
-    color: var(--accent-text);
     font-size: 0.9rem;
-    font-weight: 750;
-    cursor: pointer;
   }
-  .primary:hover:not(:disabled) { background: var(--accent-hover); }
-  .primary:disabled { cursor: not-allowed; opacity: 0.45; }
   .filters-row {
     display: grid;
     grid-template-columns: minmax(180px, 1fr) minmax(165px, 220px);
@@ -198,25 +178,11 @@
     font-size: 0.84rem;
   }
   .clear-button {
-    display: inline-flex;
     min-height: 42px;
-    align-items: center;
-    justify-content: center;
     gap: 6px;
     padding: 9px 12px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    background: transparent;
-    color: var(--muted-strong);
     font-size: 0.84rem;
-    font-weight: 700;
-    cursor: pointer;
   }
-  .clear-button:hover:not(:disabled) {
-    color: var(--text);
-    border-color: var(--muted);
-  }
-  .clear-button:disabled { cursor: not-allowed; opacity: 0.4; }
   .visually-hidden {
     position: absolute;
     width: 1px;

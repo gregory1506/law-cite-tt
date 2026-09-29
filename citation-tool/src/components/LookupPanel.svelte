@@ -62,6 +62,7 @@
     <label>
       <span>Chapter</span>
       <input
+        class="field"
         type="text"
         bind:value={chapter}
         placeholder="e.g. 8:08"
@@ -77,6 +78,7 @@
     <label>
       <span>Section</span>
       <input
+        class="field"
         type="text"
         bind:value={section}
         onkeydown={onKeydown}
@@ -86,10 +88,15 @@
 
     <label>
       <span>Available as at</span>
-      <input type="date" bind:value={date} />
+      <input class="field" type="date" bind:value={date} />
     </label>
 
-    <button type="button" onclick={submit} disabled={!chapter.trim() || !section.trim()}>
+    <button
+      class="btn btn-primary"
+      type="button"
+      onclick={submit}
+      disabled={!chapter.trim() || !section.trim()}
+    >
       <Search size={17} aria-hidden="true" />
       Look up
     </button>
@@ -176,34 +183,15 @@
     font-weight: 700;
   }
   input {
-    min-width: 0;
     width: 100%;
+    min-width: 0;
     padding: 10px 11px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    background: var(--bg);
-    color: var(--text);
-    font-size: 0.86rem;
-  }
-  input:focus-visible {
-    border-color: var(--accent);
-    outline: 2px solid var(--accent-ring);
+    font-size: var(--text-base);
   }
   .lookup-grid button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
     min-height: 40px;
-    padding: 9px 16px;
-    border: 0;
-    border-radius: var(--radius);
-    background: var(--accent);
-    color: var(--accent-text);
-    font-weight: 750;
-    cursor: pointer;
+    padding: 9px var(--space-4);
   }
-  .lookup-grid button:disabled { cursor: not-allowed; opacity: 0.45; }
   .message {
     padding: 44px 16px;
     color: var(--muted);
