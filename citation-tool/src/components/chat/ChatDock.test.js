@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import Chat from "./Chat.svelte";
+import ChatDock from "./ChatDock.svelte";
+import { chatState, clearChat } from "../../lib/chat.svelte.js";
 
 function response(body, ok = true) {
   return Promise.resolve({
@@ -32,19 +33,28 @@ const refused = {
   sources: [],
 };
 
-describe("Chat route", () => {
+async function send(text) {
+  const input = screen.getByLabelText("Message");
+  await fireEvent.input(input, { target: { value: text } });
+  await fireEvent.click(screen.getByLabelText("Send message"));
+}
+
+describe("ChatDock", () => {
   beforeEach(() => {
     vi.unstubAllGlobals();
+    localStorage.clear();
+    clearChat();
+    chatState.open = true;
+    chatState.input = "";
+    chatState.error = "";
   });
 
   it("sends the message and renders the grounded answer with its source", async () => {
     const fetchMock = vi.fn().mockResolvedValue(response(grounded));
     vi.stubGlobal("fetch", fetchMock);
-    render(Chat);
+    render(ChatDock);
 
-    const input = screen.getByLabelText("Message");
-    await fireEvent.input(input, { target: { value: "What does s. 4 say?" } });
-    await fireEvent.click(screen.getByLabelText("Send message"));
+    await send("What does s. 4 say?");
 
     await waitFor(() => {
       expect(screen.getByText("What does s. 4 say?")).toBeTruthy();
@@ -58,16 +68,14 @@ describe("Chat route", () => {
     expect(init.method).toBe("POST");
     const body = JSON.parse(init.body);
     expect(body.messages[0]).toEqual({ role: "user", content: "What does s. 4 say?" });
+    expect(body.mode).toBe("research");
   });
 
   it("shows a not-verified banner for refused answers", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(response(refused));
-    vi.stubGlobal("fetch", fetchMock);
-    render(Chat);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response(refused)));
+    render(ChatDock);
 
-    const input = screen.getByLabelText("Message");
-    await fireEvent.input(input, { target: { value: "What does s. 4 say?" } });
-    await fireEvent.click(screen.getByLabelText("Send message"));
+    await send("What does s. 4 say?");
 
     await waitFor(() => {
       expect(screen.getByText("Not verified")).toBeTruthy();
@@ -75,14 +83,42 @@ describe("Chat route", () => {
     expect(screen.getByText(/I could not verify/)).toBeTruthy();
   });
 
-  it("surfaces a request failure", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(response({}, false));
-    vi.stubGlobal("fetch", fetchMock);
-    render(Chat);
+  it("shows an explicit card when the assistant is unconfigured", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        response({ status: "unconfigured", answer: "", sources: [] }),
+      ),
+    );
+    render(ChatDock);
 
-    const input = screen.getByLabelText("Message");
-    await fireEvent.input(input, { target: { value: "What does s. 4 say?" } });
-    await fireEvent.click(screen.getByLabelText("Send message"));
+    await send("Anything?");
+
+    await waitFor(() => {
+      expect(screen.getByText("Assistant not configured")).toBeTruthy();
+    });
+  });
+
+  it("sends the selected mode", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(response(grounded));
+    vi.stubGlobal("fetch", fetchMock);
+    render(ChatDock);
+
+    await fireEvent.click(screen.getByRole("button", { name: "Precedent" }));
+    await send("Which cases cite this?");
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalled();
+    });
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.mode).toBe("precedent");
+  });
+
+  it("surfaces a request failure", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response({}, false)));
+    render(ChatDock);
+
+    await send("What does s. 4 say?");
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeTruthy();

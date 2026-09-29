@@ -1,10 +1,11 @@
 <script>
+  import ChatDock from "./components/chat/ChatDock.svelte";
+  import ChatLauncher from "./components/chat/ChatLauncher.svelte";
   import MobileHeader from "./components/layout/MobileHeader.svelte";
   import Sidebar from "./components/layout/Sidebar.svelte";
   import { isAuthenticated, setToken } from "./lib/auth.js";
   import { initRouter, router } from "./lib/router.svelte.js";
   import Cite from "./routes/Cite.svelte";
-  import Chat from "./routes/Chat.svelte";
   import Explore from "./routes/Explore.svelte";
 
   initRouter();
@@ -12,7 +13,6 @@
   const titles = {
     research: "Research",
     cite: "Validate a citation",
-    chat: "Chat",
   };
 
   let authed = $state(isAuthenticated());
@@ -55,14 +55,14 @@
       <div class="main-inner">
         {#if router.route === "research"}
           <Explore />
-        {:else if router.route === "cite"}
-          <Cite />
         {:else}
-          <Chat />
+          <Cite />
         {/if}
       </div>
     </main>
   </div>
+  <ChatLauncher />
+  <ChatDock />
 {/if}
 
 <style>
@@ -72,7 +72,7 @@
   main {
     min-width: 0;
     flex: 1;
-    padding: var(--space-8) var(--space-8) var(--space-12);
+    padding: var(--space-8) var(--space-8) 104px;
   }
   .main-inner { max-width: var(--content-max); margin: 0 auto; }
   .login-gate {
@@ -106,6 +106,6 @@
       border: 0;
       background: var(--backdrop);
     }
-    main { padding: 76px var(--space-4) var(--space-10); }
+    main { padding: 76px var(--space-4) 96px; }
   }
 </style>

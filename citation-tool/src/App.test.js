@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/svelte";
+import { fireEvent, render, screen, within } from "@testing-library/svelte";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App.svelte";
 
@@ -15,7 +15,7 @@ describe("App shell", () => {
     );
   });
 
-  it("shows Research, Cite, and Chat as primary routes without internal metrics", async () => {
+  it("shows Research and Cite as primary routes, chat as a floating dock", async () => {
     render(App);
 
     expect(screen.getByRole("heading", { name: "Research" })).toBeInTheDocument();
@@ -24,9 +24,12 @@ describe("App shell", () => {
       screen.getByRole("heading", { name: "Validate a citation", level: 1 }),
     ).toBeInTheDocument();
     expect(window.location.pathname).toBe("/cite");
-    await fireEvent.click(screen.getByRole("button", { name: "Chat" }));
-    expect(screen.getByRole("heading", { name: "Chat", level: 1 })).toBeInTheDocument();
-    expect(screen.getByText("Ask about the Laws of Trinidad and Tobago")).toBeInTheDocument();
+
+    expect(
+      screen.queryByRole("button", { name: "Chat" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Open research assistant")).toBeInTheDocument();
+    expect(document.getElementById("chat-dock")).toBeTruthy();
     expect(screen.queryByText("Chunks")).not.toBeInTheDocument();
     expect(screen.queryByText("Embedded")).not.toBeInTheDocument();
   });
@@ -38,7 +41,8 @@ describe("App shell", () => {
     expect(
       screen.getByRole("heading", { name: "Validate a citation", level: 1 }),
     ).toBeInTheDocument();
-    await fireEvent.click(screen.getByRole("button", { name: "Research" }));
+    const nav = within(document.getElementById("primary-navigation"));
+    await fireEvent.click(nav.getByRole("button", { name: "Research" }));
     expect(screen.getByRole("heading", { name: "Research", level: 1 })).toBeInTheDocument();
     expect(window.location.pathname).toBe("/");
   });

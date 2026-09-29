@@ -1,5 +1,5 @@
 const VALID_TABS = ["search", "lookup", "browse"];
-const ROUTE_PATHS = { research: "/", cite: "/cite", chat: "/chat" };
+const ROUTE_PATHS = { research: "/", cite: "/cite" };
 const PATH_ROUTES = Object.fromEntries(
   Object.entries(ROUTE_PATHS).map(([route, path]) => [path, route]),
 );

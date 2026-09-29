@@ -1,5 +1,5 @@
 <script>
-  import { FileCheck2, MessageSquareText, Search } from "@lucide/svelte";
+  import { FileCheck2, Search } from "@lucide/svelte";
   import { navigate, router } from "../../lib/router.svelte.js";
   import ThemeToggle from "./ThemeToggle.svelte";
 
@@ -29,14 +29,6 @@
     >
       <FileCheck2 size={17} aria-hidden="true" />
       Cite
-    </button>
-    <button
-      class:active={router.route === "chat"}
-      onclick={() => go("chat")}
-      aria-current={router.route === "chat" ? "page" : undefined}
-    >
-      <MessageSquareText size={17} aria-hidden="true" />
-      Chat
     </button>
   </nav>
   <div class="sidebar-footer">
