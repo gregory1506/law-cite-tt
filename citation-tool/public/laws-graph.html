@@ -46,6 +46,19 @@
       border-radius: 4px; font-weight: 800;
     }
     .skip-link:focus { top: 14px; }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 7px;
+      margin: 0 0 14px; padding: 7px 14px;
+      pointer-events: auto;
+      border: 1px solid var(--border); border-radius: 999px;
+      background: rgba(13, 21, 31, .78); backdrop-filter: blur(10px);
+      color: var(--muted); font-size: 12px; font-weight: 700;
+      text-decoration: none;
+      transition: color .16s, border-color .16s, background .16s;
+    }
+    .back-link:hover, .back-link:focus-visible {
+      color: var(--ink); border-color: var(--gold); outline: none;
+    }
     .shell { position: relative; width: 100%; height: 100%; }
     canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
     canvas.dragging { cursor: grabbing; }
@@ -164,6 +177,7 @@
   <main class="shell" aria-label="Interactive graph of the Laws of Trinidad and Tobago">
     <canvas id="graph" aria-label="Chapter graph. Search for or select a law to inspect its connections."></canvas>
     <header class="masthead">
+      <a class="back-link" href="/"><span aria-hidden="true">←</span> Back to LawCite TT</a>
       <p class="kicker">LawCite TT · Statute Atlas</p>
       <h1>The laws,<br>seen as a system.</h1>
       <p class="lede"><strong>Every point is one statutory chapter.</strong> Proximity groups chapter families; lines show strong section-level semantic relationships. Select a point to trace its neighbourhood.</p>
