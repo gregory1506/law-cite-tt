@@ -53,6 +53,7 @@ cont.txt
 docs/superpowers/
 docs/graphrag/
 docs/study-log.md
+DESIGN-*/
 
 # Proprietary data pipeline (ingestion, scraping, migration)
 backend/scraper/
