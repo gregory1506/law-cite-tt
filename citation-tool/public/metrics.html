@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>LawCite TT — Metrics</title>
+<style>
+  :root {
+    --bg: #080d14;
+    --panel: rgba(13, 21, 31, .92);
+    --border: rgba(198, 211, 219, .18);
+    --gold: #e7b84b;
+    --ink: #f3efe3;
+    --muted: #91a0ad;
+    --faint: #52616e;
+    --coral: #f1785c;
+    --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 var(--sans);
+    padding: 32px 24px 64px;
+  }
+  main { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h1 span { color: var(--gold); }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 24px; }
+  .gate { max-width: 420px; margin: 48px auto; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .row { display: flex; gap: 8px; }
+  input[type="password"] {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+  button {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--gold);
+    color: #171006;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.secondary { background: transparent; color: var(--muted); }
+  button.secondary:hover { color: var(--ink); }
+  .error { color: var(--coral); font-size: 13px; margin-top: 8px; min-height: 20px; }
+  .days { display: flex; gap: 6px; margin-bottom: 20px; }
+  .days button { background: transparent; color: var(--muted); padding: 6px 12px; font-weight: 500; }
+  .days button.active { border-color: var(--gold); color: var(--gold); }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .card .n { font-size: 26px; font-weight: 700; color: var(--gold); font-family: var(--mono); }
+  .card .k { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+  section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  section h2 { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; }
+  td.num, th.num { text-align: right; font-family: var(--mono); }
+  tr:last-child td { border-bottom: 0; }
+  .bar-row { display: flex; align-items: center; gap: 10px; font-size: 13px; margin-bottom: 6px; }
+  .bar-label { width: 150px; color: var(--muted); font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar { height: 14px; background: var(--gold); border-radius: 3px; min-width: 2px; }
+  .bar-n { font-family: var(--mono); color: var(--ink); }
+  .footer { color: var(--faint); font-size: 12px; margin-top: 8px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>LawCite <span>TT</span> — Usage Metrics</h1>
+  <p class="sub">Analytics dashboard (hashed IPs only; admin token required).</p>
+
+  <div id="gate" class="gate">
+    <label for="token">Admin token</label>
+    <div class="row">
+      <input id="token" type="password" placeholder="ADMIN_METRICS_TOKEN" autocomplete="off">
+      <button id="unlock">Unlock</button>
+    </div>
+    <div id="gate-error" class="error"></div>
+  </div>
+
+  <div id="dash" class="hidden">
+    <div class="days">
+      <button data-days="7">7 days</button>
+      <button data-days="30">30 days</button>
+      <button data-days="90">90 days</button>
+      <button id="lock" class="secondary" style="margin-left:auto">Lock</button>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="grid">
+      <section>
+        <h2>Events by type</h2>
+        <div id="bytype"></div>
+      </section>
+      <section>
+        <h2>Top paths</h2>
+        <div id="paths"></div>
+      </section>
+    </div>
+
+    <section>
+      <h2>Daily activity</h2>
+      <table>
+        <thead>
+          <tr><th>Date</th><th class="num">Sessions</th><th class="num">Events</th></tr>
+        </thead>
+        <tbody id="daily"></tbody>
+      </table>
+    </section>
+
+    <p class="footer" id="meta"></p>
+  </div>
+</main>
+
+<script>
+(function () {
+  const TOKEN_KEY = "lawcite_metrics_token";
+  const gate = document.getElementById("gate");
+  const dash = document.getElementById("dash");
+  const err = document.getElementById("gate-error");
+  const tokenInput = document.getElementById("token");
+  let days = 30;
+
+  function token() {
+    try { return sessionStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; }
+  }
+
+  function fmt(n) {
+    if (typeof n !== "number") return "—";
+    if (n >= 1000 && n % 1000 === 0 && n % 1000000 !== 0) return (n / 1000) + "k";
+    return n.toLocaleString();
+  }
+
+  function card(k, v) {
+    return '<div class="card"><div class="n">' + v + '</div><div class="k">' + k + '</div></div>';
+  }
+
+  function bars(el, entries) {
+    if (!entries.length) { el.innerHTML = '<p class="footer">No data.</p>'; return; }
+    const max = Math.max.apply(null, entries.map(e => e[1]));
+    el.innerHTML = entries.map(function (e) {
+      const w = Math.max(2, Math.round((e[1] / max) * 100));
+      return '<div class="bar-row"><span class="bar-label" title="' + e[0] + '">' +
+        e[0] + '</span><span class="bar" style="width:' + w + '%"></span>' +
+        '<span class="bar-n">' + fmt(e[1]) + '</span></div>';
+    }).join("");
+  }
+
+  async function load() {
+    const t = token();
+    if (!t) { gate.classList.remove("hidden"); dash.classList.add("hidden"); return; }
+    err.textContent = "";
+    try {
+      const res = await fetch("/api/metrics/summary?days=" + days, {
+        headers: { "X-Admin-Token": t },
+      });
+      if (res.status === 404 || res.status === 401) {
+        throw new Error("Invalid or missing admin token (404).");
+      }
+      if (!res.ok) throw new Error("Server error " + res.status);
+      const m = await res.json();
+      gate.classList.add("hidden");
+      dash.classList.remove("hidden");
+
+      document.getElementById("cards").innerHTML =
+        card("Sessions", fmt(m.totals.sessions)) +
+        card("Events", fmt(m.totals.events)) +
+        card("Searches", fmt(m.totals.searches)) +
+        card("Cite validations", fmt(m.totals.cite_validations)) +
+        card("Chat turns", fmt(m.totals.chat_turns)) +
+        card("Avg dwell", m.totals.avg_dwell_ms != null ? (m.totals.avg_dwell_ms / 1000).toFixed(1) + "s" : "—");
+
+      bars(document.getElementById("bytype"), m.by_type.map(function (r) { return [r.type, r.c]; }));
+      bars(document.getElementById("paths"), m.top_paths.map(function (r) { return [r.path, r.c]; }));
+
+      document.getElementById("daily").innerHTML = m.daily.map(function (r) {
+        return "<tr><td>" + r.day + '</td><td class="num">' + fmt(r.sessions) +
+          '</td><td class="num">' + fmt(r.events) + "</td></tr>";
+      }).join("") || '<tr><td colspan="3" class="footer">No data.</td></tr>';
+
+      document.getElementById("meta").textContent =
+        "Window: last " + m.days + " days · generated " + m.generated_at +
+        " · retention enforced server-side";
+    } catch (e) {
+      err.textContent = e.message;
+      gate.classList.remove("hidden");
+      dash.classList.add("hidden");
+    }
+  }
+
+  document.getElementById("unlock").addEventListener("click", function () {
+    const v = tokenInput.value.trim();
+    if (!v) { err.textContent = "Enter the admin token."; return; }
+    try { sessionStorage.setItem(TOKEN_KEY, v); } catch {}
+    tokenInput.value = "";
+    load();
+  });
+  tokenInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") document.getElementById("unlock").click();
+  });
+  document.getElementById("lock").addEventListener("click", function () {
+    try { sessionStorage.removeItem(TOKEN_KEY); } catch {}
+    dash.classList.add("hidden");
+    gate.classList.remove("hidden");
+  });
+  document.querySelectorAll(".days button[data-days]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      days = parseInt(b.dataset.days, 10);
+      document.querySelectorAll(".days button[data-days]").forEach(function (x) {
+        x.classList.toggle("active", x === b);
+      });
+      load();
+    });
+  });
+
+  document.querySelector('.days button[data-days="30"]').classList.add("active");
+  load();
+})();
+</script>
+</body>
+</html>

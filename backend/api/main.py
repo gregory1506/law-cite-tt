@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import hmac
 import logging
 import os
@@ -20,8 +21,10 @@ from api.analytics import (
     admin_metrics_token,
     client_ip,
     hash_ip,
+    purge_old_events,
     record_chat_exchange,
     record_events,
+    retention_days,
     summarize_usage,
     user_agent,
 )
@@ -69,11 +72,36 @@ def get_db() -> LawCitePGDB:
     return _db
 
 
+async def _retention_sweep_loop():
+    """Purge analytics older than the retention window; daily + once at boot."""
+    while True:
+        try:
+            pool = await get_db().connect()
+            removed = await purge_old_events(pool, retention_days())
+            if removed["events"] or removed["chat_messages"]:
+                logger.info(
+                    "analytics retention purge: %s events, %s chat rows",
+                    removed["events"],
+                    removed["chat_messages"],
+                )
+        except Exception:
+            logger.exception("analytics retention sweep failed")
+        await asyncio.sleep(24 * 3600)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     warm_model()
     await _db.connect()
+    sweep = asyncio.create_task(_retention_sweep_loop())
     yield
+    sweep.cancel()
+    try:
+        await sweep
+    except asyncio.CancelledError:
+        pass
+    except Exception:
+        logger.debug("retention sweep task ended with error", exc_info=True)
     await _db.close()
 
 

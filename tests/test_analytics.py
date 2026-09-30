@@ -129,6 +129,36 @@ async def test_chat_exchange_is_persisted(client, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_retention_purge_removes_expired_rows(client):
+    from api.analytics import purge_old_events
+
+    seeded = await client.post(
+        "/api/events",
+        json={"session_id": "ret1", "events": [{"type": "pageview", "path": "/"}]},
+    )
+    assert seeded.status_code == 200
+    assert seeded.json().get("recorded") == 1, seeded.json()
+
+    pool = await get_db().connect()
+    # Backdate beyond a 5-day window but well inside the 400-day sweep
+    # retention, so the lifespan sweep task can never race this assertion.
+    async with pool.acquire() as conn:
+        rc = await conn.execute(
+            "UPDATE events SET created_at = now() - interval '10 days' "
+            "WHERE session_id = 'ret1'"
+        )
+        assert rc == "UPDATE 1", rc
+    removed = await purge_old_events(pool, 5)
+    assert removed["events"] == 1
+
+    async with pool.acquire() as conn:
+        left = await conn.fetchval(
+            "SELECT count(*) FROM events WHERE session_id = 'ret1'"
+        )
+    assert left == 0
+
+
+@pytest.mark.asyncio
 async def test_metrics_summary_requires_token_and_reports_usage(client, monkeypatch):
     hidden = await client.get("/api/metrics/summary")
     assert hidden.status_code == 404

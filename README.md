@@ -229,6 +229,18 @@ The statutory and judicial corpus powering **LawCite TT** is stored in a pre-bui
 
 ---
 
+## 🔒 Privacy & Analytics
+
+LawCite TT collects lightweight, anonymized usage analytics to improve the product:
+
+* **What is collected:** page views, time-on-site (dwell), searches, citation validations, feature usage, and full chat history (for product quality and answer auditability).
+* **How it is anonymized:** IP addresses are stored only as salted HMAC-SHA256 fingerprints (24 hex chars) — raw IPs are never written to the database. Sessions are random per-tab identifiers with no account linkage.
+* **Retention:** analytics rows are purged server-side after 400 days (`ANALYTICS_RETENTION_DAYS`); chat history is retained while it supports product quality and abuse investigations.
+* **Your choice:** an opt-out toggle in the sidebar ("Usage analytics: on/off") immediately stops event collection on your device — no cookies or cross-site tracking are used.
+* **Access:** metrics and chat history are admin-token gated; they are never exposed publicly.
+
+---
+
 ## 📄 License
 
 This repository is licensed under the **MIT License**. Statutory laws of Trinidad and Tobago are public legal authorities.

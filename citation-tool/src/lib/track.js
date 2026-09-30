@@ -1,6 +1,7 @@
 // Usage analytics beacon (beta metrics). Never throws, never blocks the app.
 
 const SID_KEY = "lawcite_sid";
+const OPTOUT_KEY = "lawcite_no_analytics";
 const ENDPOINT = "/api/events";
 const FLUSH_MS = 4000;
 const FLUSH_AT = 20;
@@ -12,6 +13,22 @@ let timer = null;
 let lastPath = "";
 let lastAt = 0;
 let started = false;
+
+export function analyticsEnabled() {
+  try {
+    return localStorage.getItem(OPTOUT_KEY) !== "1";
+  } catch {
+    return true;
+  }
+}
+
+export function setAnalyticsEnabled(enabled) {
+  try {
+    localStorage.setItem(OPTOUT_KEY, enabled ? "0" : "1");
+  } catch {
+    /* storage unavailable */
+  }
+}
 
 function randomId() {
   try {
@@ -74,6 +91,7 @@ function schedule() {
 }
 
 function push(type, meta = {}) {
+  if (!analyticsEnabled()) return;
   if (buffer.length >= FLUSH_AT) flush();
   const path =
     typeof location !== "undefined" ? location.pathname + location.search : "";
@@ -98,12 +116,13 @@ export function trackPageview(path) {
 export function initTracking() {
   if (started || typeof window === "undefined") return;
   started = true;
-  push("session_start", {
-    referrer: (typeof document !== "undefined" && document.referrer) || "",
-    viewport: [window.innerWidth, window.innerHeight],
-  });
   window.addEventListener("pagehide", flush);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") flush();
+  });
+  if (!analyticsEnabled()) return;
+  push("session_start", {
+    referrer: (typeof document !== "undefined" && document.referrer) || "",
+    viewport: [window.innerWidth, window.innerHeight],
   });
 }

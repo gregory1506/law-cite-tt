@@ -1,14 +1,26 @@
 <script>
   import { FileCheck2, Network, Search } from "@lucide/svelte";
   import { navigate, router } from "../../lib/router.svelte.js";
-  import { track } from "../../lib/track.js";
+  import {
+    analyticsEnabled,
+    setAnalyticsEnabled,
+    track,
+  } from "../../lib/track.js";
   import ThemeToggle from "./ThemeToggle.svelte";
 
   let { open = false, onNavigate = () => {} } = $props();
 
+  let analyticsOn = $state(analyticsEnabled());
+
   function go(route) {
     navigate(route);
     onNavigate();
+  }
+
+  function toggleAnalytics() {
+    analyticsOn = !analyticsOn;
+    setAnalyticsEnabled(analyticsOn);
+    track("analytics_pref", { enabled: analyticsOn });
   }
 </script>
 
@@ -45,6 +57,13 @@
   <div class="sidebar-footer">
     <ThemeToggle />
     <p class="auth-status">Signed in (stub)</p>
+    <button class="analytics-toggle" onclick={toggleAnalytics}>
+      Usage analytics: {analyticsOn ? "on" : "off"}
+    </button>
+    <p class="analytics-note">
+      Anonymous usage analytics (hashed IP, no personal data) to improve
+      LawCite TT.
+    </p>
   </div>
 </aside>
 
@@ -115,6 +134,24 @@
     padding: var(--space-1) var(--space-2) 0;
     color: var(--muted);
     font-size: var(--text-xs);
+  }
+  .analytics-toggle {
+    margin: 0;
+    padding: 0 var(--space-2);
+    border: 0;
+    background: transparent;
+    color: var(--muted-strong);
+    font-size: var(--text-xs);
+    text-align: left;
+    cursor: pointer;
+  }
+  .analytics-toggle:hover { color: var(--text); }
+  .analytics-note {
+    margin: 0;
+    padding: 0 var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    line-height: 1.4;
   }
   @media (max-width: 768px) {
     .sidebar {

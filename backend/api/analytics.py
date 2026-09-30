@@ -19,6 +19,14 @@ def admin_metrics_token() -> str:
     return os.environ.get("ADMIN_METRICS_TOKEN", "")
 
 
+def retention_days() -> int:
+    try:
+        days = int(os.environ.get("ANALYTICS_RETENTION_DAYS", "400"))
+    except ValueError:
+        days = 400
+    return max(1, days)
+
+
 def hash_ip(ip: str) -> str:
     """One-way, key-salted fingerprint of a client IP. Raw IPs are never stored."""
     if not ip:
@@ -115,6 +123,23 @@ async def record_chat_exchange(
             ip_hash,
             ua,
         )
+
+
+async def purge_old_events(pool, days: int) -> dict:
+    """Delete analytics rows older than `days` (retention policy). Returns counts."""
+    async with pool.acquire() as conn:
+        ev = await conn.execute(
+            "DELETE FROM events WHERE created_at < now() - make_interval(days => $1)",
+            days,
+        )
+        cm = await conn.execute(
+            "DELETE FROM chat_messages WHERE created_at < now() - make_interval(days => $1)",
+            days,
+        )
+    return {
+        "events": int(ev.split()[-1]) if ev else 0,
+        "chat_messages": int(cm.split()[-1]) if cm else 0,
+    }
 
 
 async def summarize_usage(pool, days: int) -> dict:

@@ -1,5 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { flush, getSessionId, initTracking, track, trackPageview } from "./track.js";
+import {
+  analyticsEnabled,
+  flush,
+  getSessionId,
+  initTracking,
+  setAnalyticsEnabled,
+  track,
+  trackPageview,
+} from "./track.js";
 
 function flushCalls(fetchMock) {
   return fetchMock.mock.calls.map((call) => JSON.parse(call[1].body));
@@ -8,6 +16,8 @@ function flushCalls(fetchMock) {
 describe("track", () => {
   beforeEach(() => {
     sessionStorage.clear();
+    localStorage.clear();
+    setAnalyticsEnabled(true);
     flush();
     vi.stubGlobal(
       "fetch",
@@ -73,5 +83,21 @@ describe("track", () => {
   it("flush is a no-op when the buffer is empty", () => {
     flush();
     expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it("drops all events when analytics is opted out", () => {
+    setAnalyticsEnabled(false);
+    expect(analyticsEnabled()).toBe(false);
+    track("search", { query: "x" });
+    trackPageview("/");
+    flush();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+
+    setAnalyticsEnabled(true);
+    track("search", { query: "y" });
+    flush();
+    const batches = flushCalls(globalThis.fetch);
+    expect(batches).toHaveLength(1);
+    expect(batches[0].events.map((e) => e.type)).toEqual(["search"]);
   });
 });
