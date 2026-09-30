@@ -1,5 +1,5 @@
 <script>
-  import { FileCheck2, Search } from "@lucide/svelte";
+  import { FileCheck2, Network, Search } from "@lucide/svelte";
   import { navigate, router } from "../../lib/router.svelte.js";
   import ThemeToggle from "./ThemeToggle.svelte";
 
@@ -30,6 +30,15 @@
       <FileCheck2 size={17} aria-hidden="true" />
       Cite
     </button>
+    <a
+      href="/laws-graph.html"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Statute Atlas graph (opens in new tab)"
+    >
+      <Network size={17} aria-hidden="true" />
+      Atlas
+    </a>
   </nav>
   <div class="sidebar-footer">
     <ThemeToggle />
@@ -62,7 +71,8 @@
   }
   .accent-text { color: var(--accent); }
   nav { display: grid; gap: var(--space-1); }
-  nav button {
+  nav button,
+  nav a {
     display: flex;
     align-items: center;
     gap: var(--space-3);
@@ -75,12 +85,14 @@
     font-size: var(--text-md);
     font-weight: var(--weight-semibold);
     text-align: left;
+    text-decoration: none;
     cursor: pointer;
     transition:
       background var(--dur-fast) var(--ease),
       color var(--dur-fast) var(--ease);
   }
-  nav button:hover {
+  nav button:hover,
+  nav a:hover {
     background: var(--accent-faint);
     color: var(--text);
   }

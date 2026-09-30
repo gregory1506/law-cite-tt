@@ -46,4 +46,14 @@ describe("App shell", () => {
     expect(screen.getByRole("heading", { name: "Research", level: 1 })).toBeInTheDocument();
     expect(window.location.pathname).toBe("/");
   });
+
+  it("links the statute atlas from the sidebar in a new tab", () => {
+    render(App);
+
+    const nav = within(document.getElementById("primary-navigation"));
+    const atlas = nav.getByRole("link", { name: /atlas/i });
+    expect(atlas).toHaveAttribute("href", "/laws-graph.html");
+    expect(atlas).toHaveAttribute("target", "_blank");
+    expect(atlas).toHaveAttribute("rel", expect.stringContaining("noopener"));
+  });
 });
