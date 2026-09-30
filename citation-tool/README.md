@@ -1,43 +1,92 @@
-# Svelte + Vite
+# ⚖️ LawCite TT — Customer App
 
-This template should help get you started developing with Svelte in Vite.
+The **Svelte 5** frontend for **LawCite TT** — point-in-time legal search, citation
+validation, a grounded research assistant, and the Statute Atlas for the Laws of
+Trinidad and Tobago.
 
-## Recommended IDE Setup
+* **Live app:** https://law.ai.tt
+* **Repository root:** [`../`](../) — backend, corpus stats, and architecture docs
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+## Stack
 
-## Need an official Svelte framework?
+* **Svelte 5** (Runes API) + **Vite** — no framework, no router library
+* Custom history router (`src/lib/router.svelte.js`)
+* **Vitest** + Testing Library + jsdom
+* **Cloudflare Workers** — static assets + same-origin `/api/*` proxy
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## Quick start
 
-## Technical considerations
-
-**Why use this over SvelteKit?**
-
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
-
-This template contains as little as possible to get started with Vite + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
-
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `checkJs` in the JS template?**
-
-It is likely that most cases of changing variable types in runtime are likely to be accidental, rather than deliberate. This provides advanced typechecking out of the box. Should you like to take advantage of the dynamically-typed nature of JavaScript, it is trivial to change the configuration.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/sveltejs/svelte-hmr/tree/master/packages/svelte-hmr#preservation-of-local-state).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```js
-// store.js
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm test         # vitest suite
+npm run build    # production bundle → dist/
 ```
+
+In development the app calls the FastAPI backend at **`http://localhost:8000`**
+(see [`../backend`](../backend)); override with `VITE_API_BASE`. On any
+non-localhost hostname the app uses **same-origin `/api/*`** — in production the
+Worker forwards those requests to the API origin.
+
+## Project structure
+
+```
+src/
+├── App.svelte              # shell: header, sidebar, route switch, chat dock mount
+├── main.js                 # entry point
+├── worker.js               # Cloudflare Worker: /api/* → origin, else static assets
+├── routes/
+│   ├── Explore.svelte      # Research — hybrid search over the corpus
+│   └── Cite.svelte         # Cite — citation resolution & validation
+├── components/
+│   ├── layout/             # Sidebar, Header, ThemeToggle
+│   └── chat/               # floating research-assistant dock
+├── lib/
+│   ├── router.svelte.js    # history-based routing (/, /cite)
+│   ├── api.js              # API helpers (search, chat, cases, events, …)
+│   ├── chat.svelte.js      # chat state store (sessions, sources, chips)
+│   ├── track.js            # privacy-aware analytics beacon (opt-out supported)
+│   ├── auth.js             # session helpers (sign-in stub)
+│   └── date.js, text.js    # formatting utilities
+└── styles/                 # design tokens, light/dark themes
+public/
+├── laws-graph.html         # self-contained Statute Atlas (533 chapters)
+└── metrics.html            # admin analytics dashboard (served at /metrics)
+```
+
+## Routes
+
+| Path | View |
+| :--- | :--- |
+| `/` | Research (hybrid search) |
+| `/cite` | Citation validation & copy-ready references |
+| `/laws-graph.html` | Statute Atlas — opens in a new tab |
+| `/metrics` | Usage-metrics dashboard (admin token required) |
+
+## Testing
+
+```bash
+npm test                 # full suite (vitest, jsdom)
+npx vitest run src/lib   # pure-logic modules (router, api, track, date, text)
+```
+
+`fetch` is mocked in tests, and `import.meta.env.MODE === "test"` disables the
+analytics beacon timers so tests never hit the network.
+
+## Deploy
+
+```bash
+npm run build
+npx wrangler deploy
+```
+
+`wrangler.toml` (Worker name `law-cite-tt`) publishes `dist/` as Workers Static
+Assets; `src/worker.js` proxies `/api/*` to the API origin and serves everything
+else from the asset bundle. Run `npm test` before deploying.
+
+## Privacy
+
+Usage analytics (hashed IPs, per-tab sessions, opt-out toggle in the sidebar)
+are described in the root README's
+[Privacy & Analytics](../README.md#-privacy--analytics) section. The beacon
+implementation lives in `src/lib/track.js`.

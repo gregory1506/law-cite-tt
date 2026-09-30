@@ -130,6 +130,7 @@ flowchart TD
     FastAPI <--> Agent
     FastAPI <--> PGDB
     FastAPI <-->|SSL-Bypass Proxy /api/pdf/*| GovTT
+    User -.->|navigator.sendBeacon /api/events| CFWorker
 ```
 
 ## 🤖 AI Engineering & System Architecture
@@ -160,6 +161,7 @@ This project serves as a production-grade demonstration of modern **AI Engineeri
 * **Backend API**: [FastAPI](https://fastapi.tiangolo.com) (Python 3.13), Uvicorn, AsyncPG, HTTPX
 * **Database & Vector Search**: [PostgreSQL 16](https://www.postgresql.org) + [pgvector](https://github.com/pgvector/pgvector), Hybrid FTS + HNSW Vector Indexing
 * **Embeddings & AI**: `FastEmbed` (`BAAI/bge-small-en-v1.5`), Google Gemini API (`gemini-3.5-flash-lite`) via OpenAI-compatible endpoints
+* **Analytics & Observability**: Postgres-backed `events` / `chat_messages` store, `sendBeacon` client, retention sweep, token-gated metrics API + dashboard
 * **Infrastructure**: Traefik, Docker Compose, Hostinger VPS
 
 ---
@@ -207,11 +209,42 @@ npm test       # Run frontend tests
 The API layer (`backend/api/`) is a FastAPI application backed by PostgreSQL 16 + pgvector. The data ingestion pipeline is proprietary — the corpus is available as a pre-built database.
 
 ```bash
-# Explore the API code
-cd law-cite-tt/backend
-cat api/main.py    # FastAPI app, routes, lifespan
-cat api/agent.py   # Agentic tool-calling loop
-cat api/tools.py   # Search, citation, and case law handlers
+git clone https://github.com/gregory1506/law-cite-tt.git
+cd law-cite-tt
+
+uv venv .venv && source .venv/bin/activate
+uv pip install -r backend/requirements.txt
+
+export PG_DSN=postgresql://user:pass@localhost:5432/lawcite  # see .env.example
+cd backend && uvicorn api.main:app --port 8000               # /api/health
+```
+
+**Key modules:** `api/main.py` (routes + lifespan), `api/agent.py` (agentic
+tool-calling loop), `api/tools.py` (search / citation / case-law handlers),
+`api/analytics.py` (event + chat persistence, metrics aggregation),
+`scraper/db_pg.py` (pooled Postgres + pgvector store).
+
+**API surface:**
+
+| Method | Path | Purpose |
+| :--- | :--- | :--- |
+| GET | `/api/health` · `/api/stats` | liveness, corpus counts |
+| GET | `/api/chapters` · `/api/lookup` | catalog & section lookup |
+| GET | `/api/search` · `/api/search/grouped` | hybrid FTS + vector search |
+| GET | `/api/citations/resolve` | citation resolution & formatting |
+| GET | `/api/cases` · `/api/cases/citing` · `/api/cases/{id}` | case-law precedent graph |
+| GET | `/api/pdf/{download_id}` | server-side proxied official PDFs |
+| POST | `/api/chat` | grounded research assistant (persisted) |
+| POST | `/api/events` | analytics beacon ingest |
+| GET | `/api/metrics/summary` | admin metrics (`X-Admin-Token`) |
+
+**Testing:**
+
+```bash
+source .venv/bin/activate
+python -m pytest tests/                      # backend suite (needs PG_DSN,
+                                             # schema from data/init.sql)
+cd citation-tool && npm test                 # frontend suite (vitest)
 ```
 
 ---
@@ -226,6 +259,32 @@ The statutory and judicial corpus powering **LawCite TT** is stored in a pre-bui
 
 > **Note:** The data ingestion pipeline is proprietary. The corpus is available as a pre-built database for deployment.
 
+
+---
+
+## 📊 Analytics & Metrics
+
+Usage analytics live in the **same Postgres instance as the corpus** on the app
+server — there are no third-party analytics services or trackers:
+
+| Data | Storage |
+| :--- | :--- |
+| Page views, time-on-site (dwell), searches, cite/atlas funnel events | `events` table (PostgreSQL 16) |
+| Full chat history — per-turn latency, status, linked sources | `chat_messages` table |
+| Client identity | salted **HMAC-SHA256 fingerprint** (24 hex chars) — raw IPs are never stored |
+
+* **Ingest:** the client buffers events and flushes them with
+  `navigator.sendBeacon` to `POST /api/events` (batched, best-effort — the app
+  never breaks if analytics is unavailable or opted out).
+* **Dashboard:** the `/metrics` page shows 7/30/90-day totals, the feature
+  funnel, top paths, and daily activity. It requires the admin token
+  (`ADMIN_METRICS_TOKEN`) and returns `404` without it.
+* **Admin API:** `GET /api/metrics/summary` with header `X-Admin-Token`.
+* **Retention:** a server-side sweep purges rows older than **400 days**
+  (`ANALYTICS_RETENTION_DAYS`) — no unbounded growth.
+
+See [Privacy & Analytics](#-privacy--analytics) below for the user-facing policy
+and opt-out.
 
 ---
 
