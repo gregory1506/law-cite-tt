@@ -11,6 +11,7 @@
   import { onMount } from "svelte";
   import { getChapters, resolveCitation, resolveUrl } from "../lib/api.js";
   import { setCite } from "../lib/context.svelte.js";
+  import { track } from "../lib/track.js";
   import PageHeader from "../components/layout/PageHeader.svelte";
   import { formatDate } from "../lib/date.js";
   import Card from "../components/ui/Card.svelte";
@@ -62,6 +63,12 @@
       result = await resolveCitation(requestChapter, requestSection, date);
       chapter = result.normalized_input?.chapter || requestChapter;
       section = result.normalized_input?.section || requestSection;
+      track("cite_validate", {
+        chapter: chapter,
+        section: section,
+        date: date,
+        status: result.status,
+      });
       setCite({
         chapter: chapter,
         section: section,
@@ -71,6 +78,7 @@
       });
     } catch (resolveError) {
       error = resolveError.message;
+      track("cite_error", { chapter: requestChapter, section: requestSection });
       setCite(null);
     } finally {
       loading = false;
@@ -82,6 +90,7 @@
   }
 
   async function copyCitation(value, label) {
+    track("cite_copy", { label });
     try {
       await navigator.clipboard.writeText(value);
       copied = label;

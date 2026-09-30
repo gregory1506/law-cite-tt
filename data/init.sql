@@ -55,3 +55,37 @@ CREATE TABLE case_citations (
 
 CREATE INDEX idx_case_citations_chapter ON case_citations(chapter_number);
 CREATE INDEX idx_case_citations_case ON case_citations(case_id);
+
+-- Usage analytics (beta metrics): page views, dwell, searches, cite checks, chat turns.
+-- Retention: purge rows older than ~400 days (retention policy set at first beta review).
+CREATE TABLE events (
+    id          BIGSERIAL PRIMARY KEY,
+    session_id  TEXT NOT NULL,
+    type        TEXT NOT NULL,
+    path        TEXT NOT NULL DEFAULT '',
+    meta        JSONB NOT NULL DEFAULT '{}'::jsonb,
+    ip_hash     TEXT NOT NULL DEFAULT '',
+    user_agent  TEXT NOT NULL DEFAULT '',
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_events_session ON events(session_id);
+CREATE INDEX idx_events_created ON events(created_at);
+CREATE INDEX idx_events_type ON events(type);
+
+CREATE TABLE chat_messages (
+    id          BIGSERIAL PRIMARY KEY,
+    session_id  TEXT NOT NULL DEFAULT '',
+    role        TEXT NOT NULL,
+    content     TEXT NOT NULL,
+    status      TEXT NOT NULL DEFAULT '',
+    sources     JSONB NOT NULL DEFAULT '[]'::jsonb,
+    mode        TEXT NOT NULL DEFAULT '',
+    latency_ms  INT NOT NULL DEFAULT 0,
+    ip_hash     TEXT NOT NULL DEFAULT '',
+    user_agent  TEXT NOT NULL DEFAULT '',
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_chat_messages_session ON chat_messages(session_id);
+CREATE INDEX idx_chat_messages_created ON chat_messages(created_at);

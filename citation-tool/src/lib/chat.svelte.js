@@ -1,5 +1,6 @@
 import { chat as chatAPI } from "./api.js";
 import { buildContextNote } from "./context.svelte.js";
+import { getSessionId } from "./track.js";
 
 const STORAGE_KEY = "lawcite-chat-v1";
 const MAX_PERSISTED = 40;
@@ -105,6 +106,7 @@ export async function sendMessage(text) {
     });
     const response = await chatAPI(history, chatState.mode, {
       signal: controller.signal,
+      sessionId: getSessionId(),
     });
     chatState.messages = [
       ...chatState.messages,

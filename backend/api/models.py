@@ -91,6 +91,18 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: list[ChatMessage] = Field(min_length=1)
     mode: str = Field(default="research", pattern="^(research|precedent)$")
+    session_id: str = Field(default="", max_length=64, pattern=r"^[A-Za-z0-9-]{0,64}$")
+
+
+class EventIn(BaseModel):
+    type: str = Field(min_length=1, max_length=64, pattern=r"^[a-z][a-z0-9_]*$")
+    path: str = Field(default="", max_length=512)
+    meta: dict = Field(default_factory=dict)
+
+
+class EventsIn(BaseModel):
+    session_id: str = Field(default="", max_length=64, pattern=r"^[A-Za-z0-9-]{0,64}$")
+    events: list[EventIn] = Field(min_length=1, max_length=50)
 
 
 class ChatSource(BaseModel):

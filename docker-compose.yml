@@ -37,6 +37,8 @@ services:
         condition: service_healthy
     environment:
       PG_DSN: postgresql://lawcite:${PG_PASSWORD}@db:5432/lawcite
+      EVENTS_HASH_KEY: ${EVENTS_HASH_KEY:-}
+      ADMIN_METRICS_TOKEN: ${ADMIN_METRICS_TOKEN:-}
     labels:
       - traefik.enable=true
       - traefik.http.routers.lawcite-api.rule=Host(`${API_DOMAIN}`)

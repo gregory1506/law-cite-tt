@@ -4,6 +4,7 @@
   import { getChapters, searchGrouped } from "../lib/api.js";
   import { setSearch } from "../lib/context.svelte.js";
   import { router, setTab } from "../lib/router.svelte.js";
+  import { track } from "../lib/track.js";
   import PageHeader from "../components/layout/PageHeader.svelte";
   import SearchBar from "../components/SearchBar.svelte";
   import ResultCard from "../components/ResultCard.svelte";
@@ -58,6 +59,13 @@
       results = response.items;
       nextOffset = response.next_offset;
       hasMore = response.has_more;
+      track("search", {
+        query: searchInput.query,
+        mode: searchInput.mode,
+        chapter: searchInput.chapter,
+        date: searchInput.date,
+        results: results.length,
+      });
       setSearch({
         query: searchInput.query,
         mode: searchInput.mode,
@@ -73,6 +81,7 @@
       });
     } catch (searchError) {
       error = searchError.message;
+      track("search_error", { query: searchInput.query });
     } finally {
       loading = false;
     }
@@ -93,6 +102,7 @@
       results = [...results, ...response.items];
       nextOffset = response.next_offset;
       hasMore = response.has_more;
+      track("search_more", { query: lastSearch.query, results: response.items.length });
     } catch (searchError) {
       error = searchError.message;
     } finally {

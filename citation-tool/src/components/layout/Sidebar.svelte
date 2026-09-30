@@ -1,6 +1,7 @@
 <script>
   import { FileCheck2, Network, Search } from "@lucide/svelte";
   import { navigate, router } from "../../lib/router.svelte.js";
+  import { track } from "../../lib/track.js";
   import ThemeToggle from "./ThemeToggle.svelte";
 
   let { open = false, onNavigate = () => {} } = $props();
@@ -35,6 +36,7 @@
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Statute Atlas graph (opens in new tab)"
+      onclick={() => track("atlas_open")}
     >
       <Network size={17} aria-hidden="true" />
       Atlas

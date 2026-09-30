@@ -5,6 +5,7 @@
   import Sidebar from "./components/layout/Sidebar.svelte";
   import { isAuthenticated, setToken } from "./lib/auth.js";
   import { initRouter, router } from "./lib/router.svelte.js";
+  import { initTracking, trackPageview } from "./lib/track.js";
   import Cite from "./routes/Cite.svelte";
   import Explore from "./routes/Explore.svelte";
 
@@ -25,6 +26,17 @@
 
   $effect(() => {
     document.title = `${titles[router.route] || "Research"} — LawCite TT`;
+  });
+
+  $effect(() => {
+    if (!authed) return;
+    initTracking();
+    const path = router.route === "cite" ? "/cite" : "/";
+    const tab =
+      router.route === "research" && router.tab !== "search"
+        ? `?tab=${router.tab}`
+        : "";
+    trackPageview(path + tab);
   });
 </script>
 

@@ -82,7 +82,7 @@ async def test_search_and_lookup_after_ingest(client):
     body = resp.json()
     assert len(body) == 1
     assert "Absconding Debtors Act" in body[0]["chunk_text"]
-    assert body[0]["pdf_url"].endswith("105522?type=act")
+    assert body[0]["pdf_url"].endswith("/api/pdf/105522")
 
     resp = await client.get("/api/search", params={"q": "affidavit", "mode": "fts"})
     assert resp.status_code == 200
@@ -141,10 +141,10 @@ async def test_grouped_search_contract_and_pdf_urls(client, monkeypatch):
     body = response.json()
     assert body["items"][0]["title"] == "Bankruptcy Act"
     assert body["items"][0]["matched_version"]["pdf_url"].endswith(
-        "/1002?type=act"
+        "/api/pdf/1002"
     )
     assert body["items"][0]["latest_available"]["pdf_url"].endswith(
-        "/1002?type=act"
+        "/api/pdf/1002"
     )
 
 
@@ -201,7 +201,7 @@ async def test_citation_resolve_contract_normalizes_and_formats(client, monkeypa
         "(version available as at 1 January 2010)"
     )
     assert body["citation"]["short"] == "Chap. 8:08, s. 12(3)(a)"
-    assert body["authority"]["pdf_url"].endswith("/1001?type=act")
+    assert body["authority"]["pdf_url"].endswith("/api/pdf/1001")
     assert body["text"].startswith("A debtor")
 
 

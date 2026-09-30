@@ -1,17 +1,30 @@
 from __future__ import annotations
 
+import hmac
+import logging
 import os
+import time
+import uuid
 from contextlib import asynccontextmanager
 from datetime import date
 from pathlib import Path
 
 import httpx
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, Response
 
 
 from api.agent import ChatAgent
+from api.analytics import (
+    admin_metrics_token,
+    client_ip,
+    hash_ip,
+    record_chat_exchange,
+    record_events,
+    summarize_usage,
+    user_agent,
+)
 from api.citations import format_citation, normalize_chapter, normalize_section
 from api.models import (
     CaseDetail,
@@ -19,10 +32,13 @@ from api.models import (
     ChatRequest,
     ChatResponse,
     CitationResolveResponse,
+    EventsIn,
     GroupedSearchResponse,
 )
 from scraper.db_pg import LawCitePGDB
 from scraper.embed import _get_model
+
+logger = logging.getLogger("lawcite.analytics")
 
 PG_DSN = os.environ.get(
     "PG_DSN", "postgresql://lawcite:changeme@localhost:5432/lawcite"
@@ -257,11 +273,71 @@ async def resolve_citation(
     }
 
 
+def _request_identity(request: Request) -> tuple[str, str]:
+    ip = client_ip(
+        request.headers.get("x-forwarded-for"),
+        request.headers.get("x-real-ip"),
+        request.client.host if request.client else "",
+    )
+    return hash_ip(ip), user_agent(request.headers.get("user-agent"))
+
+
+@app.post("/api/events")
+async def ingest_events(payload: EventsIn, request: Request):
+    """Beacon ingest for usage analytics. Best-effort: never fails the client."""
+    session_id = payload.session_id or uuid.uuid4().hex
+    ip_hash, ua = _request_identity(request)
+    pool = await get_db().connect()
+    try:
+        recorded = await record_events(
+            pool, session_id=session_id, ip_hash=ip_hash, ua=ua, events=payload.events
+        )
+    except Exception:
+        logger.exception("event ingest failed")
+        return {"status": "degraded", "recorded": 0}
+    return {"status": "ok", "recorded": recorded}
+
+
+@app.get("/api/metrics/summary")
+async def metrics_summary(request: Request, days: int = Query(30, ge=1, le=90)):
+    """Beta metrics. Hidden (404) unless ADMIN_METRICS_TOKEN is configured and sent."""
+    token = admin_metrics_token()
+    provided = request.headers.get("x-admin-token", "")
+    if not token or not provided or not hmac.compare_digest(provided, token):
+        raise HTTPException(status_code=404, detail="Not Found")
+    pool = await get_db().connect()
+    try:
+        return await summarize_usage(pool, days)
+    except Exception:
+        logger.exception("metrics summary failed")
+        raise HTTPException(status_code=503, detail="Metrics unavailable") from None
+
+
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat(payload: ChatRequest):
+async def chat(payload: ChatRequest, request: Request):
     messages = [{"role": m.role, "content": m.content} for m in payload.messages]
     agent = ChatAgent(get_db())
+    started = time.perf_counter()
     result = await agent.run(messages, mode=payload.mode)
+    latency_ms = int((time.perf_counter() - started) * 1000)
+    ip_hash, ua = _request_identity(request)
+    session_id = payload.session_id or uuid.uuid4().hex
+    pool = await get_db().connect()
+    try:
+        await record_chat_exchange(
+            pool,
+            session_id=session_id,
+            ip_hash=ip_hash,
+            ua=ua,
+            mode=payload.mode,
+            user_content=messages[-1]["content"] if messages else "",
+            answer=result.get("answer", ""),
+            status=result.get("status", ""),
+            sources=result.get("sources") or [],
+            latency_ms=latency_ms,
+        )
+    except Exception:
+        logger.exception("chat persistence failed")
     return ChatResponse(**result)
 
 

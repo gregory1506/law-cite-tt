@@ -68,8 +68,8 @@ async function postJSON(path, body, signal) {
   return res.json();
 }
 
-export function chat(messages, mode = "research", { signal } = {}) {
-  return postJSON("/api/chat", { messages, mode }, signal);
+export function chat(messages, mode = "research", { signal, sessionId = "" } = {}) {
+  return postJSON("/api/chat", { messages, mode, session_id: sessionId }, signal);
 }
 
 export function resolveUrl(url) {
