@@ -21,24 +21,30 @@
 
 **LawCite TT** is an advanced legal research engine and temporal citation platform indexing the complete statutory laws and judicial precedent of **Trinidad and Tobago**. 
 
-By digitizing and section-chunking all **533 statutory chapters** across **4,989 historical revisions** (spanning back to the 1800s), LawCite TT enables point-in-time statutory research (*"What did Section 5 of the Arbitration Act state as of December 31, 2016?"*), hybrid full-text + vector semantic search, and citation graph exploration across **7,914 case-law precedent edges**.
+By digitizing and section-chunking all **533 statutory chapters** across **4,989 historical revisions** (spanning back to the 1800s), LawCite TT enables point-in-time statutory research (*"What did Section 5 of the Arbitration Act state as of December 31, 2016?"*), hybrid full-text + vector semantic search, and citation graph exploration across **7,914 case-law precedent edges**. A floating research assistant grounds every answer in the corpus with linked sources, and the **Statute Atlas** renders the whole corpus as an explorable semantic map.
 
 ---
 
-## 📸 Screenshots
+## 📸 Demo & Screenshots
+
+**Walkthrough** — hybrid search → validate a citation → ask the grounded assistant → open the Statute Atlas → back to the app:
+
+<img src="docs/images/walkthrough.gif" alt="Walkthrough: searching legislation, validating a citation, asking the research assistant, and exploring the Statute Atlas" width="960" />
 
 <table>
   <tr>
     <td align="center"><strong>Research</strong></td>
     <td align="center"><strong>Cite</strong></td>
-    <td align="center"><strong>Chat</strong></td>
+    <td align="center"><strong>Research assistant</strong></td>
   </tr>
   <tr>
-    <td><img src="docs/images/research.png" alt="Research tab showing search results" /></td>
-    <td><img src="docs/images/cite.png" alt="Cite tab showing citation validation" /></td>
-    <td><img src="docs/images/chat.png" alt="Chat tab showing AI assistant" /></td>
+    <td><img src="docs/images/research.png" alt="Research view with hybrid search results for arbitration across 11 chapters" /></td>
+    <td><img src="docs/images/cite.png" alt="Citation validation resolving Chap. 8:08 s. 4 to the Absconding Debtors Act with copy-ready citations" /></td>
+    <td><img src="docs/images/chat.png" alt="Research assistant answering with a grounded quote and 13 linked sources, cite-context chip attached" /></td>
   </tr>
 </table>
+
+<img src="docs/images/atlas.png" alt="Statute Atlas: interactive canvas graph of all 533 statutory chapters with semantic relationships" />
 
 ---
 
@@ -52,7 +58,7 @@ By digitizing and section-chunking all **533 statutory chapters** across **4,989
     </td>
     <td width="50%">
       <h3>🤖 Intelligent Legal AI Assistant</h3>
-      <p>An interactive legal assistant that analyzes statutory provisions, identifies relevant judicial precedents, and synthesizes structured legal answers in real time.</p>
+      <p>A floating research assistant that answers strictly from the corpus with verbatim quotes and linked sources — and carries your current search or citation context into every question.</p>
     </td>
   </tr>
   <tr>
@@ -71,8 +77,8 @@ By digitizing and section-chunking all **533 statutory chapters** across **4,989
       <p>View and inspect official statutory PDF revisions inline with high-reliability document streaming and instant browser preview capabilities.</p>
     </td>
     <td width="50%">
-      <h3>⚡ Global Edge Performance & Security</h3>
-      <p>Built on an enterprise-grade edge architecture with distributed caching, end-to-end HTTPS encryption, and sub-second query response times worldwide.</p>
+      <h3>🗺️ Statute Atlas</h3>
+      <p>An Obsidian-style interactive map of all 533 statutory chapters — search, pan, zoom, and traverse the strongest semantic relationships between laws, self-contained in a single page.</p>
     </td>
   </tr>
 </table>
@@ -149,7 +155,7 @@ This project serves as a production-grade demonstration of modern **AI Engineeri
 ## 🛠️ Technology Stack
 
 
-* **Frontend**: [Svelte 5](https://svelte.dev) (Runes API), Vite, Lucide Icons, Vanilla CSS Design Tokens
+* **Frontend**: [Svelte 5](https://svelte.dev) (Runes API), Vite, Lucide Icons, Vanilla CSS Design Tokens, self-contained canvas Statute Atlas
 * **Edge Deployment**: [Cloudflare Workers](https://workers.cloudflare.com) (Static Assets + Worker Reverse Proxy)
 * **Backend API**: [FastAPI](https://fastapi.tiangolo.com) (Python 3.13), Uvicorn, AsyncPG, HTTPX
 * **Database & Vector Search**: [PostgreSQL 16](https://www.postgresql.org) + [pgvector](https://github.com/pgvector/pgvector), Hybrid FTS + HNSW Vector Indexing
@@ -172,10 +178,11 @@ The fastest way to understand LawCite TT is to use it:
 
 ### Statute Atlas
 
-The frontend also ships a self-contained, Obsidian-style graph at
-`/laws-graph.html`. It includes all 533 statutory chapters and rolls 23,143
-provisions into a sparse set of chapter-level semantic relationships. Users can
-search, pan, zoom, select a law, and traverse to its strongest related laws.
+The frontend also ships a self-contained, Obsidian-style graph — linked from the
+**Atlas** item in the app sidebar — at `/laws-graph.html`. It includes all 533
+statutory chapters and rolls 23,143 provisions into a sparse set of
+chapter-level semantic relationships. Users can search, pan, zoom, select a law,
+and traverse to its strongest related laws.
 
 These graph links represent inferred semantic similarity, not authoritative
 citations. Rebuild the page from the local GraphRAG export with:
